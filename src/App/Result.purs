@@ -32,7 +32,7 @@ component = H.mkComponent
     HH.div
       [ HP.class_ $ H.ClassName "flex align-baseline" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "w-48 py-1 px-3 text-2xl text-right" ]
+          [ HP.class_ $ H.ClassName "flex justify-end items-center w-40 py-1 px-3 text-2xl" ]
           [ HH.text $ case calculation of
               Just _ -> "Calculating..."
               _ -> if total == zero
@@ -42,7 +42,7 @@ component = H.mkComponent
                   Format.toStringWith (Format.fixed 4) prob <> "%"
           ]
       , HH.div
-          [ HP.class_ $ H.ClassName "w-20 flex justify-end" ]
+          [ HP.class_ $ H.ClassName "w-20 min-w-fit flex justify-end" ]
           [ HH.div
               [ HP.class_ $ H.ClassName "inline-flex flex-col mx-1" ]
               [ HH.div [ HP.class_ $ H.ClassName "text-right px-1" ] [ HH.text $ BigInt.toString combination ]

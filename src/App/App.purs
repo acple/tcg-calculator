@@ -24,7 +24,6 @@ import Effect.Random as Random
 import Halogen as C
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
 import Halogen.Util as HU
@@ -96,12 +95,7 @@ component = H.mkComponent
       [ HP.class_ $ H.ClassName "grow basis-0 flex items-center rounded border-2 border-cyan-400 p-1" ]
       [ HH.div
           [ HP.class_ $ H.ClassName "h-full mr-auto" ]
-          [ HH.button
-              [ HP.class_ $ H.ClassName "rounded border h-full w-full py-1 px-3"
-              , HE.onClick $ const SaveState
-              ]
-              [ HH.text "Save" ]
-          ]
+          [ HU.button (HH.text "Save") (H.ClassName "border border-rose-500 hover:bg-rose-100") SaveState ]
       , HH.slot_ (Proxy :: _ "result") unit Result.component unit
       ]
 

@@ -48,14 +48,14 @@ component = H.mkComponent
 
   render { cards, condition: { mode, count }, minValue, maxValue } = do
     HH.div
-      [ HP.class_ $ H.ClassName "flex items-center gap-1" ]
+      [ HP.class_ $ H.ClassName "flex flex-wrap items-center" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "grow w-0 rounded border p-0.5" ]
+          [ HP.class_ $ H.ClassName "grow w-24 rounded border p-0.5" ]
           [ renderCardSelector cards ]
-      , HH.text "を"
       , HH.span
-          [ HP.class_ $ H.ClassName "flex" ]
-          [ renderCardCounter count minValue maxValue
+          [ HP.class_ $ H.ClassName "flex items-center" ]
+          [ HH.span [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "を" ]
+          , renderCardCounter count minValue maxValue
           , renderModeSelector mode
           ]
       ]

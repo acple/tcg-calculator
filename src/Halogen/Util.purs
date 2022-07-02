@@ -1,14 +1,4 @@
-module Halogen.Util
-  ( downButton
-  , empty
-  , fa
-  , fa_
-  , plusButton
-  , removeButton
-  , toggleButton
-  , upButton
-  )
-  where
+module Halogen.Util where
 
 import Prelude
 
@@ -27,22 +17,22 @@ fa_ :: forall w i. String -> HH.HTML w i
 fa_ s = HH.i [ HP.class_ $ H.ClassName ("fa-solid " <> s) ] []
 
 plusButton :: forall w i. i -> HH.HTML w i
-plusButton = _button "fa-plus" $ H.ClassName "border border-sky-500 text-sky-700 hover:bg-sky-200"
+plusButton = button (fa_ "fa-plus") $ H.ClassName "border border-sky-500 text-sky-700 hover:bg-sky-200"
 
 removeButton :: forall w i. i -> HH.HTML w i
-removeButton = _button "fa-xmark" $ H.ClassName "text-gray-500 hover:bg-gray-200"
+removeButton = button (fa_ "fa-xmark") $ H.ClassName "text-gray-500 hover:bg-gray-200"
 
 toggleButton :: forall w i. i -> HH.HTML w i
-toggleButton = _button "fa-arrows-rotate" $ H.ClassName "text-gray-500 hover:bg-gray-200"
+toggleButton = button (fa_ "fa-arrows-rotate") $ H.ClassName "text-gray-500 hover:bg-gray-200"
 
 upButton :: forall w i. i -> HH.HTML w i
-upButton = _button "fa-angle-up" $ H.ClassName "text-gray-500 hover:bg-gray-200"
+upButton = button (fa_ "fa-angle-up") $ H.ClassName "text-gray-500 hover:bg-gray-200"
 
 downButton :: forall w i. i -> HH.HTML w i
-downButton = _button "fa-angle-down" $ H.ClassName "text-gray-500 hover:bg-gray-200"
+downButton = button (fa_ "fa-angle-down") $ H.ClassName "text-gray-500 hover:bg-gray-200"
 
-_button :: forall w i. String -> H.ClassName -> i -> HH.HTML w i
-_button sym style h =
+button :: forall w i. HH.HTML w i -> H.ClassName -> i -> HH.HTML w i
+button content style h =
   HH.button
     [ HP.classes
         [ H.ClassName "rounded w-full h-full py-1 px-3 transition-colors duration-75"
@@ -50,4 +40,4 @@ _button sym style h =
         ]
     , HE.onClick $ const h
     ]
-    [ fa_ sym ]
+    [ content ]
