@@ -163,7 +163,8 @@ component = H.mkComponent
     GetCondition reply -> do
       reply <<< Condition <$> H.gets _.condition
     RestoreState cards (Condition condition) a -> do
-      { condition: { cards: selected } } <- H.modify _ { cards = cards , condition = condition }
+      let { min, max } = getMinMax condition.cards condition.mode
+      { condition: { cards: selected } } <- H.modify _ { cards = cards , condition = condition, minValue = min, maxValue = max }
       let items = cards <#> \card -> { id: card.id, value: card.name, selected: Array.elem card selected }
       H.lift $ H.tell (Proxy :: _ "selector") unit (Selector.SetItems items)
       pure a
