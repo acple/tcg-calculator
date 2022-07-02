@@ -2,12 +2,11 @@ module TcgCalculator.Types where
 
 import Prelude
 
-import Data.Argonaut.Decode (class DecodeJson)
-import Data.Argonaut.Decode.Generic (genericDecodeJsonWith)
-import Data.Argonaut.Encode (class EncodeJson)
-import Data.Argonaut.Encode.Generic (genericEncodeJsonWith)
-import Data.Argonaut.Types.Generic (defaultEncoding)
+import Data.Argonaut.Decode (class DecodeJson, JsonDecodeError(..), decodeJson)
+import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Either (note)
 import Data.Generic.Rep (class Generic)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 
@@ -38,10 +37,21 @@ instance Show ConditionMode where
   show = genericShow
 
 instance EncodeJson ConditionMode where
-  encodeJson = genericEncodeJsonWith defaultEncoding { unwrapSingleArguments = true }
+  encodeJson = encodeJson <<< show
 
 instance DecodeJson ConditionMode where
-  decodeJson = genericDecodeJsonWith defaultEncoding { unwrapSingleArguments = true }
+  decodeJson json = note (UnexpectedValue json) <<< readConditionMode =<< decodeJson json
+
+readConditionMode :: String -> Maybe ConditionMode
+readConditionMode = case _ of
+  "AtLeast" -> Just AtLeast
+  "JustDraw" -> Just JustDraw
+  "Remains" -> Just Remains
+  "JustRemains" -> Just JustRemains
+  "Choice" -> Just Choice
+  "LeftOne" -> Just LeftOne
+  "LeftAll" -> Just LeftAll
+  _ -> Nothing
 
 type Condition' = { mode :: ConditionMode, count :: Int, cards :: Cards }
 

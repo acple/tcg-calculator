@@ -13,7 +13,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import TcgCalculator.Types (Cards, Condition(..), Condition', ConditionMode(..))
+import TcgCalculator.Types (Cards, Condition(..), Condition', ConditionMode(..), readConditionMode)
 import Type.Proxy (Proxy(..))
 
 data Updated = Updated
@@ -97,17 +97,6 @@ component = H.mkComponent
       , HH.option [ HP.value "LeftOne" ] [ HH.text "種類以上デッキに残す" ]
       , HH.option [ HP.value "LeftAll" ] [ HH.text "種類以上ドローしない" ]
       ]
-
-  readConditionMode :: String -> Maybe ConditionMode
-  readConditionMode = case _ of
-    "AtLeast" -> Just AtLeast
-    "JustDraw" -> Just JustDraw
-    "Remains" -> Just Remains
-    "JustRemains" -> Just JustRemains
-    "Choice" -> Just Choice
-    "LeftOne" -> Just LeftOne
-    "LeftAll" -> Just LeftAll
-    _ -> Nothing
 
   action :: Action -> _
   action = case _ of
