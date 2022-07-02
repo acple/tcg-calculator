@@ -60,7 +60,7 @@ component = H.mkComponent
           [ HU.fa "fa-layer-group" [ H.ClassName "text-2xl" ]
           , HH.text "デッキ情報"
           ]
-      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500" ]
+      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500 text-right" ]
           [ HH.span [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "手札枚数:" ]
           , HH.input
               [ HP.class_ styleFormNumber
@@ -72,7 +72,7 @@ component = H.mkComponent
               , HE.onValueChange (UpdateHand <<< fromMaybe 0 <<< Int.fromString)
               ]
           ]
-      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500" ]
+      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500 text-right" ]
           [ HH.span [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "デッキ枚数:" ]
           , HH.input
               [ HP.class_ styleFormNumber

@@ -67,7 +67,7 @@ component = H.mkComponent
   renderCardCounter count min max =
     HH.input
       [ HP.classes
-          [ H.ClassName "appearance-none w-16 py-1 pl-3 pr-1 m-0 rounded border transition ease-in-out"
+          [ H.ClassName "appearance-none w-12 py-1 pl-3 pr-1 rounded border transition ease-in-out"
           , H.ClassName "bg-transparent border-gray-400 hover:border-gray-500"
           , H.ClassName "focus:outline-none focus:border-blue-600"
           ]
@@ -82,7 +82,7 @@ component = H.mkComponent
   renderModeSelector mode =
     HH.select
       [ HP.classes
-          [ H.ClassName "appearance-none py-1 pl-4 pr-8 rounded border"
+          [ H.ClassName "appearance-none py-1 px-3 rounded border w-full"
           , H.ClassName "bg-transparent border-gray-400 hover:border-gray-500"
           , H.ClassName "focus:outline-none focus:border-blue-600"
           ]

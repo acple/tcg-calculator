@@ -35,7 +35,7 @@ button :: forall w i. HH.HTML w i -> H.ClassName -> i -> HH.HTML w i
 button content style h =
   HH.button
     [ HP.classes
-        [ H.ClassName "rounded w-full h-full py-1 px-3 transition-colors duration-75"
+        [ H.ClassName "rounded w-full h-full py-1 px-2 transition-colors duration-75"
         , style
         ]
     , HE.onClick $ const h

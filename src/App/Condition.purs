@@ -115,7 +115,7 @@ component = H.mkComponent
               , HU.toggleButton (ToggleItemDisabled id)
               ]
           , HH.div
-              [ HP.class_ $ H.ClassName "grow" ]
+              [ HP.class_ $ H.ClassName "grow min-w-0" ]
               [ HH.slot (Proxy :: _ "block") id ConditionBlock.component cards (const Calculate) ]
           ]
       ]
