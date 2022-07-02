@@ -14,6 +14,8 @@ import Halogen.Util as HU
 import Record as Record
 import Type.Proxy (Proxy(..))
 
+----------------------------------------------------------------
+
 type Item key = { id :: key, value :: String, selected :: Boolean }
 
 type Items key = Array (Item key)
@@ -31,11 +33,17 @@ data Action key
 data Query key a
   = SetItems (Items key) a
 
+----------------------------------------------------------------
+
 component :: forall m k. Eq k => H.Component (Query k) (Input k) (Output k) m
 component = H.mkComponent
   { initialState
   , render
-  , eval: H.mkEval $ H.defaultEval { handleAction = action, handleQuery = runMaybeT <<< query, receive = Just <<< Receive }
+  , eval: H.mkEval $ H.defaultEval
+      { handleAction = action
+      , handleQuery = runMaybeT <<< query
+      , receive = Just <<< Receive
+      }
   }
   where
 
@@ -110,8 +118,7 @@ component = H.mkComponent
         H.modify_ _ { items = items' }
         raiseUpdate items'
     where
-    raiseUpdate items = do
-      H.raise $ items # Array.filter _.selected <#> _.id
+    raiseUpdate items = H.raise $ items # Array.filter _.selected <#> _.id
 
   query :: _ ~> _
   query = case _ of

@@ -20,6 +20,8 @@ import Halogen.HTML.Properties as HP
 import Halogen.Util as HU
 import TcgCalculator.Types (Deck, Card)
 
+----------------------------------------------------------------
+
 type Index = Int
 
 data Action
@@ -34,13 +36,18 @@ data Action
 data Query a
   = SetDeck Deck a
 
+----------------------------------------------------------------
+
 component :: H.Component Query Unit Deck Aff
 component = H.mkComponent
-  { initialState: const { cards: [], others: 40, hand: 5 }
+  { initialState
   , render
   , eval: H.mkEval $ H.defaultEval { handleAction = action, handleQuery = runMaybeT <<< query }
   }
   where
+
+  initialState :: _ -> Deck
+  initialState _ = { cards: [], others: 40, hand: 5 }
 
   render { cards, others, hand } = do
     let cardCount = countCards cards
@@ -192,5 +199,4 @@ component = H.mkComponent
   query = case _ of
     SetDeck deck a -> do
       H.put deck
-      H.lift $ raiseUpdate deck
       pure a

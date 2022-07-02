@@ -5,7 +5,7 @@ import Prelude
 import App.Selector as Selector
 import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Array as Array
-import Data.Foldable (sum)
+import Data.Foldable (foldMap, sum)
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
@@ -16,19 +16,22 @@ import Halogen.HTML.Properties as HP
 import TcgCalculator.Types (Cards, Condition(..), Condition', ConditionMode(..), readConditionMode)
 import Type.Proxy (Proxy(..))
 
+----------------------------------------------------------------
+
 data Updated = Updated
 
 data Action
-  = UpdateCards Cards
+  = Initialize
   | UpdateConditionMode String
   | UpdateCardSelect (Array String)
   | UpdateCardCount String
-  | UpdateStatus
+  | Receive Cards
 
 data Query a
-  = SetCondition Condition a
-  | GetCondition (Condition -> a)
+  = GetCondition (Condition -> a)
   | RestoreState Cards Condition a
+
+----------------------------------------------------------------
 
 component :: H.Component Query Cards Updated Aff
 component = H.mkComponent
@@ -37,8 +40,8 @@ component = H.mkComponent
   , eval: H.mkEval $ H.defaultEval
       { handleAction = action
       , handleQuery = runMaybeT <<< query
-      , initialize = Just UpdateStatus
-      , receive = Just <<< UpdateCards
+      , initialize = Just Initialize
+      , receive = Just <<< Receive
       }
   }
   where
@@ -100,35 +103,35 @@ component = H.mkComponent
 
   action :: Action -> _
   action = case _ of
-    UpdateCards cards -> do
+    Initialize -> do
+      { cards, condition: { mode, count, cards: selected } } <- H.get
+      updateStatus cards selected mode count
+    UpdateCardSelect selected -> do
+      updateCardSelect selected
+      H.raise Updated
+    UpdateConditionMode mode -> do
+      foldMap <@> readConditionMode mode $ \mode' -> do
+        { cards, condition: { count, cards: selected } } <- H.get
+        updateStatus cards selected mode' count
+        H.raise Updated
+    UpdateCardCount count -> do
+      foldMap <@> Int.fromString count $ \count' -> do
+        { cards, condition: { mode, cards: selected } } <- H.get
+        updateStatus cards selected mode count'
+        H.raise Updated
+    Receive cards -> do
       current <- H.gets _.cards
       when (cards /= current) do
         { condition: { cards: selected } } <- H.modify _ { cards = cards }
-        action $ UpdateCardSelect (selected <#> _.id)
-    UpdateCardSelect selected -> do
+        updateCardSelect (selected <#> _.id)
+    where
+    updateCardSelect selected = do
       { cards, condition: { mode, count } } <- H.get
       let selected' = cards # Array.filter \{ id } -> Array.elem id selected
       updateStatus cards selected' mode count
-    UpdateConditionMode mode -> do
-      case readConditionMode mode of
-        Just mode' -> do
-          { cards, condition: { count, cards: selected } } <- H.get
-          updateStatus cards selected mode' count
-        _ -> pure unit
-    UpdateCardCount count -> do
-      case Int.fromString count of
-        Just count' -> do
-          { cards, condition: { mode, cards: selected } } <- H.get
-          updateStatus cards selected mode count'
-        _ -> pure unit
-    UpdateStatus -> do
-      { cards, condition: { mode, count, cards: selected } } <- H.get
-      updateStatus cards selected mode count
-    where
     updateStatus cards selected mode count = do
       let { min, max } = getMinMax selected mode
       H.modify_ _ { cards = cards, condition { mode = mode, cards = selected, count = clamp min max count }, minValue = min, maxValue = max }
-      H.raise Updated
 
   getMinMax :: Cards -> ConditionMode -> { min :: Int, max :: Int }
   getMinMax cards = case _ of
@@ -156,10 +159,6 @@ component = H.mkComponent
 
   query :: _ ~> _
   query = case _ of
-    SetCondition (Condition condition) a -> do
-      H.modify_ _ { condition = condition }
-      H.lift $ action UpdateStatus
-      pure a
     GetCondition reply -> do
       reply <<< Condition <$> H.gets _.condition
     RestoreState cards (Condition condition) a -> do

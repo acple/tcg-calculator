@@ -4,6 +4,7 @@ import Prelude
 
 import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Array.NonEmpty (NonEmptyArray)
+import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Foldable (foldMap)
 import Data.Function (on)
@@ -17,16 +18,23 @@ import Halogen.HTML.Properties as HP
 import TcgCalculator as TC
 import TcgCalculator.Types (Condition, Deck)
 
+----------------------------------------------------------------
+
 data Query a
   = Calculate Deck (Array (NonEmptyArray Condition)) a
 
+----------------------------------------------------------------
+
 component :: H.Component Query Unit Void Aff
 component = H.mkComponent
-  { initialState: const { combination: zero, total: zero, calculation: Nothing }
+  { initialState
   , render
   , eval: H.mkEval H.defaultEval { handleQuery = runMaybeT <<< query }
   }
   where
+
+  initialState :: _ -> { combination :: BigInt, total :: BigInt, calculation :: Maybe _ }
+  initialState _ = { combination: zero, total: zero, calculation: Nothing }
 
   render { combination, total, calculation } =
     HH.div

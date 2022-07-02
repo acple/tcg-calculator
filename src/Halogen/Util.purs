@@ -7,6 +7,8 @@ import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
+----------------------------------------------------------------
+
 empty :: forall w i. HH.HTML w i
 empty = HH.text mempty
 

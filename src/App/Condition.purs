@@ -11,7 +11,6 @@ import Data.Array as Array
 import Data.Array.NonEmpty as NE
 import Data.Array.NonEmpty.Internal (NonEmptyArray)
 import Data.Array.ST as STA
-import Data.BigInt (BigInt)
 import Data.Foldable (for_)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -27,14 +26,9 @@ import Record as Record
 import TcgCalculator.Types (Condition(..), ConditionMode, Deck)
 import Type.Proxy (Proxy(..))
 
-type Id = String
+----------------------------------------------------------------
 
-type State =
-  { conditions :: Array { id :: Id, disabled :: Boolean }
-  , result :: { combination :: BigInt, total :: BigInt }
-  , deck :: Deck
-  , disabled :: Boolean
-  }
+type Id = String
 
 type Export =
   { conditions :: Array { mode :: ConditionMode, count :: Int, cards :: Array Id, disabled :: Boolean }
@@ -48,7 +42,8 @@ data Updated
   | AllConditionDeleted
 
 data Action
-  = AddCondition
+  = Initialize
+  | AddCondition
   | RemoveCondition Id
   | Swap Index Index
   | ToggleItemDisabled Id
@@ -61,18 +56,23 @@ data Query a
   | RestoreState Deck Export a
   | ToggleDisabled a
 
+----------------------------------------------------------------
+
 component :: H.Component Query Deck Updated Aff
 component = H.mkComponent
-  { initialState: { conditions: [], deck: _, disabled: false }
+  { initialState
   , render
   , eval: H.mkEval $ H.defaultEval
       { handleAction = action
       , handleQuery = runMaybeT <<< query
-      , initialize = Just AddCondition
+      , initialize = Just Initialize
       , receive = Just <<< Receive
       }
   }
   where
+
+  initialState :: _ -> { conditions :: Array { id :: Id, disabled :: Boolean } , deck :: Deck , disabled :: Boolean }
+  initialState = { conditions: [], deck: _, disabled: false }
 
   render { conditions, deck, disabled } =
     HH.div
@@ -126,6 +126,9 @@ component = H.mkComponent
       [ HU.plusButton AddCondition ]
 
   action = case _ of
+    Initialize -> do
+      action AddCondition
+      calculate
     AddCondition -> do
       conditions <- H.gets _.conditions
       id <- generateId
@@ -159,17 +162,20 @@ component = H.mkComponent
       current <- H.gets _.deck
       when (current /= deck) do
         H.modify_ _ { deck = deck }
-        action Calculate
+        calculate
     Calculate -> do
-      deck <- H.gets _.deck
-      conditions <- Array.fromFoldable <$> getConditions
-      H.tell (Proxy :: _ "result") unit (Result.Calculate deck conditions)
+      calculate
       H.raise Updated
 
   getConditions = ado
     disabled <- map _.id <<< Array.filter _.disabled <$> H.gets _.conditions
     conditions <- H.requestAll (Proxy :: _ "block") ConditionBlock.GetCondition
     in NE.fromFoldable <<< Map.values <<< Map.filterKeys (Array.notElem <@> disabled) $ conditions
+
+  calculate = do
+    deck <- H.gets _.deck
+    conditions <- Array.fromFoldable <$> getConditions
+    H.tell (Proxy :: _ "result") unit (Result.Calculate deck conditions)
 
   generateId :: forall m. MonadEffect m => m Id
   generateId = H.liftEffect $ show <$> Random.random -- TODO: use UUID
@@ -193,7 +199,7 @@ component = H.mkComponent
       for_ conditions' \{ id, mode, count, cards } -> do
         let cards' = Array.mapMaybe <@> cards $ \cardId -> Array.find (_.id >>> (_ == cardId)) deck.cards
         H.lift $ H.tell (Proxy :: _ "block") id (ConditionBlock.RestoreState deck.cards (Condition { mode, count, cards: cards' }))
-      H.lift $ action Calculate
+      H.lift calculate
       pure a
     ToggleDisabled a -> do
       H.modify_ do

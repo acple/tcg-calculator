@@ -32,12 +32,11 @@ import Routing.Hash as Hash
 import TcgCalculator.Types (Deck)
 import Type.Proxy (Proxy(..))
 
+----------------------------------------------------------------
+
 type Export = { deck :: Deck, conditions :: Array Condition.Export }
 
 type Id = String -- TODO: use UUID
-
-type Query :: Type -> Type
-type Query = Const Void
 
 data Action
   = Initialize
@@ -52,7 +51,9 @@ data Action
   | RestoreState String
   | SaveState
 
-component :: H.Component Query Unit Void Aff
+----------------------------------------------------------------
+
+component :: H.Component (Const Void) Unit Void Aff
 component = H.mkComponent
   { initialState
   , render
@@ -137,14 +138,17 @@ component = H.mkComponent
         id <- generateId
         let defaultDeck = { cards: [{ id, name: "Card1", count: 3 }], others: 37, hand: 5 }
         H.tell (Proxy :: _ "deck") unit (Deck.SetDeck defaultDeck)
+        H.modify_ _ { deck = defaultDeck }
         action AddCondition
     UpdateDeck deck -> do
       H.modify_ _ { deck = deck }
+      action Calculate
     AddCondition -> do
       id <- generateId
       H.modify_ do
         conditions <- _.conditions
         _ { conditions = Array.snoc conditions id }
+      action Calculate
     RemoveCondition id -> do
       H.modify_ do
         conditions <- _.conditions
@@ -185,6 +189,7 @@ component = H.mkComponent
           H.tell (Proxy :: _ "deck") unit (Deck.SetDeck deck)
           for_ conditions' \{ id, condition } -> do
             H.tell (Proxy :: _ "condition") id (Condition.RestoreState deck condition)
+          action Calculate
     SaveState -> do
       { deck, conditions: ids } <- H.get
       conditions <- H.requestAll (Proxy :: _ "condition") Condition.GetState
