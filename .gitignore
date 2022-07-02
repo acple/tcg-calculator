@@ -8,3 +8,7 @@
 /.purs*
 /.psa*
 /.spago
+/.parcel-cache/
+
+/dist/
+/devcert.*

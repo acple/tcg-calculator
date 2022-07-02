@@ -1,0 +1,31 @@
+{
+  "private": true,
+  "name": "tcg-calculator",
+  "version": "1.0.0",
+  "description": "",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "spago build",
+    "build:bundle": "spago bundle-app --minify --source-maps --to output/app.js",
+    "build:parcel": "parcel build index.html --public-url .",
+    "bundle": "npm run build:bundle && npm run build:parcel",
+    "gendevcert": "dotnet dev-certs https --format pem --no-password --export-path ./devcert.pem --trust",
+    "server": "parcel serve --cert devcert.pem --key devcert.key --no-hmr index.html",
+    "test": "spago test",
+    "watch": "spago bundle-app --watch --source-maps --to output/app.js"
+  },
+  "author": "acple",
+  "license": "MIT",
+  "dependencies": {
+    "big-integer": "^1.6.51"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.42",
+    "parcel": "^2.6.0",
+    "purescript": "^0.15.2",
+    "spago": "^0.20.9",
+    "tailwindcss": "^3.0.24"
+  }
+}
