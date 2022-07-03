@@ -113,8 +113,7 @@ component = H.mkComponent
     Receive input -> do
       items <- H.gets _.items
       let items' = input <#> \{ id, value } -> { id, value, selected: maybe false _.selected (Array.find (_.id >>> (_ == id)) items) }
-      when (items /= items') do
-        H.modify_ _ { items = items' }
+      H.modify_ _ { items = items' }
 
   query :: _ ~> _
   query = case _ of

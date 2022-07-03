@@ -120,10 +120,8 @@ component = H.mkComponent
         updateStatus cards selected mode count'
         H.raise Updated
     Receive cards -> do
-      current <- H.gets _.cards
-      when (cards /= current) do
-        { condition: { cards: selected } } <- H.modify _ { cards = cards }
-        updateCardSelect (selected <#> _.id)
+      { condition: { cards: selected } } <- H.modify _ { cards = cards }
+      updateCardSelect (selected <#> _.id)
     where
     updateCardSelect selected = do
       { cards, condition: { mode, count } } <- H.get

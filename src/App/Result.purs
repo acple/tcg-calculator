@@ -67,7 +67,9 @@ component = H.mkComponent
       newCalculation <- H.fork do
         H.liftAff $ Aff.delay (Milliseconds 350.0)
         let deck' = TC.normalizeDeck deck conditions
+        H.liftAff $ Aff.delay (Milliseconds 0.0)
         let combination = TC.calculate deck' conditions
+        H.liftAff $ Aff.delay (Milliseconds 0.0)
         let total = TC.calculateTotal deck'
         H.modify_ _ { combination = combination, total = total, calculation = Nothing }
       currentCalculation <- H.gets _.calculation
