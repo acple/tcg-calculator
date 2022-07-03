@@ -98,13 +98,12 @@ component = H.mkComponent
     HH.div_
       [ HU.plusButton EnterEdit ]
 
-  action :: Action k -> _
   action = case _ of
     EnterEdit -> do
       H.modify_ _ { isEditMode = true }
     LeaveEdit -> do
       { items } <- H.modify _ { isEditMode = false }
-      raiseUpdate items
+      H.raise $ items # Array.filter _.selected <#> _.id
     Toggle id -> do
       whenM (H.gets _.isEditMode) do
         H.modify_ do
@@ -116,9 +115,6 @@ component = H.mkComponent
       let items' = input <#> \{ id, value } -> { id, value, selected: maybe false _.selected (Array.find (_.id >>> (_ == id)) items) }
       when (items /= items') do
         H.modify_ _ { items = items' }
-        raiseUpdate items'
-    where
-    raiseUpdate items = H.raise $ items # Array.filter _.selected <#> _.id
 
   query :: _ ~> _
   query = case _ of

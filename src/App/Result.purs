@@ -15,6 +15,7 @@ import Effect.Aff as Aff
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
+import Halogen.Query.HalogenM (ForkId)
 import TcgCalculator as TC
 import TcgCalculator.Types (Condition, Deck)
 
@@ -33,7 +34,7 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ -> { combination :: BigInt, total :: BigInt, calculation :: Maybe _ }
+  initialState :: _ -> { combination :: BigInt, total :: BigInt, calculation :: Maybe ForkId }
   initialState _ = { combination: zero, total: zero, calculation: Nothing }
 
   render { combination, total, calculation } =
