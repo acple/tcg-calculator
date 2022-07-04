@@ -60,7 +60,7 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ -> { deck :: Deck , conditions :: Array Id }
+  initialState :: _ -> { deck :: Deck, conditions :: Array Id }
   initialState _ = { deck: { cards: [], others: 0, hand: 0 }, conditions: [] }
 
   render { deck, conditions } =

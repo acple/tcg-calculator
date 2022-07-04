@@ -71,7 +71,7 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ -> { conditions :: Array { id :: Id, disabled :: Boolean } , deck :: Deck , disabled :: Boolean }
+  initialState :: _ -> { conditions :: Array { id :: Id, disabled :: Boolean }, deck :: Deck, disabled :: Boolean }
   initialState = { conditions: [], deck: _, disabled: false }
 
   render { conditions, deck, disabled } =

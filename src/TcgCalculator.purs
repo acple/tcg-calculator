@@ -86,16 +86,16 @@ mkConditionPattern (Condition { mode, count, cards }) = case mode of
   -- cards の中から count 枚以上を引くパターン
   AtLeast -> ado
     pattern <- mkDrawPattern cards count
-    in pattern <#> \p -> { card: p.card , min: p.draw, max: p.card.count }
+    in pattern <#> \p -> { card: p.card, min: p.draw, max: p.card.count }
   -- cards の中からちょうど count 枚を引くパターン
   JustDraw -> ado
     pattern <- mkDrawPattern cards count
-    let cond = pattern <#> \p -> { card: p.card , min: p.draw, max: p.draw }
+    let cond = pattern <#> \p -> { card: p.card, min: p.draw, max: p.draw }
     in unionBy ((==) `on` _.card.id) cond $ { card: _, min: 0, max: 0 } <$> cards -- fill others with zero
   -- count 枚以上デッキに残すパターン
   Remains -> ado
     pattern <- mkDrawPattern cards (sumBy _.count cards - count)
-    let cond =  pattern <#> \p -> { card: p.card , min: 0, max: p.draw }
+    let cond =  pattern <#> \p -> { card: p.card, min: 0, max: p.draw }
     in unionBy ((==) `on` _.card.id) cond $ { card: _, min: 0, max: 0 } <$> cards
   -- ちょうど count 枚デッキに残すパターン
   JustRemains ->
@@ -103,15 +103,15 @@ mkConditionPattern (Condition { mode, count, cards }) = case mode of
   -- cards の中から count 種類以上を1枚以上引くパターン
   Choice -> ado
     pattern <- mkDrawPattern' cards [replicate count 1]
-    in pattern <#> \p -> { card: p.card , min: 1, max: p.card.count }
+    in pattern <#> \p -> { card: p.card, min: 1, max: p.card.count }
   -- cards の中から count 種類以上を1枚以上残すパターン
   LeftOne -> ado
     pattern <- mkDrawPattern' cards [replicate count 1]
-    in pattern <#> \p -> { card: p.card , min: 0, max: p.card.count - 1 }
+    in pattern <#> \p -> { card: p.card, min: 0, max: p.card.count - 1 }
   -- cards の中から count 種類以上を1枚も引かないパターン
   LeftAll -> ado
     pattern <- mkDrawPattern' cards [replicate count 1]
-    in pattern <#> \p -> { card: p.card , min: 0, max: 0 }
+    in pattern <#> \p -> { card: p.card, min: 0, max: 0 }
 
 -- カードを指定枚数引く全ての組み合わせを列挙する
 mkDrawPattern :: Cards -> Int -> Array DrawPattern
