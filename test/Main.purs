@@ -2,12 +2,12 @@ module Test.Main where
 
 import Prelude
 
-import Data.Array (sortBy)
+import Data.Array as Array
 import Data.Array.NonEmpty as NE
 import Data.BigInt as BigInt
 import Effect (Effect)
 import Effect.Aff (launchAff_)
-import TcgCalculator (buildConditionPattern, mergeConditionPattern, mkConditionPattern)
+import TcgCalculator (buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, normalizeDeck)
 import TcgCalculator.Math (combinationNumber, combinations, partitionNumber, permutations)
 import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..))
 import Test.Spec (Spec, describe, it)
@@ -74,6 +74,7 @@ tcgCalculatorTest = do
     mkConditionPatternTest
     mergeConditionPatternTest
     buildConditionPatternTest
+    calculateTest
 
 mkConditionPatternTest :: Spec Unit
 mkConditionPatternTest = do
@@ -230,7 +231,7 @@ mergeConditionPatternTest = do
         [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 1, max: 3 }] `shouldEqual`
         sort' [{ card: cardA, min: 2, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }]
   where
-  sort' = sortBy $ comparing _.card
+  sort' = Array.sortBy $ comparing _.card
 
 buildConditionPatternTest :: Spec Unit
 buildConditionPatternTest = do
@@ -270,9 +271,44 @@ buildConditionPatternTest = do
         -- , sort' [{ card: cardD, min: 1 + 1, max: 1 }, { card: cardB, min: 1, max: 2 }] -- D + BD invalid min < max
         -- , sort' [{ card: cardD, min: 1 + 1, max: 1 }, { card: cardC, min: 1, max: 3 }] -- D + CD invalid min < max
         ]
-
   where
-  sort' = sortBy $ comparing _.card
+  sort' = Array.sortBy $ comparing _.card
+
+calculateTest :: Spec Unit
+calculateTest = do
+  describe "calculate" do
+    it "check some results" do
+      let deck = { cards: testCards, others: 11, hand: 5 }
+      let cond01 = buildCondition [[{ cards: [cardA], count: 1, mode: AtLeast }]]
+      runTest deck cond01 9316
+      runTest deck { others = 0 } cond01 120
+      let cond02 = buildCondition [[{ cards: [cardA], count: 1, mode: JustDraw }]]
+      runTest deck cond02 7140
+      runTest deck { others = 0 } cond02 45
+      let cond03 = buildCondition [[{ cards: [cardA, cardB, cardC], count: 5, mode: AtLeast }]]
+      runTest deck cond03 56
+      runTest deck { others = 0 } cond03 56
+      let cond04 = buildCondition [[{ cards: [cardA, cardB, cardC], count: 2, mode: Choice }]]
+      runTest deck cond04 9080
+      runTest deck { others = 0 } cond04 126
+      let cond05 = buildCondition [[{ cards: [cardB, cardC, cardD], count: 4, mode: JustDraw }]]
+      runTest deck cond05 210
+      runTest deck { others = 0 } cond05 45
+      let cond06 = buildCondition [[{ cards: [cardA], count: 1, mode: AtLeast }, { cards: [cardB], count: 1, mode: AtLeast }]]
+      runTest deck cond06 3751
+      runTest deck { others = 0 } cond06 99
+      let cond07 = buildCondition [[{ cards: [cardA], count: 2, mode: JustDraw }, { cards: [cardB], count: 1, mode: AtLeast }]]
+      runTest deck cond07 675
+      runTest deck { others = 0 } cond07 48
+      let cond08 = buildCondition [[{ cards: [cardD], count: 1, mode: AtLeast }, { cards: [cardA, cardB, cardC, cardD], count: 2, mode: Choice }]]
+      runTest deck cond08 1819
+      runTest deck { others = 0 } cond08 70
+      let cond09 = buildCondition [[{ cards: [cardD], count: 1, mode: AtLeast }, { cards: [cardA, cardB, cardC], count: 2, mode: Choice }]]
+      runTest deck cond09 1819
+      runTest deck { others = 0 } cond09 70
+  where
+  runTest deck cond expected = calculate (normalizeDeck deck cond) cond `shouldEqual` BigInt.fromInt expected
+  buildCondition = Array.mapMaybe NE.fromArray <<< map (map Condition)
 
 ----------------------------------------------------------------
 
