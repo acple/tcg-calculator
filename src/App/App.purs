@@ -21,7 +21,6 @@ import Effect.Aff (Aff)
 import Effect.Class (class MonadEffect)
 import Effect.Class.Console as Console
 import Effect.Random as Random
-import Halogen as C
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -73,9 +72,9 @@ component = H.mkComponent
               [ HH.a [ HP.href "." ] [ HH.text "Draw Calculator" ] ]
           ]
       , HH.div
-          [ HP.class_ $ C.ClassName "flex flex-col gap-3 container max-w-4xl p-1" ]
+          [ HP.class_ $ H.ClassName "flex flex-col gap-3 container max-w-4xl p-1" ]
           [ HH.div
-              [ HP.class_ $ C.ClassName "flex flex-wrap gap-1" ]
+              [ HP.class_ $ H.ClassName "flex flex-wrap gap-1" ]
               [ renderDeck
               , renderResult
               ]

@@ -8,8 +8,8 @@ import Control.Alternative (guard)
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Control.Plus (empty)
 import Data.Array as Array
+import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NE
-import Data.Array.NonEmpty.Internal (NonEmptyArray)
 import Data.Array.ST as STA
 import Data.Foldable (for_)
 import Data.Map as Map
