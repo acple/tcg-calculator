@@ -3,15 +3,14 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty, guard)
-import Data.Array (all, any, concatMap, filter, foldMap, group, groupAllBy, length, nubByEq, nubEq, replicate, unionBy, zipWith, (..), (\\))
+import Data.Array (all, any, concatMap, filter, foldMap, group, groupAllBy, length, nubByEq, nubEq, replicate, take, unionBy, zipWith, (\\))
 import Data.Array.NonEmpty (NonEmptyArray, foldl1, toArray)
 import Data.BigInt (BigInt)
 import Data.Foldable (and, product, sum)
 import Data.Function (on)
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF, unwrap)
-import Data.Traversable (traverse)
-import TcgCalculator.Math (Combination, combinationNumber, combinations, partitionNumber, permutations)
+import TcgCalculator.Math (Combination, combinationNumber, combinations, partitionNumber, partitionNumbers, permutations)
 import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Deck)
 
 ----------------------------------------------------------------
@@ -40,12 +39,10 @@ calculateTotal { cards, others, hand } = combinationNumber (sumBy _.count cards 
 type DrawPattern = Array { card :: Card, draw :: Int }
 
 generateDrawPatterns :: Deck -> Array DrawPattern
-generateDrawPatterns { cards, others, hand } = filterPatterns hand others $ createAllPatterns hand cards
-  where
-  createAllPatterns :: Int -> Cards -> Array DrawPattern
-  createAllPatterns h = traverse \card -> { card, draw: _ } <$> 0 .. min h card.count
-  filterPatterns :: Int -> Int -> Array DrawPattern -> Array DrawPattern
-  filterPatterns h o = filter $ sumBy _.draw >>> \draw -> draw <= h && h - draw <= o
+generateDrawPatterns { cards, others, hand } = ado
+  let zeroDrawPattern = { card: _, draw: 0 } <$> cards
+  drawPattern <- mkDrawPattern' cards $ join <<< take (others + 1) $ partitionNumbers hand
+  in unionBy ((==) `on` _.card.id) drawPattern zeroDrawPattern
 
 calculatePatternCount :: Deck -> DrawPattern -> BigInt
 calculatePatternCount { others, hand } pattern = do
@@ -116,11 +113,11 @@ mkConditionPattern (Condition { mode, count, cards }) = case mode of
     pattern <- mkDrawPattern' cards [replicate count 1]
     in pattern <#> \p -> { card: p.card , min: 0, max: 0 }
 
--- combination of drawn cards and their number
+-- カードを指定枚数引く全ての組み合わせを列挙する
 mkDrawPattern :: Cards -> Int -> Array DrawPattern
-mkDrawPattern cards count = mkDrawPattern' cards $ partitionNumber count # filter \p -> length p <= length cards
+mkDrawPattern cards count = mkDrawPattern' cards $ partitionNumber count
 
--- draw patterns by combination of card counts
+-- 指定の枚数パターンに合致するカードの組み合わせを全て列挙する
 mkDrawPattern' :: Cards -> Combination Int -> Array DrawPattern
 mkDrawPattern' cards pattern = do
   p <- pattern

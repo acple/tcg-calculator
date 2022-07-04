@@ -7,6 +7,7 @@ module TcgCalculator.Math
   , combinations
   , createPascalTriangle
   , partitionNumber
+  , partitionNumbers
   , pascalTriangle
   , permutations
   )
@@ -14,7 +15,7 @@ module TcgCalculator.Math
 
 import Prelude
 
-import Data.Array (filter, head, insertAt, length, singleton, uncons, zipWith, (!!), (..), (:))
+import Data.Array (filter, fromFoldable, head, insertAt, length, singleton, uncons, zipWith, (!!), (..), (:))
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Foldable (fold, product)
@@ -58,16 +59,23 @@ type PartitionNumber = Array (Array Int)
 partitionNumber :: Int -> PartitionNumber
 partitionNumber n | n < 0 = []
 partitionNumber 0 = [[]]
-partitionNumber n = fold <<< L.head $ build n
+partitionNumber n = fold <<< L.head $ buildPartitionNumbers n
+
+-- partitionNumbers 3 -> [partitionNumber 3, partitionNumber 2, paritionNumber 1, partitionNumber 0]
+partitionNumbers :: Int -> Array PartitionNumber
+partitionNumbers n | n < 0 = []
+partitionNumbers 0 = [[]]
+partitionNumbers n = fromFoldable $ buildPartitionNumbers n
+
+buildPartitionNumbers :: Int -> L.List PartitionNumber
+buildPartitionNumbers 0 = L.singleton [[]]
+buildPartitionNumbers k = do
+  let prev = buildPartitionNumbers (k - 1)
+  new prev 1 L.: prev
   where
-  build :: Int -> L.List PartitionNumber
-  build 1 = L.singleton [[1]]
-  build k = do
-    let prev = build (k - 1)
-    new prev 1 L.: prev
   new :: L.List PartitionNumber -> Int -> PartitionNumber
   new (h L.: t) i = new t (i + 1) <> ((i : _) <$> filter ((_ <= i) <<< fromMaybe 0 <<< head) h)
-  new _         i = [[i]]
+  new _         _ = []
 
 ----------------------------------------------------------------
 
