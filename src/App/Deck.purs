@@ -6,6 +6,7 @@ import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Array ((!!))
 import Data.Array as Array
 import Data.Foldable (fold)
+import Data.Function (on)
 import Data.Int as Int
 import Data.Maybe (fromMaybe)
 import Data.Monoid.Additive (Additive(..))
@@ -17,8 +18,9 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Halogen.Util as HU
 import TcgCalculator.Types (Deck, Card)
+import Util.Array as ArrayUtil
+import Util.Halogen as HU
 
 ----------------------------------------------------------------
 
@@ -26,8 +28,8 @@ type Index = Int
 
 data Action
   = AddCard
-  | RemoveCard Index
-  | UpdateCard Index Card
+  | RemoveCard Card
+  | UpdateCard Card
   | UpdateDeck Int
   | UpdateHand Int
   | UpdateOthers Int
@@ -55,7 +57,7 @@ component = H.mkComponent
     HH.div
       [ HP.class_ $ H.ClassName "p-1 rounded border-2 border-amber-500" ]
       [ renderHeader deckCount hand cardCount
-      , HH.ul [ HP.class_ $ H.ClassName "m-1" ] $ Array.mapWithIndex (renderCard others) cards
+      , HH.ul [ HP.class_ $ H.ClassName "m-1" ] $ renderCard others <$> cards
       , renderFooter others cardCount
       ]
 
@@ -93,17 +95,17 @@ component = H.mkComponent
           ]
       ]
 
-  renderCard others i card =
+  renderCard others card =
     HH.li
       [ HP.class_ $ H.ClassName "flex border-b border-gray-500" ]
       [ HH.div
           [ HP.class_ $ H.ClassName "mx-1" ]
-          [ HU.removeButton (RemoveCard i) ]
+          [ HU.removeButton (RemoveCard card) ]
       , HH.input
           [ HP.classes [ H.ClassName "grow", styleFormInput ]
           , HP.type_ HP.InputText
           , HP.value card.name
-          , HE.onValueChange (UpdateCard i <<< { id: card.id, name: _, count: card.count })
+          , HE.onValueChange (UpdateCard <<< card { name = _ })
           ]
       , HH.input
           [ HP.class_ styleFormNumber
@@ -112,7 +114,7 @@ component = H.mkComponent
           , HP.value $ show card.count
           , HP.min 0.0
           , HP.max if String.null card.name then 0.0 else Int.toNumber (card.count + others)
-          , HE.onValueChange (UpdateCard i <<< { id: card.id, name: card.name, count: _ } <<< fromMaybe 0 <<< Int.fromString)
+          , HE.onValueChange (UpdateCard <<< card { count = _ } <<< fromMaybe 0 <<< Int.fromString)
           ]
       ]
 
@@ -151,15 +153,14 @@ component = H.mkComponent
     AddCard -> do
       id <- H.liftEffect $ show <$> Random.random -- TODO: use UUID
       H.modify_ \s -> s { cards = Array.snoc s.cards { id, name: "", count: 0 } }
-    RemoveCard i -> do
+    RemoveCard card -> do
       { cards, others } <- H.get
-      fold ado
-        card <- cards !! i
-        cards' <- Array.deleteAt i cards
-        in raiseUpdate =<< H.modify _ { cards = cards', others = others + card.count }
-    UpdateCard i card -> do
+      let cards' = Array.deleteBy ((==) `on` _.id) card cards
+      raiseUpdate =<< H.modify _ { cards = cards', others = others + card.count }
+    UpdateCard card -> do
       { cards, others } <- H.get
       fold do
+        i <- Array.findIndex (_.id >>> (_ == card.id)) cards
         old <- cards !! i
         let card' = if String.null card.name then card { count = 0 } else card { count = clamp 0 (old.count + others) card.count }
         cards' <- Array.modifyAt i (const card') cards
@@ -180,16 +181,13 @@ component = H.mkComponent
         let deckCount = clamp cardCount deckLimit (cardCount + others)
         let others' = deckCount - cardCount
         _ { others = others', hand = min hand deckCount }
-    Swap x y -> do
-      cards <- H.gets _.cards
-      fold do
-        x' <- cards !! x
-        y' <- cards !! y
-        cards' <- Array.modifyAt y (const x') =<< Array.modifyAt x (const y') cards
-        pure $ raiseUpdate =<< H.modify _ { cards = cards' }
+    Swap x y -> do -- TODO
+      H.modify_ do
+        cards <- _.cards
+        _ { cards = ArrayUtil.swap x y cards }
 
   raiseUpdate deck =
-    H.raise deck { cards = Array.filter (_.name >>> (_ /= "")) deck.cards }
+    H.raise deck { cards = Array.filter (_.name >>> not String.null) deck.cards }
 
   countCards = alaF Additive Array.foldMap _.count
 

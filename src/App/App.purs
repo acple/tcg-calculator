@@ -9,7 +9,6 @@ import Data.Argonaut.Core (stringify)
 import Data.Argonaut.Decode (decodeJson, parseJson, printJsonDecodeError)
 import Data.Argonaut.Encode (encodeJson)
 import Data.Array as Array
-import Data.Array.ST as STA
 import Data.Const (Const)
 import Data.Either (Either(..))
 import Data.Foldable (fold, for_)
@@ -25,11 +24,12 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
-import Halogen.Util as HU
 import JSURI (decodeFormURLComponent)
 import Routing.Hash as Hash
 import TcgCalculator.Types (Deck)
 import Type.Proxy (Proxy(..))
+import Util.Array as ArrayUtil
+import Util.Halogen as HU
 
 ----------------------------------------------------------------
 
@@ -157,15 +157,9 @@ component = H.mkComponent
       H.tell (Proxy :: _ "condition") id Condition.ToggleDisabled
       action Calculate
     Swap x y -> do
-      conditions <- H.gets _.conditions
-      let conditions' = STA.run do
-            st <- STA.thaw conditions
-            a <- STA.peek x st
-            b <- STA.peek y st
-            case a, b of
-              Just a', Just b' -> STA.poke x b' st *> STA.poke y a' st $> st
-              _, _ -> pure st
-      H.modify_ _ { conditions = conditions' }
+      H.modify_ do
+        conditions <- _.conditions
+        _ { conditions = ArrayUtil.swap x y conditions }
     ReceiveConditionUpdated id response -> case response of
       Condition.Updated ->
         action Calculate

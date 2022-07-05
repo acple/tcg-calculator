@@ -10,9 +10,9 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Halogen.Util as HU
 import Record as Record
 import Type.Proxy (Proxy(..))
+import Util.Halogen as HU
 
 ----------------------------------------------------------------
 

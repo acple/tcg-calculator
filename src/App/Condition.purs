@@ -10,7 +10,6 @@ import Control.Plus (empty)
 import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NE
-import Data.Array.ST as STA
 import Data.Foldable (for_)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
@@ -21,10 +20,11 @@ import Effect.Random as Random
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
-import Halogen.Util as HU
 import Record as Record
 import TcgCalculator.Types (Condition(..), ConditionMode, Deck)
 import Type.Proxy (Proxy(..))
+import Util.Array as ArrayUtil
+import Util.Halogen as HU
 
 ----------------------------------------------------------------
 
@@ -140,16 +140,10 @@ component = H.mkComponent
       if Array.null conditions
         then H.raise AllConditionDeleted
         else action Calculate
-    Swap x y -> do
-      conditions <- H.gets _.conditions
-      let conditions' = STA.run do
-            st <- STA.thaw conditions
-            a <- STA.peek x st
-            b <- STA.peek y st
-            case a, b of
-              Just a', Just b' -> STA.poke x b' st *> STA.poke y a' st $> st
-              _, _ -> pure st
-      H.modify_ _ { conditions = conditions' }
+    Swap x y -> do -- TODO
+      H.modify_ do
+        conditions <- _.conditions
+        _ { conditions = ArrayUtil.swap x y conditions }
     ToggleItemDisabled id -> do
       H.modify_ do
         conditions <- _.conditions
@@ -159,8 +153,10 @@ component = H.mkComponent
           pure _ { conditions = conditions' }
       action Calculate
     Receive deck -> do
-      H.modify_ _ { deck = deck }
-      calculate
+      current <- H.gets _.deck
+      when (deck /= current) do
+        H.modify_ _ { deck = deck }
+        calculate
     Calculate -> do
       calculate
       H.raise Updated
