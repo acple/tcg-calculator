@@ -64,7 +64,7 @@ partitionNumber n = fold <<< L.head $ buildPartitionNumbers n
 -- partitionNumbers 3 -> [partitionNumber 3, partitionNumber 2, paritionNumber 1, partitionNumber 0]
 partitionNumbers :: Int -> Array PartitionNumber
 partitionNumbers n | n < 0 = []
-partitionNumbers 0 = [[]]
+partitionNumbers 0 = [[[]]]
 partitionNumbers n = fromFoldable $ buildPartitionNumbers n
 
 buildPartitionNumbers :: Int -> L.List PartitionNumber
