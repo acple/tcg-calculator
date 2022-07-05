@@ -51,9 +51,9 @@ component = H.mkComponent
 
   render { cards, condition: { mode, count }, minValue, maxValue } = do
     HH.div
-      [ HP.class_ $ H.ClassName "flex flex-wrap items-center" ]
+      [ HP.class_ $ H.ClassName "flex flex-wrap items-center justify-end" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "grow w-24 rounded border p-0.5" ]
+          [ HP.class_ $ H.ClassName "grow w-48 rounded border p-0.5" ]
           [ renderCardSelector cards ]
       , HH.span
           [ HP.class_ $ H.ClassName "flex items-center" ]
@@ -70,7 +70,7 @@ component = H.mkComponent
   renderCardCounter count min max =
     HH.input
       [ HP.classes
-          [ H.ClassName "appearance-none w-12 py-1 px-1 text-right rounded border transition ease-in-out"
+          [ H.ClassName "appearance-none w-12 shrink-0 py-1 px-1 text-right rounded border transition ease-in-out"
           , H.ClassName "bg-transparent border-gray-400 hover:border-gray-500"
           , H.ClassName "focus:outline-none focus:border-blue-600"
           ]
@@ -85,7 +85,7 @@ component = H.mkComponent
   renderModeSelector mode =
     HH.select
       [ HP.classes
-          [ H.ClassName "appearance-none py-1 px-3 rounded border w-full"
+          [ H.ClassName "appearance-none w-full py-1 px-3 rounded border"
           , H.ClassName "bg-transparent border-gray-400 hover:border-gray-500"
           , H.ClassName "focus:outline-none focus:border-blue-600"
           ]
