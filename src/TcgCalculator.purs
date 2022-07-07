@@ -18,7 +18,7 @@ import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Deck)
 calculate :: Deck -> Array (NonEmptyArray Condition) -> BigInt
 calculate deck conditions = do
   let drawPattern = generateDrawPatterns deck
-  let conditionPattern = buildConditionPattern =<< conditions
+  let conditionPattern = nubEq $ buildConditionPattern =<< conditions
   let pattern = filter (\d -> any (satisfyCondition d) conditionPattern) drawPattern
   sum $ calculatePatternCount deck <$> pattern
 
@@ -41,7 +41,7 @@ type DrawPattern = Array { card :: Card, draw :: Int }
 generateDrawPatterns :: Deck -> Array DrawPattern
 generateDrawPatterns { cards, others, hand } = ado
   let zeroDrawPattern = { card: _, draw: 0 } <$> cards
-  drawPattern <- mkDrawPattern' cards $ join <<< take (others + 1) $ partitionNumbers hand
+  drawPattern <- mkDrawPattern' cards <=< take (others + 1) $ partitionNumbers hand
   in unionBy ((==) `on` _.card.id) drawPattern zeroDrawPattern
 
 calculatePatternCount :: Deck -> DrawPattern -> BigInt
@@ -73,7 +73,7 @@ buildConditionPattern conditions = do
     if isValidConditionPattern merged then pure merged else empty
 
 mergeConditionPattern :: ConditionPattern -> ConditionPattern -> ConditionPattern
-mergeConditionPattern left right = foldl1 merge <$> groupAllBy (comparing _.card) (left <> right)
+mergeConditionPattern left right = foldl1 merge <$> groupAllBy (comparing _.card.id) (left <> right)
   where
   merge { card, min: min1, max : max1 } { min: min2, max : max2 } = { card, min: min1 + min2, max: min max1 max2 }
 

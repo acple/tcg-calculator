@@ -140,8 +140,10 @@ component = H.mkComponent
         H.modify_ _ { deck = defaultDeck }
         action AddCondition
     UpdateDeck deck -> do
-      H.modify_ _ { deck = deck }
-      action Calculate
+      current <- H.gets _.deck
+      when (deck /= current) do
+        H.modify_ _ { deck = deck }
+        action Calculate
     AddCondition -> do
       id <- generateId
       H.modify_ do
