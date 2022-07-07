@@ -231,7 +231,7 @@ mergeConditionPatternTest = do
         [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 1, max: 3 }] `shouldEqual`
         sort' [{ card: cardA, min: 2, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }]
   where
-  sort' = Array.sortBy $ comparing _.card
+  sort' = Array.sortBy $ comparing _.card.id
 
 buildConditionPatternTest :: Spec Unit
 buildConditionPatternTest = do
@@ -272,7 +272,7 @@ buildConditionPatternTest = do
         -- , sort' [{ card: cardD, min: 1 + 1, max: 1 }, { card: cardC, min: 1, max: 3 }] -- D + CD invalid min < max
         ]
   where
-  sort' = Array.sortBy $ comparing _.card
+  sort' = Array.sortBy $ comparing _.card.id
 
 calculateTest :: Spec Unit
 calculateTest = do
