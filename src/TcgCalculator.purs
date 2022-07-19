@@ -2,12 +2,13 @@ module TcgCalculator where
 
 import Prelude
 
-import Control.Alternative (empty, guard)
-import Data.Array (all, any, concatMap, filter, foldMap, group, groupAllBy, length, nubByEq, nubEq, replicate, take, unionBy, zipWith, (\\))
+import Control.Alternative (empty)
+import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, groupAll, groupAllBy, length, nubByEq, nubEq, replicate, take, unionBy, zipWith, (!!), (..))
 import Data.Array.NonEmpty (NonEmptyArray, foldl1, toArray)
 import Data.BigInt (BigInt)
-import Data.Foldable (and, product, sum)
+import Data.Foldable (fold, maximum, product, sum)
 import Data.Function (on)
+import Data.Maybe (fromMaybe)
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF, unwrap)
 import TcgCalculator.Math (Combination, combinationNumber, combinations, partitionNumber, partitionNumbers, permutations)
@@ -19,16 +20,17 @@ calculate :: Deck -> Array (NonEmptyArray Condition) -> BigInt
 calculate deck conditions = do
   let drawPattern = generateDrawPatterns deck
   let conditionPattern = nubEq $ buildConditionPattern =<< conditions
-  let pattern = filter (\d -> any (satisfyCondition d) conditionPattern) drawPattern
+  let pattern = filter (\dp -> any (satisfyCondition dp) conditionPattern) drawPattern
   sum $ calculatePatternCount deck <$> pattern
 
 normalizeDeck :: Deck -> Array (NonEmptyArray Condition) -> Deck
 normalizeDeck deck conditions = do
   let used = usedCards conditions
-  let unused = deck.cards \\ used
+  let unused = diffCards deck.cards used
   deck { cards = used, others = deck.others + sumBy _.count unused }
   where
   usedCards = nubByEq ((==) `on` _.id) <<< concatMap (_.cards <<< unwrap) <<< concatMap toArray
+  diffCards = foldr $ deleteBy ((==) `on` _.id)
 
 calculateTotal :: Deck -> BigInt
 calculateTotal { cards, others, hand } = combinationNumber (sumBy _.count cards + others) hand
@@ -41,7 +43,7 @@ type DrawPattern = Array { card :: Card, draw :: Int }
 generateDrawPatterns :: Deck -> Array DrawPattern
 generateDrawPatterns { cards, others, hand } = ado
   let zeroDrawPattern = { card: _, draw: 0 } <$> cards
-  drawPattern <- mkDrawPattern' cards <=< take (others + 1) $ partitionNumbers hand
+  drawPattern <- mkDrawPattern' cards <<< concat <<< take (others + 1) $ partitionNumbers hand
   in unionBy ((==) `on` _.card.id) drawPattern zeroDrawPattern
 
 calculatePatternCount :: Deck -> DrawPattern -> BigInt
@@ -56,11 +58,9 @@ calculatePatternCount { others, hand } pattern = do
 type ConditionPattern = Array { card :: Card, min :: Int, max :: Int }
 
 satisfyCondition :: DrawPattern -> ConditionPattern -> Boolean
-satisfyCondition dp cp = and do
-  { card, min, max } <- cp
-  { card: card', draw } <- dp
-  guard $ card.id == card'.id
-  pure $ min <= draw && draw <= max
+satisfyCondition dp = all \{ card: { id }, min, max } -> fromMaybe false ado
+  { draw } <- find (_.card.id >>> (_ == id)) dp
+  in min <= draw && draw <= max
 
 -- 一列の条件を満たすパターンのリストを生成
 buildConditionPattern :: NonEmptyArray Condition -> Array ConditionPattern
@@ -119,11 +119,15 @@ mkDrawPattern cards count = mkDrawPattern' cards $ partitionNumber count
 
 -- 指定の枚数パターンに合致するカードの組み合わせを全て列挙する
 mkDrawPattern' :: Cards -> Combination Int -> Array DrawPattern
+mkDrawPattern' _ [] = []
+mkDrawPattern' _ [[]] = [[]]
 mkDrawPattern' cards pattern = do
+  let maxLength = fromMaybe 0 <<< maximum $ length <$> pattern
+  let con = combinations <$> 0 .. maxLength <@> filter (_.count >>> (0 < _)) cards
   p <- pattern
   let len = length p
-  let c = combinations len cards
-  p' <- p # case length (group p) of -- `p` must be sorted
+  let c = fold $ con !! len
+  p' <- p # case length (groupAll p) of
     1            -> pure
     n | n == len -> permutations
     _            -> nubEq <<< permutations

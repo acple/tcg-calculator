@@ -47,7 +47,7 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ -> { items :: Array (Item k), isEditMode :: Boolean }
+  initialState :: _ -> { items :: Items k, isEditMode :: Boolean }
   initialState = { items: _, isEditMode: false } <<< map (Record.insert (Proxy :: _ "selected") false)
 
   render { items, isEditMode } =

@@ -15,7 +15,7 @@ module TcgCalculator.Math
 
 import Prelude
 
-import Data.Array (filter, fromFoldable, head, insertAt, length, singleton, uncons, zipWith, (!!), (..), (:))
+import Data.Array (filter, fromFoldable, head, insertAt, length, mapMaybe, singleton, uncons, zipWith, (!!), (..), (:))
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Foldable (fold, product)
@@ -89,7 +89,7 @@ permutations a = case uncons a of
   Just { head, tail } -> do
     let r = 0 .. length tail
     p <- permutations tail
-    r <#> \i -> fold $ insertAt i head p
+    mapMaybe (\i -> insertAt i head p) r
   _ -> []
 
 ----------------------------------------------------------------
