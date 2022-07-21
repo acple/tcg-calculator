@@ -92,7 +92,7 @@ component = H.mkComponent
     HH.div
       [ HP.class_ $ H.ClassName "flex items-center justify-end gap-1" ]
       [ HH.div
-          [ HP.class_ if disabled then H.ClassName "py-1 px-3 text-xl mr-auto" else H.ClassName "hidden" ]
+          [ HP.class_ if disabled then H.ClassName "w-0 py-1 pl-3 text-xl mr-auto" else H.ClassName "hidden" ]
           [ HH.text "Disabled" ]
       , HH.div
           [ HP.class_ if disabled then H.ClassName "text-gray-400" else H.ClassName "text-black" ]
