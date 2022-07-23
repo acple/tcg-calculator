@@ -15,7 +15,7 @@ module TcgCalculator.Math
 
 import Prelude
 
-import Data.Array (filter, fromFoldable, head, insertAt, length, mapMaybe, singleton, uncons, zipWith, (!!), (..), (:))
+import Data.Array (filter, fromFoldable, head, insertAt, length, singleton, uncons, zipWith, (!!), (..), (:))
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Foldable (fold, product)
@@ -89,7 +89,7 @@ permutations a = case uncons a of
   Just { head, tail } -> do
     let r = 0 .. length tail
     p <- permutations tail
-    mapMaybe (\i -> insertAt i head p) r
+    r <#> \i -> fold $ insertAt i head p
   _ -> []
 
 ----------------------------------------------------------------
@@ -99,10 +99,10 @@ type Combination a = Array (Array a)
 -- combination 2 [1, 2, 3, 4] -> [[1, 2], [1, 3], [1, 4], [2, 3], [2, 4], [3, 4]]
 combinations :: forall a. Int -> Array a -> Combination a
 combinations n a
-  | length a < n  = []
-  | length a == n = [a]
   | n == 0        = [[]]
   | n == 1        = singleton <$> a
+  | length a == n = [a]
+  | length a < n  = []
   | otherwise     = case uncons a of
       Just { head, tail } -> ((head : _) <$> combinations (n - 1) tail) <> combinations n tail
       _ -> []
