@@ -18,7 +18,7 @@ import Type.Proxy (Proxy(..))
 
 ----------------------------------------------------------------
 
-data Updated = Updated
+data Output = Updated
 
 data Action
   = Initialize
@@ -33,7 +33,7 @@ data Query a
 
 ----------------------------------------------------------------
 
-component :: H.Component Query Cards Updated Aff
+component :: H.Component Query Cards Output Aff
 component = H.mkComponent
   { initialState
   , render
@@ -129,7 +129,7 @@ component = H.mkComponent
       updateStatus cards selected' mode count
     updateStatus cards selected mode count = do
       let { min, max } = getMinMax selected mode
-      H.modify_ _ { cards = cards, condition { mode = mode, cards = selected, count = clamp min max count }, minValue = min, maxValue = max }
+      H.put { cards, condition: { mode: mode, cards: selected, count: clamp min max count }, minValue: min, maxValue: max }
 
   getMinMax :: Cards -> ConditionMode -> { min :: Int, max :: Int }
   getMinMax cards = case _ of

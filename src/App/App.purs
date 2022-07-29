@@ -37,6 +37,8 @@ type Export = { deck :: Deck, conditions :: Array Condition.Export }
 
 type Id = String -- TODO: use UUID
 
+type Index = Int
+
 data Action
   = Initialize
   | PrepareDefaultState
@@ -44,8 +46,8 @@ data Action
   | AddCondition
   | RemoveCondition Id
   | ToggleDisabled Id
-  | Swap Int Int
-  | ReceiveConditionUpdated Id Condition.Updated
+  | Swap Index Index
+  | ReceiveConditionUpdated Id Condition.Output
   | Calculate
   | RestoreState String
   | SaveState
@@ -173,8 +175,7 @@ component = H.mkComponent
       let conditions' = Array.fromFoldable <<< Map.values $ conditions
       H.tell (Proxy :: _ "result") unit (Result.Calculate deck conditions')
     RestoreState json -> do
-      let state = decodeJson =<< parseJson json :: _ Export
-      case state of
+      case parseJson json >>= decodeJson :: _ Export of
         Left error -> do
           Console.error $ printJsonDecodeError error
           action PrepareDefaultState

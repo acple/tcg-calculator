@@ -37,7 +37,7 @@ type Export =
 
 type Index = Int
 
-data Updated
+data Output
   = Updated
   | AllConditionDeleted
 
@@ -58,7 +58,7 @@ data Query a
 
 ----------------------------------------------------------------
 
-component :: H.Component Query Deck Updated Aff
+component :: H.Component Query Deck Output Aff
 component = H.mkComponent
   { initialState
   , render
