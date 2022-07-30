@@ -41,10 +41,13 @@ calculateTotal { cards, others, hand } = combinationNumber (sumBy _.count cards 
 type DrawPattern = Array { card :: Card, draw :: Int }
 
 generateDrawPatterns :: Deck -> Array DrawPattern
-generateDrawPatterns { cards, others, hand } = ado
+generateDrawPatterns { cards, others, hand } = do
   let zeroDrawPattern = { card: _, draw: 0 } <$> cards
-  drawPattern <- mkDrawPattern' cards <<< concat <<< take (others + 1) $ partitionNumbers hand
-  in unionBy ((==) `on` _.card.id) drawPattern zeroDrawPattern
+  let maxDrawCount = min hand (sumBy _.count cards)
+  let maxPatternLength = others - (hand - maxDrawCount) + 1
+  ado
+    drawPattern <- mkDrawPattern' cards <<< concat <<< take maxPatternLength $ partitionNumbers maxDrawCount
+    in unionBy ((==) `on` _.card.id) drawPattern zeroDrawPattern
 
 calculatePatternCount :: Deck -> DrawPattern -> BigInt
 calculatePatternCount { others, hand } pattern = do
@@ -122,16 +125,18 @@ mkDrawPattern' :: Cards -> Combination Int -> Array DrawPattern
 mkDrawPattern' _ [] = []
 mkDrawPattern' _ [[]] = [[]]
 mkDrawPattern' cards pattern = do
-  let maxLength = fromMaybe 0 <<< maximum $ length <$> pattern
-  let con = combinations <$> 0 .. maxLength <@> filter (_.count >>> (0 < _)) cards
-  p <- pattern
+  let cardsLength = length cards
+  let pattern' = filter (length >>> (_ <= cardsLength)) pattern
+  let maxPatternLength = min cardsLength (fromMaybe 0 <<< maximum $ length <$> pattern')
+  let cardCombinations = combinations <@> cards <$> 0 .. maxPatternLength
+  p <- pattern'
   let len = length p
-  let c = fold $ con !! len
+  let con = fold $ cardCombinations !! len
   p' <- p # case length (groupAll p) of
     1            -> pure
     n | n == len -> permutations
     _            -> nubEq <<< permutations
-  filter (all \d -> d.draw <= d.card.count) $ zipWith { draw: _, card: _ } p' <$> c
+  filter (all \d -> d.draw <= d.card.count) $ zipWith { draw: _, card: _ } p' <$> con
 
 ----------------------------------------------------------------
 
