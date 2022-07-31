@@ -307,7 +307,7 @@ calculateTest = do
       runTest deck cond09 1819
       runTest deck { others = 0 } cond09 70
       let cond10 = buildCondition [[{ cards: [cardA], count: 0, mode: JustDraw }]]
-      let deck10 = deck { cards = [cardA, cardB], others = 5, hand = 5 }
+      let deck10 = { cards: [cardA, cardB], others: 5, hand: 5 }
       runTest deck10 cond10 21
       runTest deck10 { others = 2 } cond10 0
       let cond11 = buildCondition [[{ cards: [cardA, cardB, cardC, cardD], count: 3, mode: Choice }]]
@@ -319,6 +319,17 @@ calculateTest = do
       let cond13 = buildCondition [[{ cards: [cardA, cardB], count: 1, mode: JustDraw }], [{ cards: [cardC, cardD], count: 1, mode: JustDraw }]]
       runTest deck cond13 10805
       runTest deck { others = 0 } cond13 25
+      let cardE = { id: "eee", name: "E", count: 0 }
+      let cond14 = buildCondition [[{ cards: [cardE], count: 0, mode: LeftAll }]]
+      let deck14 = deck { cards = [cardE] }
+      runTest deck14 cond14 462
+      let deck15 = deck { cards = deck.cards <> [cardE] }
+      let cond15 = buildCondition [[{ cards: [cardA, cardB, cardE], count: 1, mode: LeftAll }]]
+      runTest deck15 cond15 15504
+      let deck16 = deck15
+      let cond16 = buildCondition [[{ cards: [cardA, cardB, cardE], count: 2, mode: LeftAll }]]
+      runTest deck16 cond16 11753
+
   where
   runTest deck cond expected = calculate (normalizeDeck deck cond) cond `shouldEqual` BigInt.fromInt expected
   buildCondition = Array.mapMaybe NE.fromArray <<< map (map Condition)
