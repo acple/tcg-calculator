@@ -10,8 +10,7 @@ module TcgCalculator.Math
   , partitionNumbers
   , pascalTriangle
   , permutations
-  )
-  where
+  ) where
 
 import Prelude
 

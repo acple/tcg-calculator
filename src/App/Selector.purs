@@ -57,12 +57,12 @@ component = H.mkComponent
       [ if Array.all (not _.selected) items || isEditMode then renderAddButton else HU.empty
       , renderBackground isEditMode
       , HH.ul
-        [ HP.class_ if isEditMode
-            then H.ClassName "flex flex-col gap-0.5 absolute p-4 w-48 min-w-fit shadow-md bg-white"
-            else H.ClassName "flex gap-1 flex-wrap min-w-0 w-full break-words"
-        , HE.onClick $ const EnterEdit
-        ]
-        $ items <#> renderItem isEditMode
+          [ HP.class_ if isEditMode
+              then H.ClassName "flex flex-col gap-0.5 absolute p-4 w-48 min-w-fit shadow-md bg-white"
+              else H.ClassName "flex gap-1 flex-wrap min-w-0 w-full break-words"
+          , HE.onClick $ const EnterEdit
+          ]
+          $ items <#> renderItem isEditMode
       ]
 
   renderBackground isEditMode =
@@ -78,9 +78,9 @@ component = H.mkComponent
   renderItem isEditMode item =
     HH.li
       [ HP.classes $ join
-        [ [ H.ClassName "min-w-0" ]
-        , if item.selected || isEditMode then empty else [ H.ClassName "hidden" ]
-        ]
+          [ [ H.ClassName "min-w-0" ]
+          , if item.selected || isEditMode then empty else [ H.ClassName "hidden" ]
+          ]
       ]
       [ HH.button
           [ HP.classes

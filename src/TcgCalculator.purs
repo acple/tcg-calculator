@@ -78,7 +78,7 @@ buildConditionPattern conditions = do
 mergeConditionPattern :: ConditionPattern -> ConditionPattern -> ConditionPattern
 mergeConditionPattern left right = foldl1 merge <$> groupAllBy (comparing _.card.id) (left <> right)
   where
-  merge { card, min: min1, max : max1 } { min: min2, max : max2 } = { card, min: min1 + min2, max: min max1 max2 }
+  merge { card, min: min1, max: max1 } { min: min2, max: max2 } = { card, min: min1 + min2, max: min max1 max2 }
 
 isValidConditionPattern :: ConditionPattern -> Boolean
 isValidConditionPattern = all \{ card: { count }, min, max } -> min <= max && min <= count

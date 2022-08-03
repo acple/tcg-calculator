@@ -95,7 +95,7 @@ component = H.mkComponent
       [ HH.option [ HP.value "AtLeast" ] [ HH.text "枚以上ドローする" ]
       , HH.option [ HP.value "JustDraw" ] [ HH.text "枚ちょうどドローする" ]
       , HH.option [ HP.value "Remains" ] [ HH.text "枚以上デッキに残す" ]
-      , HH.option [ HP.value "JustRemains" ] [ HH.text "枚ちょうどデッキに残す"]
+      , HH.option [ HP.value "JustRemains" ] [ HH.text "枚ちょうどデッキに残す" ]
       , HH.option [ HP.value "Choice" ] [ HH.text "種類以上ドローする" ]
       , HH.option [ HP.value "LeftOne" ] [ HH.text "種類以上デッキに残す" ]
       , HH.option [ HP.value "LeftAll" ] [ HH.text "種類以上ドローしない" ]
