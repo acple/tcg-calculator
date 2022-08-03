@@ -1,4 +1,4 @@
-{ name = "my-project"
+{ name = "tcg-calculator"
 , dependencies =
   [ "aff"
   , "argonaut-codecs"
