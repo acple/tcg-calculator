@@ -126,7 +126,8 @@ mkDrawPattern' _ [] = []
 mkDrawPattern' _ [[]] = [[]]
 mkDrawPattern' cards pattern = do
   let cardsLength = length cards
-  let pattern' = filter (length >>> (_ <= cardsLength)) pattern
+  let maxCardCount = maximum $ _.count <$> cards
+  let pattern' = filter (length >>> (_ <= cardsLength) && maximum >>> (_ <= maxCardCount)) pattern
   let maxPatternLength = fromMaybe 0 <<< maximum $ length <$> pattern'
   let cardCombinations = combinations <@> cards <$> 0 .. maxPatternLength
   p <- pattern'
