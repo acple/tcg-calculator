@@ -24,7 +24,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
-import JSURI (decodeFormURLComponent)
+import JSURI (decodeURIComponent)
 import Routing.Hash as Hash
 import TcgCalculator.Types (Deck)
 import Type.Proxy (Proxy(..))
@@ -129,7 +129,7 @@ component = H.mkComponent
       { emitter, listener } <- H.liftEffect HS.create
       _ <- H.subscribe emitter
       void <<< H.liftEffect $ Hash.hashes \_ hash -> do
-        let hash' = fold $ decodeFormURLComponent hash
+        let hash' = fold $ decodeURIComponent hash
         HS.notify listener if String.null hash'
           then PrepareDefaultState
           else RestoreState hash'

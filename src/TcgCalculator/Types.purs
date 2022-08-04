@@ -57,7 +57,7 @@ type Condition' = { mode :: ConditionMode, count :: Int, cards :: Cards }
 
 newtype Condition = Condition Condition'
 
-derive newtype instance Eq Condition
-derive newtype instance Ord Condition
+derive instance Eq Condition
+derive instance Ord Condition
 derive newtype instance Show Condition
 derive instance Newtype Condition _
