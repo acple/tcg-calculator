@@ -13,12 +13,11 @@ import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF, collect)
 import Data.String as String
 import Effect.Aff (Aff)
-import Effect.Random as Random
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import TcgCalculator.Types (Deck, Card)
+import TcgCalculator.Types (Card, Deck, generateId)
 import Util.Array as ArrayUtil
 import Util.Halogen as HU
 
@@ -151,7 +150,7 @@ component = H.mkComponent
 
   action = case _ of
     AddCard -> do
-      id <- H.liftEffect $ show <$> Random.random -- TODO: use UUID
+      id <- generateId
       H.modify_ \s -> s { cards = Array.snoc s.cards { id, name: "", count: 0 } }
     RemoveCard card -> do
       { cards, others } <- H.get

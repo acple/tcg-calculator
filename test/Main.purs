@@ -9,7 +9,7 @@ import Effect (Effect)
 import Effect.Aff (launchAff_)
 import TcgCalculator (buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, normalizeDeck)
 import TcgCalculator.Math (combinationNumber, combinations, partitionNumber, permutations)
-import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..))
+import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), mkId)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter (consoleReporter)
@@ -319,7 +319,7 @@ calculateTest = do
       let cond13 = buildCondition [[{ cards: [cardA, cardB], count: 1, mode: JustDraw }], [{ cards: [cardC, cardD], count: 1, mode: JustDraw }]]
       runTest deck cond13 10805
       runTest deck { others = 0 } cond13 25
-      let cardE = { id: "eee", name: "E", count: 0 }
+      let cardE = { id: mkId "eee", name: "E", count: 0 }
       let cond14 = buildCondition [[{ cards: [cardE], count: 0, mode: LeftAll }]]
       let deck14 = deck { cards = [cardE] }
       runTest deck14 cond14 462
@@ -340,10 +340,10 @@ testCards :: Cards
 testCards = [cardA, cardB, cardC, cardD]
 
 cardA :: Card
-cardA = { id: "aaa", name: "A", count: 3 }
+cardA = { id: mkId "aaa", name: "A", count: 3 }
 cardB :: Card
-cardB = { id: "bbb", name: "B", count: 2 }
+cardB = { id: mkId "bbb", name: "B", count: 2 }
 cardC :: Card
-cardC = { id: "ccc", name: "C", count: 3 }
+cardC = { id: mkId "ccc", name: "C", count: 3 }
 cardD :: Card
-cardD = { id: "ddd", name: "D", count: 1 }
+cardD = { id: mkId "ddd", name: "D", count: 1 }

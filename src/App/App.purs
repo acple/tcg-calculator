@@ -17,16 +17,14 @@ import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.Traversable (traverse)
 import Effect.Aff (Aff)
-import Effect.Class (class MonadEffect)
 import Effect.Class.Console as Console
-import Effect.Random as Random
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
 import JSURI (decodeURIComponent)
 import Routing.Hash as Hash
-import TcgCalculator.Types (Deck)
+import TcgCalculator.Types (Deck, Id, generateId)
 import Type.Proxy (Proxy(..))
 import Util.Array as ArrayUtil
 import Util.Halogen as HU
@@ -34,8 +32,6 @@ import Util.Halogen as HU
 ----------------------------------------------------------------
 
 type Export = { deck :: Deck, conditions :: Array Condition.Export }
-
-type Id = String -- TODO: use UUID
 
 type Index = Int
 
@@ -120,9 +116,6 @@ component = H.mkComponent
   renderConditionAddButton =
     HH.div_
       [ HU.plusButton AddCondition ]
-
-  generateId :: forall m. MonadEffect m => m Id
-  generateId = H.liftEffect $ show <$> Random.random
 
   action = case _ of
     Initialize -> do

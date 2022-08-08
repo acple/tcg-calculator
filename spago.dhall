@@ -21,12 +21,12 @@
   , "numbers"
   , "ordered-collections"
   , "prelude"
-  , "random"
   , "record"
   , "routing"
   , "spec"
   , "strings"
   , "transformers"
+  , "uuid"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

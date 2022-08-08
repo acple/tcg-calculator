@@ -15,20 +15,16 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Traversable (for, traverse)
 import Effect.Aff (Aff)
-import Effect.Class (class MonadEffect)
-import Effect.Random as Random
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Record as Record
-import TcgCalculator.Types (Condition(..), ConditionMode, Deck)
+import TcgCalculator.Types (Condition(..), ConditionMode, Deck, Id, generateId)
 import Type.Proxy (Proxy(..))
 import Util.Array as ArrayUtil
 import Util.Halogen as HU
 
 ----------------------------------------------------------------
-
-type Id = String
 
 type Export =
   { conditions :: Array { mode :: ConditionMode, count :: Int, cards :: Array Id, disabled :: Boolean }
@@ -170,9 +166,6 @@ component = H.mkComponent
     deck <- H.gets _.deck
     conditions <- Array.fromFoldable <$> getConditions
     H.tell (Proxy :: _ "result") unit (Result.Calculate deck conditions)
-
-  generateId :: forall m. MonadEffect m => m Id
-  generateId = H.liftEffect $ show <$> Random.random -- TODO: use UUID
 
   query :: _ ~> _
   query = case _ of

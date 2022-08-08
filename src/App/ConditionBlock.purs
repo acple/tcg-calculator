@@ -13,7 +13,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import TcgCalculator.Types (Cards, Condition(..), Condition', ConditionMode(..), readConditionMode)
+import TcgCalculator.Types (Cards, Condition(..), Condition', ConditionMode(..), Id, readConditionMode)
 import Type.Proxy (Proxy(..))
 
 ----------------------------------------------------------------
@@ -23,7 +23,7 @@ data Output = Updated
 data Action
   = Initialize
   | UpdateConditionMode String
-  | UpdateCardSelect (Array String)
+  | UpdateCardSelect (Array Id)
   | UpdateCardCount String
   | Receive Cards
 

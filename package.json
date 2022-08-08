@@ -19,14 +19,15 @@
   "author": "acple",
   "license": "MIT",
   "dependencies": {
-    "big-integer": "^1.6.51"
+    "big-integer": "^1.6.51",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@parcel/css": "^1.12.2",
     "esbuild": "^0.14.53",
-    "parcel": "^2.6.2",
+    "parcel": "^2.7.0",
     "purescript": "^0.15.4",
     "spago": "^0.20.9",
-    "tailwindcss": "^3.1.7"
+    "tailwindcss": "^3.1.8"
   }
 }
