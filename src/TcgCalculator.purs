@@ -3,7 +3,7 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty)
-import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, groupAll, groupAllBy, length, nubByEq, nubEq, replicate, take, unionBy, zipWith, (!!), (..))
+import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, group, groupAllBy, length, nubByEq, nubEq, replicate, sortBy, take, unionBy, zipWith, (!!), (..))
 import Data.Array.NonEmpty (NonEmptyArray, foldl1, toArray)
 import Data.BigInt (BigInt)
 import Data.Foldable (fold, maximum, product, sum)
@@ -126,14 +126,14 @@ mkDrawPattern' _ [] = []
 mkDrawPattern' _ [[]] = [[]]
 mkDrawPattern' cards pattern = do
   let cardsLength = length cards
-  let maxCardCount = maximum $ _.count <$> cards
-  let pattern' = filter (length >>> (_ <= cardsLength) && maximum >>> (_ <= maxCardCount)) pattern
+  let cardCounts = sortBy (flip compare) $ _.count <$> cards
+  let pattern' = filter (_ <= cardCounts) $ sortBy (flip compare) <$> filter (length >>> (_ <= cardsLength)) pattern
   let maxPatternLength = fromMaybe 0 <<< maximum $ length <$> pattern'
   let cardCombinations = combinations <@> cards <$> 0 .. maxPatternLength
   p <- pattern'
   let len = length p
   let con = fold $ cardCombinations !! len
-  p' <- p # case length (groupAll p) of
+  p' <- p # case length (group p) of
     1            -> pure
     n | n == len -> permutations
     _            -> nubEq <<< permutations
