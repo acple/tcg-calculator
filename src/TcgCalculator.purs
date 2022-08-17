@@ -6,7 +6,7 @@ import Control.Alternative (empty)
 import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, group, groupAllBy, length, nubByEq, nubEq, replicate, sortBy, take, unionBy, zipWith, (!!), (..))
 import Data.Array.NonEmpty (NonEmptyArray, foldl1, toArray)
 import Data.BigInt (BigInt)
-import Data.Foldable (fold, maximum, product, sum)
+import Data.Foldable (and, fold, maximum, product, sum)
 import Data.Function (on)
 import Data.Maybe (fromMaybe)
 import Data.Monoid.Additive (Additive(..))
@@ -127,7 +127,7 @@ mkDrawPattern' _ [[]] = [[]]
 mkDrawPattern' cards pattern = do
   let cardsLength = length cards
   let cardCounts = sortBy (flip compare) $ _.count <$> cards
-  let pattern' = filter (_ <= cardCounts) $ sortBy (flip compare) <$> filter (length >>> (_ <= cardsLength)) pattern
+  let pattern' = filter (and <<< zipWith (>=) cardCounts) $ sortBy (flip compare) <$> filter (length >>> (_ <= cardsLength)) pattern
   let maxPatternLength = fromMaybe 0 <<< maximum $ length <$> pattern'
   let cardCombinations = combinations <@> cards <$> 0 .. maxPatternLength
   p <- pattern'
