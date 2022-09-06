@@ -20,11 +20,11 @@
   "license": "MIT",
   "dependencies": {
     "big-integer": "^1.6.51",
-    "uuid": "^8.3.2"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@parcel/css": "^1.12.2",
-    "esbuild": "^0.15.5",
+    "@parcel/css": "^1.13.1",
+    "esbuild": "^0.15.7",
     "parcel": "^2.7.0",
     "purescript": "^0.15.4",
     "spago": "^0.20.9",
