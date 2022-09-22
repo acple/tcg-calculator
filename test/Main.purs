@@ -160,7 +160,6 @@ mkConditionPatternTest = do
       [ [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 0, max: 2 }, zeroCard cardC]
       , [{ card: cardA, min: 0, max: 3 }, { card: cardC, min: 0, max: 2 }, zeroCard cardB]
       -- , [{ card: cardB, min: 0, max: 3 }, { card: cardC, min: 0, max: 2 }, zeroCard cardA] -- cardB.count < 3
-      -- [2, 3]
       -- , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 3 }, zeroCard cardC] -- cardB.count < 3
       , [{ card: cardA, min: 0, max: 2 }, { card: cardC, min: 0, max: 3 }, zeroCard cardB]
       , [{ card: cardB, min: 0, max: 2 }, { card: cardC, min: 0, max: 3 }, zeroCard cardA]
