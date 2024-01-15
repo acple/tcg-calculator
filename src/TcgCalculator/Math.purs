@@ -28,12 +28,11 @@ type PascalTriangle = Array (Array BigInt)
 createPascalTriangle :: Int -> PascalTriangle
 createPascalTriangle size = f [one] size
   where
-  f _ n | n < 0 = []
-  f r 0 = [r]
+  f _ n | n <= 0 = []
   f r n = r : f (zipWith (+) ([zero] <> r) (r <> [zero])) (n - 1)
 
 ptCacheSize :: Int
-ptCacheSize = 255
+ptCacheSize = 256
 
 pascalTriangle :: PascalTriangle
 pascalTriangle = createPascalTriangle ptCacheSize
@@ -43,7 +42,7 @@ combinationNumber n r
   | n < r            = zero
   | r == 0 || n == r = one
   | r == 1           = BigInt.fromInt n
-  | n <= ptCacheSize = fromMaybe zero $ pascalTriangle !! n >>= (_ !! r) -- fast path using cached pascal triangle
+  | n < ptCacheSize  = fromMaybe zero $ pascalTriangle !! n >>= (_ !! r) -- fast path using cached pascal triangle
   | otherwise        = do
       let k = min r (n - r)
       product' ((n - k + 1) .. n) / product' (1 .. k)

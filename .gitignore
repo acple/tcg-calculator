@@ -11,5 +11,6 @@
 /.parcel-cache/
 /.vscode
 
+/bundle/
 /dist/
 /devcert.*

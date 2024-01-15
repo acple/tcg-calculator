@@ -7,6 +7,7 @@ workspace:
         - argonaut-codecs
         - argonaut-core
         - arrays
+        - bifunctors
         - bigints
         - console
         - const
@@ -14,6 +15,7 @@ workspace:
         - effect
         - either
         - foldable-traversable
+        - foreign
         - halogen
         - halogen-subscriptions
         - integers
@@ -29,6 +31,8 @@ workspace:
         - strings
         - transformers
         - uuid
+        - web-html
+        - web-workers
       test_dependencies:
         - spec
       build_plan:
@@ -121,10 +125,11 @@ workspace:
         - web-storage
         - web-touchevents
         - web-uievents
+        - web-workers
   package_set:
     address:
-      registry: 47.0.0
-    compiler: ">=0.15.13 <0.16.0"
+      registry: 48.1.0
+    compiler: ">=0.15.14 <0.16.0"
     content:
       abc-parser: 2.0.1
       ace: 9.1.0
@@ -151,7 +156,7 @@ workspace:
       arraybuffer-builder: 3.1.0
       arraybuffer-types: 3.0.2
       arrays: 7.3.0
-      arrays-extra: 0.4.2
+      arrays-extra: 0.5.0
       arrays-zipper: 2.0.1
       ask: 1.0.0
       assert: 6.0.0
@@ -217,16 +222,17 @@ workspace:
       echarts-simple: 0.0.1
       effect: 4.0.0
       either: 6.1.0
-      elmish: 0.10.0
+      elmish: 0.11.3
       elmish-enzyme: 0.1.1
       elmish-hooks: 0.10.0
-      elmish-html: 0.8.1
-      elmish-testing-library: 0.3.1
+      elmish-html: 0.8.2
+      elmish-testing-library: 0.3.2
       email-validate: 7.0.0
       encoding: 0.0.8
       enums: 6.0.1
       env-names: 0.3.4
       error: 2.0.0
+      eta-conversion: 0.3.2
       exceptions: 6.0.0
       exists: 6.0.0
       exitcodes: 4.0.0
@@ -234,10 +240,11 @@ workspace:
       fahrtwind: 2.0.0
       fallback: 0.1.0
       fast-vect: 1.2.0
-      fetch: 4.0.0
+      fetch: 4.1.0
       fetch-argonaut: 1.0.1
       fetch-core: 5.1.0
       fetch-yoga-json: 1.1.0
+      fft-js: 0.1.0
       filterable: 5.0.0
       fix-functor: 0.1.0
       fixed-points: 7.0.0
@@ -267,13 +274,14 @@ workspace:
       generic-router: 0.0.1
       geojson: 0.0.5
       geometry-plane: 1.0.3
+      gojs: 0.1.0
       grain: 3.0.0
       grain-router: 3.0.0
       grain-virtualized: 3.0.0
       graphs: 8.1.0
       group: 4.1.1
       halogen: 7.0.0
-      halogen-bootstrap5: 2.3.1
+      halogen-bootstrap5: 5.3.2
       halogen-css: 10.0.0
       halogen-echarts-simple: 0.0.4
       halogen-formless: 4.0.3
@@ -284,7 +292,7 @@ workspace:
       halogen-storybook: 2.0.0
       halogen-subscriptions: 2.0.0
       halogen-svg-elems: 8.0.0
-      halogen-typewriter: 1.0.2
+      halogen-typewriter: 1.0.4
       halogen-vdom: 8.0.0
       halogen-vdom-string-renderer: 0.5.0
       heckin: 2.0.1
@@ -344,6 +352,7 @@ workspace:
       matryoshka: 1.0.0
       maybe: 6.0.0
       media-types: 6.0.0
+      meowclient: 1.0.0
       midi: 4.0.0
       milkis: 9.0.0
       minibench: 4.0.1
@@ -372,6 +381,7 @@ workspace:
       node-event-emitter: 3.0.0
       node-execa: 5.0.0
       node-fs: 9.1.0
+      node-glob-basic: 1.3.0
       node-http: 9.1.0
       node-http2: 1.1.1
       node-human-signals: 1.0.0
@@ -399,9 +409,11 @@ workspace:
       open-memoize: 6.1.0
       open-pairing: 6.1.0
       options: 7.0.0
+      optparse: 5.0.1
       ordered-collections: 3.1.1
       ordered-set: 0.4.0
       orders: 6.0.0
+      owoify: 1.2.0
       pairs: 9.0.1
       parallel: 7.0.0
       parsing: 10.2.0
@@ -413,7 +425,7 @@ workspace:
       phylio: 1.1.2
       pipes: 8.0.0
       pirates-charm: 0.0.1
-      pmock: 0.7.0
+      pmock: 0.9.0
       point-free: 1.0.0
       pointed-list: 0.5.1
       polymorphic-vectors: 4.0.0
@@ -447,7 +459,7 @@ workspace:
       react-basic-storybook: 2.0.0
       react-dom: 8.0.0
       react-halo: 3.0.0
-      react-icons: 1.1.2
+      react-icons: 1.1.4
       react-markdown: 0.1.0
       react-testing-library: 4.0.1
       react-virtuoso: 1.0.0
@@ -455,6 +467,7 @@ workspace:
       recharts: 1.1.0
       record: 4.0.0
       record-extra: 5.0.1
+      record-ptional-fields: 0.1.2
       record-studio: 1.0.4
       refs: 6.0.0
       remotedata: 5.0.0
@@ -486,7 +499,7 @@ workspace:
       sparse-matrices: 1.3.0
       sparse-polynomials: 2.0.5
       spec: 7.5.5
-      spec-mocha: 5.0.0
+      spec-mocha: 5.1.0
       spec-quickcheck: 5.0.0
       splitmix: 2.1.0
       ssrs: 1.0.0
@@ -581,6 +594,7 @@ workspace:
       yoga-postgres: 6.0.0
       yoga-tree: 1.0.0
       z3: 0.0.2
+      zipperarray: 2.0.0
   extra_packages: {}
 packages:
   aff:
@@ -1575,3 +1589,14 @@ packages:
     integrity: sha256-5I+ut9JYno3wowti3vJGs1afKCm1ucppKuy+zhuSyss=
     dependencies:
       - web-html
+  web-workers:
+    type: registry
+    version: 1.1.0
+    integrity: sha256-H9cKidfGmZsVF8DuIOveAGZ3GBzJ3kXzfR0wQlzEfsE=
+    dependencies:
+      - effect
+      - foreign
+      - maybe
+      - prelude
+      - unsafe-coerce
+      - web-events

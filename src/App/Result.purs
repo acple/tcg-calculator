@@ -2,6 +2,7 @@ module App.Result where
 
 import Prelude
 
+import App.Worker as Worker
 import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.BigInt (BigInt)
@@ -10,8 +11,7 @@ import Data.Foldable (foldMap)
 import Data.Function (on)
 import Data.Maybe (Maybe(..))
 import Data.Number.Format as Format
-import Effect.Aff (Aff, Milliseconds(..))
-import Effect.Aff as Aff
+import Effect.Aff (Aff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -65,11 +65,8 @@ component = H.mkComponent
   query = case _ of
     Calculate deck conditions a -> H.lift do
       newCalculation <- H.fork do
-        H.liftAff $ Aff.delay (Milliseconds 350.0)
         let deck' = TC.normalizeDeck deck conditions
-        H.liftAff $ Aff.delay (Milliseconds 0.0)
-        let combination = TC.calculate deck' conditions
-        H.liftAff $ Aff.delay (Milliseconds 0.0)
+        combination <- H.liftAff $ Worker.run { deck: deck', conditions }
         let total = TC.calculateTotal deck'
         H.put { combination, total, calculation: Nothing }
       currentCalculation <- H.gets _.calculation

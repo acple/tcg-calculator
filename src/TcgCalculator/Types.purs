@@ -95,3 +95,6 @@ derive instance Ord Condition
 derive instance Newtype Condition _
 
 derive newtype instance Show Condition
+
+derive newtype instance EncodeJson Condition
+derive newtype instance DecodeJson Condition
