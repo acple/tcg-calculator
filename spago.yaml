@@ -1,0 +1,37 @@
+package:
+  dependencies:
+    - "aff"
+    - "argonaut-codecs"
+    - "argonaut-core"
+    - "arrays"
+    - "bigints"
+    - "console"
+    - "const"
+    - "control"
+    - "effect"
+    - "either"
+    - "foldable-traversable"
+    - "halogen"
+    - "halogen-subscriptions"
+    - "integers"
+    - "js-uri"
+    - "lists"
+    - "maybe"
+    - "newtype"
+    - "numbers"
+    - "ordered-collections"
+    - "prelude"
+    - "record"
+    - "routing"
+    - "strings"
+    - "transformers"
+    - "uuid"
+  name: tcg-calculator
+  test:
+    dependencies:
+      - "spec"
+    main: Test.Main
+workspace:
+  extra_packages: {}
+  package_set:
+    registry: 47.0.0

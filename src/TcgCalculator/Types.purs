@@ -29,7 +29,7 @@ instance EncodeJson Id where
   encodeJson = encodeJson <<< show
 
 instance DecodeJson Id where
-  decodeJson json = decodeJson json <#> \json' -> maybe' (\_ -> mkId json') Id (UUID.parseUUID json')
+  decodeJson json = decodeJson json <#> \id -> maybe' (\_ -> mkId id) Id (UUID.parseUUID id)
 
 namespaceTcgCalculator :: UUID
 namespaceTcgCalculator = UUID.genv5UUID "tcg-calculator" UUID.emptyUUID

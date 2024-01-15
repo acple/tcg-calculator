@@ -51,7 +51,7 @@ component = H.mkComponent
                   Format.toStringWith (Format.fixed 4) prob <> "%"
           ]
       , HH.div
-          [ HP.class_ $ H.ClassName "w-20 min-w-fit flex justify-end" ]
+          [ HP.class_ $ H.ClassName "min-w-fit flex justify-end" ]
           [ HH.div
               [ HP.class_ $ H.ClassName "inline-flex flex-col mx-1" ]
               [ HH.div [ HP.class_ $ H.ClassName "text-right px-1" ] [ HH.text $ BigInt.toString combination ]
@@ -71,7 +71,7 @@ component = H.mkComponent
         let combination = TC.calculate deck' conditions
         H.liftAff $ Aff.delay (Milliseconds 0.0)
         let total = TC.calculateTotal deck'
-        H.modify_ _ { combination = combination, total = total, calculation = Nothing }
+        H.put { combination, total, calculation: Nothing }
       currentCalculation <- H.gets _.calculation
       H.modify_ _ { calculation = Just newCalculation }
       foldMap H.kill currentCalculation

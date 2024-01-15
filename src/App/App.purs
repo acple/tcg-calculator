@@ -86,7 +86,7 @@ component = H.mkComponent
   renderDeck =
     HH.div
       [ HP.class_ $ H.ClassName "grow" ]
-      [ HH.slot (Proxy :: _ "deck") unit Deck.component unit UpdateDeck ]
+      [ HH.slot (Proxy @"deck") unit Deck.component unit UpdateDeck ]
 
   renderResult =
     HH.div
@@ -96,7 +96,7 @@ component = H.mkComponent
           [ HH.div
               [ HP.class_ $ H.ClassName "mr-auto" ]
               [ HU.button (HH.text "Save") (H.ClassName "border border-rose-500 hover:bg-rose-100") SaveState ]
-          , HH.slot_ (Proxy :: _ "result") unit Result.component unit
+          , HH.slot_ (Proxy @"result") unit Result.component unit
           ]
       ]
 
@@ -110,7 +110,7 @@ component = H.mkComponent
           , HU.toggleButton (ToggleDisabled id)
           , HU.downButton (Swap i (i + 1))
           ]
-      , HH.slot (Proxy :: _ "condition") id Condition.component deck (ReceiveConditionUpdated id)
+      , HH.slot (Proxy @"condition") id Condition.component deck (ReceiveConditionUpdated id)
       ]
 
   renderConditionAddButton =
@@ -131,7 +131,7 @@ component = H.mkComponent
       when (Array.null deck.cards && Array.null conditions) do
         id <- generateId
         let defaultDeck = { cards: [{ id, name: "Card1", count: 3 }], others: 37, hand: 5 }
-        H.tell (Proxy :: _ "deck") unit (Deck.SetDeck defaultDeck)
+        H.tell (Proxy @"deck") unit (Deck.SetDeck defaultDeck)
         H.modify_ _ { deck = defaultDeck }
         action AddCondition
     UpdateDeck deck -> do
@@ -151,7 +151,7 @@ component = H.mkComponent
         _ { conditions = Array.filter (_ /= id) conditions }
       action Calculate
     ToggleDisabled id -> do
-      H.tell (Proxy :: _ "condition") id Condition.ToggleDisabled
+      H.tell (Proxy @"condition") id Condition.ToggleDisabled
       action Calculate
     Swap x y -> do
       H.modify_ do
@@ -164,24 +164,24 @@ component = H.mkComponent
         action (RemoveCondition id)
     Calculate -> do
       deck <- H.gets _.deck
-      conditions <- H.requestAll (Proxy :: _ "condition") Condition.GetConditions
+      conditions <- H.requestAll (Proxy @"condition") Condition.GetConditions
       let conditions' = Array.fromFoldable <<< Map.values $ conditions
-      H.tell (Proxy :: _ "result") unit (Result.Calculate deck conditions')
+      H.tell (Proxy @"result") unit (Result.Calculate deck conditions')
     RestoreState json -> do
-      case parseJson json >>= decodeJson :: _ Export of
+      case parseJson json >>= decodeJson @Export of
         Left error -> do
           Console.error $ printJsonDecodeError error
           action PrepareDefaultState
         Right { deck, conditions } -> do
           conditions' <- traverse (flap $ { id: _, condition: _ } <$> generateId) conditions
           H.modify_ _ { deck = deck, conditions = _.id <$> conditions' }
-          H.tell (Proxy :: _ "deck") unit (Deck.SetDeck deck)
+          H.tell (Proxy @"deck") unit (Deck.SetDeck deck)
           for_ conditions' \{ id, condition } -> do
-            H.tell (Proxy :: _ "condition") id (Condition.RestoreState deck condition)
+            H.tell (Proxy @"condition") id (Condition.RestoreState deck condition)
           action Calculate
     SaveState -> do
       { deck, conditions: ids } <- H.get
-      conditions <- H.requestAll (Proxy :: _ "condition") Condition.GetState
+      conditions <- H.requestAll (Proxy @"condition") Condition.GetState
       let conditions' = Array.mapMaybe (Map.lookup <@> conditions) ids
       let json = encodeJson { deck, conditions: conditions' }
       H.liftEffect $ Hash.setHash (stringify json)

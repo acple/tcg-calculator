@@ -65,7 +65,7 @@ component = H.mkComponent
 
   renderCardSelector cards = do
     let cards' = cards <#> \card -> { id: card.id, value: card.name }
-    HH.slot (Proxy :: _ "selector") unit Selector.component cards' UpdateCardSelect
+    HH.slot (Proxy @"selector") unit Selector.component cards' UpdateCardSelect
 
   renderCardCounter count min max =
     HH.input
@@ -163,5 +163,5 @@ component = H.mkComponent
       let { min, max } = getMinMax condition.cards condition.mode
       { condition: { cards: selected } } <- H.modify _ { cards = cards, condition = condition, minValue = min, maxValue = max }
       let items = cards <#> \card -> { id: card.id, value: card.name, selected: Array.elem card selected }
-      H.lift $ H.tell (Proxy :: _ "selector") unit (Selector.SetItems items)
+      H.lift $ H.tell (Proxy @"selector") unit (Selector.SetItems items)
       pure a

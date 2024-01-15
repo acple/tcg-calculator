@@ -48,7 +48,7 @@ component = H.mkComponent
   where
 
   initialState :: _ -> { items :: Items k, isEditMode :: Boolean }
-  initialState = { items: _, isEditMode: false } <<< map (Record.insert (Proxy :: _ "selected") false)
+  initialState = { items: _, isEditMode: false } <<< map (Record.insert (Proxy @"selected") false)
 
   render { items, isEditMode } =
     HH.div

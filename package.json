@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "spago build",
-    "build:bundle": "spago bundle-app --minify --source-maps --to output/app.js",
+    "build:bundle": "spago bundle --minify --source-maps --outfile output/app.js --pedantic-packages",
     "build:parcel": "parcel build index.html --public-url .",
     "bundle": "npm run build:bundle && npm run build:parcel",
     "gendevcert": "dotnet dev-certs https --format pem --no-password --export-path ./devcert.pem --trust",
@@ -24,10 +24,10 @@
   },
   "devDependencies": {
     "@parcel/css": "^1.14.0",
-    "esbuild": "^0.19.3",
+    "esbuild": "^0.19.4",
     "parcel": "^2.9.3",
-    "purescript": "^0.15.10",
-    "spago": "^0.21.0",
+    "purescript": "^0.15.11",
+    "spago": "^0.93.18",
     "tailwindcss": "^3.3.3"
   }
 }
