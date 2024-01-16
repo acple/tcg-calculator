@@ -128,7 +128,7 @@ workspace:
         - web-workers
   package_set:
     address:
-      registry: 48.1.0
+      registry: 48.2.0
     compiler: ">=0.15.14 <0.16.0"
     content:
       abc-parser: 2.0.1
@@ -156,7 +156,7 @@ workspace:
       arraybuffer-builder: 3.1.0
       arraybuffer-types: 3.0.2
       arrays: 7.3.0
-      arrays-extra: 0.5.0
+      arrays-extra: 0.5.1
       arrays-zipper: 2.0.1
       ask: 1.0.0
       assert: 6.0.0
@@ -274,7 +274,7 @@ workspace:
       generic-router: 0.0.1
       geojson: 0.0.5
       geometry-plane: 1.0.3
-      gojs: 0.1.0
+      gojs: 0.1.1
       grain: 3.0.0
       grain-router: 3.0.0
       grain-virtualized: 3.0.0
@@ -309,6 +309,7 @@ workspace:
       int64: 3.0.0
       integers: 6.0.0
       interpolate: 5.0.2
+      intersection-observer: 1.0.1
       invariant: 6.0.0
       jarilo: 1.0.1
       jelly: 0.10.0
@@ -471,6 +472,7 @@ workspace:
       record-studio: 1.0.4
       refs: 6.0.0
       remotedata: 5.0.0
+      resize-observer: 1.0.0
       resource: 2.0.1
       resourcet: 1.0.0
       result: 1.0.3

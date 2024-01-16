@@ -11,7 +11,7 @@ import Data.Argonaut.Encode (encodeJson)
 import Data.Array as Array
 import Data.Const (Const)
 import Data.Either (Either(..))
-import Data.Foldable (fold, for_)
+import Data.Foldable (for_)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.String as String
@@ -121,18 +121,17 @@ component = H.mkComponent
     Initialize -> do
       { emitter, listener } <- H.liftEffect HS.create
       _ <- H.subscribe emitter
-      void <<< H.liftEffect $ Hash.hashes \_ hash -> do
-        let hash' = fold $ decodeURIComponent hash
-        HS.notify listener if String.null hash'
+      void <<< H.liftEffect $ Hash.matchesWith decodeURIComponent \_ hash -> do
+        HS.notify listener if String.null hash
           then PrepareDefaultState
-          else RestoreState hash'
+          else RestoreState hash
     PrepareDefaultState -> do
       { deck, conditions } <- H.get
       when (Array.null deck.cards && Array.null conditions) do
         id <- generateId
         let defaultDeck = { cards: [{ id, name: "Card1", count: 3 }], others: 37, hand: 5 }
-        H.tell (Proxy @"deck") unit (Deck.SetDeck defaultDeck)
         H.modify_ _ { deck = defaultDeck }
+        H.tell (Proxy @"deck") unit (Deck.SetDeck defaultDeck)
         action AddCondition
     UpdateDeck deck -> do
       current <- H.gets _.deck
@@ -174,7 +173,7 @@ component = H.mkComponent
           action PrepareDefaultState
         Right { deck, conditions } -> do
           conditions' <- traverse (flap $ { id: _, condition: _ } <$> generateId) conditions
-          H.modify_ _ { deck = deck, conditions = _.id <$> conditions' }
+          H.put { deck, conditions: _.id <$> conditions' }
           H.tell (Proxy @"deck") unit (Deck.SetDeck deck)
           for_ conditions' \{ id, condition } -> do
             H.tell (Proxy @"condition") id (Condition.RestoreState deck condition)

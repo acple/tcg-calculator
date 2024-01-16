@@ -21,7 +21,6 @@
   "license": "MIT",
   "dependencies": {
     "big-integer": "^1.6.52",
-    "http-server": "^14.1.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -29,7 +28,7 @@
     "esbuild": "^0.19.11",
     "parcel": "^2.11.0",
     "purescript": "^0.15.14",
-    "spago": "^0.93.23",
+    "spago": "^0.93.24",
     "tailwindcss": "^3.4.1"
   }
 }

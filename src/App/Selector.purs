@@ -52,8 +52,7 @@ component = H.mkComponent
 
   render { items, isEditMode } =
     HH.div
-      [ HP.class_ $ H.ClassName "flex mx-1"
-      ]
+      [ HP.class_ $ H.ClassName "flex mx-1" ]
       [ if Array.all (not _.selected) items || isEditMode then renderAddButton else HU.empty
       , renderBackground isEditMode
       , HH.ul

@@ -151,7 +151,9 @@ component = H.mkComponent
   action = case _ of
     AddCard -> do
       id <- generateId
-      H.modify_ \s -> s { cards = Array.snoc s.cards { id, name: "", count: 0 } }
+      H.modify_ do
+        cards <- _.cards
+        _ { cards = Array.snoc cards { id, name: "", count: 0 } }
     RemoveCard card -> do
       { cards, others } <- H.get
       let cards' = Array.deleteBy ((==) `on` _.id) card cards
@@ -161,9 +163,9 @@ component = H.mkComponent
       fold do
         i <- Array.findIndex (_.id >>> (_ == card.id)) cards
         old <- cards !! i
-        let card' = if String.null card.name then card { count = 0 } else card { count = clamp 0 (old.count + others) card.count }
-        cards' <- Array.modifyAt i (const card') cards
-        pure $ raiseUpdate =<< H.modify _ { cards = cards', others = others - (card'.count - old.count) }
+        let new = if String.null card.name then card { count = 0 } else card { count = clamp 0 (old.count + others) card.count }
+        cards' <- Array.modifyAt i (const new) cards
+        pure $ raiseUpdate =<< H.modify _ { cards = cards', others = others - (new.count - old.count) }
     UpdateDeck total -> do
       cards <- H.gets _.cards
       let cardCount = countCards cards
@@ -177,7 +179,7 @@ component = H.mkComponent
       raiseUpdate =<< H.modify do
         { cards, hand } <- identity
         let cardCount = countCards cards
-        let deckCount = clamp cardCount deckLimit (cardCount + others)
+        let deckCount = min deckLimit (cardCount + others)
         let others' = deckCount - cardCount
         _ { others = others', hand = min hand deckCount }
     Swap x y -> do -- TODO

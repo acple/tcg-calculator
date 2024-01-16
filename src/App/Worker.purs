@@ -8,7 +8,7 @@ import Data.Bifunctor (lmap)
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Either (Either(..), note)
-import Data.Foldable (foldMap)
+import Data.Maybe (maybe)
 import Data.Semigroup.Foldable (intercalateMap)
 import Effect.Aff (Aff, effectCanceler, error, makeAff)
 import Foreign (readString, renderForeignError)
@@ -26,7 +26,7 @@ run param = makeAff \reply -> do
     result <- lmap (error <<< intercalateMap "\n" renderForeignError) <<< runExcept <<< readString $ MessageEvent.data_ event
     note (error "BigInt.fromString") $ BigInt.fromString result
   worker # Worker.onError \event -> do
-    let message = foldMap ErrorEvent.message $ ErrorEvent.fromEvent event
+    let message = maybe "Unknown worker error" ErrorEvent.message $ ErrorEvent.fromEvent event
     reply <<< Left $ error message
   Worker.postMessage (encodeJson param) worker
   pure $ effectCanceler (Worker.terminate worker)

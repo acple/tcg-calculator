@@ -98,9 +98,9 @@ type Combination a = Array (Array a)
 combinations :: forall a. Int -> Array a -> Combination a
 combinations n a
   | n == 0        = [[]]
-  | n == 1        = singleton <$> a
   | length a == n = [a]
   | length a < n  = []
+  | n == 1        = singleton <$> a
   | otherwise     = case uncons a of
       Just { head, tail } -> ((head : _) <$> combinations (n - 1) tail) <> combinations n tail
       _ -> []

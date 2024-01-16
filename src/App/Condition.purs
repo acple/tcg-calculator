@@ -182,7 +182,7 @@ component = H.mkComponent
         in reply { conditions: conditions', disabled: parentDisabled }
     RestoreState deck { conditions, disabled: parentDisabled } a -> do
       conditions' <- traverse (flap $ Record.insert (Proxy @"id") <$> generateId) conditions
-      H.modify_ _ { conditions = conditions' <#> \{ id, disabled } -> { id, disabled }, deck = deck, disabled = parentDisabled }
+      H.put { conditions: conditions' <#> \{ id, disabled } -> { id, disabled }, deck, disabled: parentDisabled }
       for_ conditions' \{ id, mode, count, cards } -> do
         let cards' = Array.mapMaybe <@> cards $ \cardId -> Array.find (_.id >>> (_ == cardId)) deck.cards
         H.lift $ H.tell (Proxy @"block") id (ConditionBlock.RestoreState deck.cards (Condition { mode, count, cards: cards' }))

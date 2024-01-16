@@ -23,7 +23,7 @@ data Output = Updated
 data Action
   = Initialize
   | UpdateConditionMode String
-  | UpdateCardSelect (Array Id)
+  | UpdateCardSelected (Array Id)
   | UpdateCardCount String
   | Receive Cards
 
@@ -65,7 +65,7 @@ component = H.mkComponent
 
   renderCardSelector cards = do
     let cards' = cards <#> \card -> { id: card.id, value: card.name }
-    HH.slot (Proxy @"selector") unit Selector.component cards' UpdateCardSelect
+    HH.slot (Proxy @"selector") unit Selector.component cards' UpdateCardSelected
 
   renderCardCounter count min max =
     HH.input
@@ -106,8 +106,8 @@ component = H.mkComponent
     Initialize -> do
       { cards, condition: { mode, count, cards: selected } } <- H.get
       updateStatus cards selected mode count
-    UpdateCardSelect selected -> do
-      updateCardSelect selected
+    UpdateCardSelected selected -> do
+      updateCardSelected selected
       H.raise Updated
     UpdateConditionMode mode -> do
       foldMap <@> readConditionMode mode $ \mode' -> do
@@ -121,9 +121,9 @@ component = H.mkComponent
         H.raise Updated
     Receive cards -> do
       { condition: { cards: selected } } <- H.modify _ { cards = cards }
-      updateCardSelect (selected <#> _.id)
+      updateCardSelected (selected <#> _.id)
     where
-    updateCardSelect selected = do
+    updateCardSelected selected = do
       { cards, condition: { mode, count } } <- H.get
       let selected' = cards # Array.filter \{ id } -> Array.elem id selected
       updateStatus cards selected' mode count
@@ -161,7 +161,7 @@ component = H.mkComponent
       reply <<< Condition <$> H.gets _.condition
     RestoreState cards (Condition condition) a -> do
       let { min, max } = getMinMax condition.cards condition.mode
-      { condition: { cards: selected } } <- H.modify _ { cards = cards, condition = condition, minValue = min, maxValue = max }
-      let items = cards <#> \card -> { id: card.id, value: card.name, selected: Array.elem card selected }
+      H.put { cards, condition, minValue: min, maxValue: max }
+      let items = cards <#> \card -> { id: card.id, value: card.name, selected: Array.elem card condition.cards }
       H.lift $ H.tell (Proxy @"selector") unit (Selector.SetItems items)
       pure a
