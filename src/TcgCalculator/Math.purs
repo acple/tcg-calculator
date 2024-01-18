@@ -20,19 +20,18 @@ import Data.BigInt as BigInt
 import Data.Foldable (fold, product)
 import Data.List as L
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Unfoldable (iterateN)
 
 ----------------------------------------------------------------
 
 type PascalTriangle = Array (Array BigInt)
 
 createPascalTriangle :: Int -> PascalTriangle
-createPascalTriangle size = f [one] size
-  where
-  f _ n | n <= 0 = []
-  f r n = r : f (zipWith (+) ([zero] <> r) (r <> [zero])) (n - 1)
+createPascalTriangle size | size <= 0 = []
+createPascalTriangle size = [one] # iterateN size \r -> zipWith (+) ([zero] <> r) (r <> [zero])
 
 ptCacheSize :: Int
-ptCacheSize = 256
+ptCacheSize = 64
 
 pascalTriangle :: PascalTriangle
 pascalTriangle = createPascalTriangle ptCacheSize

@@ -14,7 +14,7 @@
     "bundle": "npm run build && npm run build:parcel",
     "gendevcert": "dotnet dev-certs https --format pem --no-password --export-path devcert.pem --trust",
     "postinstall": "spago install",
-    "server": "parcel serve --cert devcert.pem --key devcert.key -- index.html bundle/worker.js",
+    "server": "parcel serve --cert devcert.pem --key devcert.key --no-hmr -- index.html bundle/worker.js",
     "test": "spago test"
   },
   "author": "acple",

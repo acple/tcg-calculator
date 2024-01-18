@@ -23,10 +23,10 @@ derive instance Ord Id
 derive instance Newtype Id _
 
 instance Show Id where
-  show (Id uuid) = UUID.toString uuid
+  show (Id uuid) = "\"" <> UUID.toString uuid <> "\""
 
 instance EncodeJson Id where
-  encodeJson = encodeJson <<< show
+  encodeJson (Id uuid) = encodeJson $ UUID.toString uuid
 
 instance DecodeJson Id where
   decodeJson json = decodeJson json <#> \id -> maybe' (\_ -> mkId id) Id (UUID.parseUUID id)

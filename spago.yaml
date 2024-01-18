@@ -27,6 +27,7 @@ package:
     - routing
     - strings
     - transformers
+    - unfoldable
     - uuid
     - web-html
     - web-workers
@@ -38,4 +39,4 @@ package:
 workspace:
   extra_packages: {}
   package_set:
-    registry: 48.2.0
+    registry: 48.3.0
