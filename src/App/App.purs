@@ -184,4 +184,3 @@ component = H.mkComponent
       let conditions' = Array.mapMaybe (Map.lookup <@> conditions) ids
       let json = encodeJson { deck, conditions: conditions' }
       H.liftEffect $ Hash.setHash (stringify json)
-      pure unit

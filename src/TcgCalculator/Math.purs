@@ -14,13 +14,14 @@ module TcgCalculator.Math
 
 import Prelude
 
-import Data.Array (filter, fromFoldable, head, insertAt, length, singleton, uncons, zipWith, (!!), (..), (:))
+import Data.Array (filter, fromFoldable, head, insertAt, length, singleton, uncons, unsafeIndex, zipWith, (..), (:))
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Foldable (fold, product)
 import Data.List as L
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Unfoldable (iterateN)
+import Partial.Unsafe (unsafePartial)
 
 ----------------------------------------------------------------
 
@@ -38,13 +39,12 @@ pascalTriangle = createPascalTriangle ptCacheSize
 
 combinationNumber :: Int -> Int -> BigInt
 combinationNumber n r
-  | n < r            = zero
-  | r == 0 || n == r = one
-  | r == 1           = BigInt.fromInt n
-  | n < ptCacheSize  = fromMaybe zero $ pascalTriangle !! n >>= (_ !! r) -- fast path using cached pascal triangle
-  | otherwise        = do
-      let k = min r (n - r)
-      product' ((n - k + 1) .. n) / product' (1 .. k)
+  | n < 0 || r < 0  = zero
+  | r == 0          = one
+  | r == 1          = BigInt.fromInt n
+  | n - r < r       = combinationNumber n (n - r)
+  | n < ptCacheSize = unsafePartial $ pascalTriangle `unsafeIndex` n `unsafeIndex` r -- fast path using cached pascal triangle
+  | otherwise       = product' ((n - r + 1) .. n) / product' (1 .. r)
   where
   product' = product <<< map BigInt.fromInt
 

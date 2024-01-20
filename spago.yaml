@@ -22,6 +22,7 @@ package:
     - newtype
     - numbers
     - ordered-collections
+    - partial
     - prelude
     - record
     - routing
@@ -39,4 +40,4 @@ package:
 workspace:
   extra_packages: {}
   package_set:
-    registry: 48.3.0
+    registry: 48.4.0

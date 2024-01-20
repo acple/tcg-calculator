@@ -25,6 +25,7 @@ workspace:
         - newtype
         - numbers
         - ordered-collections
+        - partial
         - prelude
         - record
         - routing
@@ -129,7 +130,7 @@ workspace:
         - web-workers
   package_set:
     address:
-      registry: 48.3.0
+      registry: 48.4.0
     compiler: ">=0.15.14 <0.16.0"
     content:
       abc-parser: 2.0.1
@@ -289,7 +290,7 @@ workspace:
       halogen-helix: 1.0.0
       halogen-hooks: 0.6.3
       halogen-hooks-extra: 0.9.0
-      halogen-infinite-scroll: 1.0.1
+      halogen-infinite-scroll: 1.1.0
       halogen-store: 0.5.4
       halogen-storybook: 2.0.0
       halogen-subscriptions: 2.0.0
