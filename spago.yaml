@@ -26,8 +26,10 @@ package:
     - prelude
     - record
     - routing
+    - st
     - strings
     - transformers
+    - tuples
     - unfoldable
     - uuid
     - web-html
@@ -40,4 +42,4 @@ package:
 workspace:
   extra_packages: {}
   package_set:
-    registry: 48.4.0
+    registry: 48.5.0

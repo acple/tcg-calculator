@@ -3,7 +3,7 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty)
-import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, group, groupAllBy, length, nubByEq, nubEq, replicate, sortBy, take, zipWith, (!!), (..))
+import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, groupAllBy, length, nubByEq, replicate, sortBy, take, zipWith, (!!), (..))
 import Data.Array.NonEmpty (NonEmptyArray, foldl1, toArray)
 import Data.BigInt (BigInt)
 import Data.Foldable (and, fold, maximum, product, sum)
@@ -11,7 +11,7 @@ import Data.Function (on)
 import Data.Maybe (fromMaybe, maybe)
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF, unwrap)
-import TcgCalculator.Math (Combination, combinationNumber, combinations, partitionNumber, partitionNumbers, permutations)
+import TcgCalculator.Math (Combination, combinationNumber, combinations, distinctPermutations, partitionNumber, partitionNumbers)
 import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Deck)
 
 ----------------------------------------------------------------
@@ -20,7 +20,7 @@ import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Deck)
 calculate :: Deck -> Array (NonEmptyArray Condition) -> BigInt
 calculate deck conditions = do
   let drawPattern = generateDrawPatterns deck
-  let conditionPattern = nubEq $ buildConditionPattern =<< conditions
+  let conditionPattern = buildConditionPattern =<< conditions
   let pattern = filter (\dp -> any (satisfyCondition dp) conditionPattern) drawPattern
   sum $ calculatePatternCount deck <$> pattern
 
@@ -135,12 +135,8 @@ mkDrawPattern' cards pattern = do
   let maxPatternLength = fromMaybe 0 <<< maximum $ length <$> pattern'
   let cardCombinations = combinations <@> cards <$> 0 .. maxPatternLength
   p <- pattern'
-  let len = length p
-  let con = fold $ cardCombinations !! len
-  p' <- p # case length (group p) of
-    1            -> pure
-    n | n == len -> permutations
-    _            -> nubEq <<< permutations
+  let con = fold $ cardCombinations !! length p
+  p' <- distinctPermutations p
   filter (all \d -> d.draw <= d.card.count) $ zipWith { draw: _, card: _ } p' <$> con
 
 ----------------------------------------------------------------

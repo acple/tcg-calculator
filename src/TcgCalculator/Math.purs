@@ -6,22 +6,28 @@ module TcgCalculator.Math
   , combinationNumber
   , combinations
   , createPascalTriangle
+  , distinctPermutations
   , partitionNumber
   , partitionNumbers
   , pascalTriangle
-  , permutations
   ) where
 
 import Prelude
 
-import Data.Array (filter, fromFoldable, head, insertAt, length, singleton, uncons, unsafeIndex, zipWith, (..), (:))
+import Control.Alternative (guard)
+import Control.Monad.ST (ST)
+import Data.Array (drop, filter, findLastIndex, fromFoldable, head, length, singleton, uncons, unsafeIndex, zipWith, (!!), (..), (:))
+import Data.Array.ST (STArray)
+import Data.Array.ST as STA
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Foldable (fold, product)
 import Data.List as L
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Unfoldable (iterateN)
+import Data.Tuple (Tuple(..))
+import Data.Unfoldable (iterateN, unfoldr1)
 import Partial.Unsafe (unsafePartial)
+import Util.Array (swapST)
 
 ----------------------------------------------------------------
 
@@ -78,16 +84,28 @@ buildPartitionNumbers k = do
 
 type Permutation a = Array (Array a)
 
--- permutations [1, 2, 3] -> [[1, 2, 3], [2, 1, 3], [2, 3, 1], [1, 3, 2], [3, 1, 2], [3, 2, 1]]
-permutations :: Array ~> Permutation
-permutations [] = [[]]
-permutations [a] = [[a]]
-permutations a = case uncons a of
-  Just { head, tail } -> do
-    let r = 0 .. length tail
-    p <- permutations tail
-    r <#> \i -> fold $ insertAt i head p
-  _ -> []
+-- distinctPermutations [3, 2, 1] -> [[3, 2, 1], [3, 1, 2], [2, 3, 1], [2, 1, 3], [1, 3, 2], [1, 2, 3]]
+-- permutations for arrays with duplicated items
+-- input array must be sorted in DESCENDING order
+-- https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order
+distinctPermutations :: forall a. Ord a => Array a -> Permutation a
+distinctPermutations = unfoldr1 \a -> Tuple a (prevPerm a)
+  where
+  prevPerm :: Array a -> Maybe (Array a)
+  prevPerm a = do
+    k <- findLastIndex identity $ zipWith (>) a (drop 1 a)
+    v <- a !! k
+    l <- findLastIndex (v > _) a
+    guard $ k < l
+    pure $ STA.run do
+      st <- STA.thaw a
+      swapST k l st
+      reverseST (k + 1) (length a - 1) st
+      pure st
+  reverseST :: forall h. Int -> Int -> STArray h a -> ST h Unit
+  reverseST x y st = when (x < y) do
+    swapST x y st
+    reverseST (x + 1) (y - 1) st
 
 ----------------------------------------------------------------
 

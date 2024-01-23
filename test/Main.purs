@@ -8,7 +8,7 @@ import Data.BigInt as BigInt
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import TcgCalculator (buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, normalizeDeck)
-import TcgCalculator.Math (combinationNumber, combinations, partitionNumber, permutations)
+import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber)
 import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), mkId)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -49,10 +49,12 @@ mathTest = do
     partitionNumber 0 `shouldEqual` [[]]
 
   permutationsTest = do
-    permutations [1, 2, 3] `shouldEqual` [[1, 2, 3], [2, 1, 3], [2, 3, 1], [1, 3, 2], [3, 1, 2], [3, 2, 1]]
-    permutations ['b', 'a'] `shouldEqual` [['b', 'a'], ['a', 'b']]
-    permutations ["x"] `shouldEqual` [["x"]]
-    permutations ([] :: Array Unit) `shouldEqual` [[]]
+    distinctPermutations [3, 2, 1] `shouldEqual` [[3, 2, 1], [3, 1, 2], [2, 3, 1], [2, 1, 3], [1, 3, 2], [1, 2, 3]]
+    distinctPermutations [3, 1, 1] `shouldEqual` [[3, 1, 1], [1, 3, 1], [1, 1, 3]]
+    distinctPermutations [3, 3, 1, 1] `shouldEqual` [[3, 3, 1, 1], [3, 1, 3, 1], [3, 1, 1, 3], [1, 3, 3, 1], [1, 3, 1, 3], [1, 1, 3, 3]]
+    distinctPermutations ['b', 'a'] `shouldEqual` [['b', 'a'], ['a', 'b']]
+    distinctPermutations ["x"] `shouldEqual` [["x"]]
+    distinctPermutations ([] :: Array Unit) `shouldEqual` [[]]
 
   combinationsTest = do
     combinations 2 [1, 2, 3] `shouldEqual`
