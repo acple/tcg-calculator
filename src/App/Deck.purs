@@ -164,7 +164,7 @@ component = H.mkComponent
         i <- Array.findIndex (_.id >>> (_ == card.id)) cards
         old <- cards !! i
         let new = if String.null card.name then card { count = 0 } else card { count = clamp 0 (old.count + others) card.count }
-        cards' <- Array.modifyAt i (const new) cards
+        cards' <- Array.updateAt i new cards
         pure $ raiseUpdate =<< H.modify _ { cards = cards', others = others - (new.count - old.count) }
     UpdateDeck total -> do
       cards <- H.gets _.cards
@@ -179,9 +179,8 @@ component = H.mkComponent
       raiseUpdate =<< H.modify do
         { cards, hand } <- identity
         let cardCount = countCards cards
-        let deckCount = min deckLimit (cardCount + others)
-        let others' = deckCount - cardCount
-        _ { others = others', hand = min hand deckCount }
+        let deckCount = clamp cardCount deckLimit (cardCount + others)
+        _ { others = deckCount - cardCount, hand = min hand deckCount }
     Swap x y -> do -- TODO
       H.modify_ do
         cards <- _.cards

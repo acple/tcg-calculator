@@ -7,11 +7,12 @@ import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
-import Data.Foldable (foldMap)
+import Data.Either (Either(..))
+import Data.Foldable (traverse_)
 import Data.Function (on)
 import Data.Maybe (Maybe(..))
 import Data.Number.Format as Format
-import Effect.Aff (Aff)
+import Effect.Aff (Aff, attempt, throwError)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -66,10 +67,15 @@ component = H.mkComponent
     Calculate deck conditions a -> H.lift do
       newCalculation <- H.fork do
         let deck' = TC.normalizeDeck deck conditions
-        combination <- H.liftAff $ Worker.run { deck: deck', conditions }
-        let total = TC.calculateTotal deck'
-        H.put { combination, total, calculation: Nothing }
+        result <- H.liftAff <<< attempt $ Worker.run { deck: deck', conditions }
+        case result of
+          Left error -> do
+            H.put { combination: zero, total: zero, calculation: Nothing }
+            throwError error
+          Right combination -> do
+            let total = TC.calculateTotal deck'
+            H.put { combination, total, calculation: Nothing }
       currentCalculation <- H.gets _.calculation
       H.modify_ _ { calculation = Just newCalculation }
-      foldMap H.kill currentCalculation
+      traverse_ H.kill currentCalculation
       pure a

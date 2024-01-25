@@ -6,7 +6,7 @@ import Control.Alternative (empty)
 import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, groupAllBy, length, nubByEq, replicate, sortBy, take, zipWith, (!!), (..))
 import Data.Array.NonEmpty (NonEmptyArray, foldl1, toArray)
 import Data.BigInt (BigInt)
-import Data.Foldable (and, fold, maximum, product, sum)
+import Data.Foldable (and, fold, maximum, product)
 import Data.Function (on)
 import Data.Maybe (fromMaybe, maybe)
 import Data.Monoid.Additive (Additive(..))
@@ -22,7 +22,7 @@ calculate deck conditions = do
   let drawPattern = generateDrawPatterns deck
   let conditionPattern = buildConditionPattern =<< conditions
   let pattern = filter (\dp -> any (satisfyCondition dp) conditionPattern) drawPattern
-  sum $ calculatePatternCount deck <$> pattern
+  sumBy (calculatePatternCount deck) pattern
 
 -- 指定した条件式で使用していないカードをデッキから取り除く
 normalizeDeck :: Deck -> Array (NonEmptyArray Condition) -> Deck
@@ -141,5 +141,5 @@ mkDrawPattern' cards pattern = do
 
 ----------------------------------------------------------------
 
-sumBy :: forall a. (a -> Int) -> Array a -> Int
+sumBy :: forall a m. Semiring m => (a -> m) -> Array a -> m
 sumBy = alaF Additive foldMap

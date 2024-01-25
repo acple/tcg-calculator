@@ -5,9 +5,11 @@ import Prelude
 import App.Selector as Selector
 import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Array as Array
-import Data.Foldable (foldMap, sum)
+import Data.Foldable (traverse_)
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
+import Data.Monoid.Additive (Additive(..))
+import Data.Newtype (alaF)
 import Effect.Aff (Aff)
 import Halogen as H
 import Halogen.HTML as HH
@@ -92,13 +94,13 @@ component = H.mkComponent
       , HP.value $ show mode
       , HE.onValueChange UpdateConditionMode
       ]
-      [ HH.option [ HP.value "AtLeast" ] [ HH.text "枚以上ドローする" ]
-      , HH.option [ HP.value "JustDraw" ] [ HH.text "枚ちょうどドローする" ]
-      , HH.option [ HP.value "Remains" ] [ HH.text "枚以上デッキに残す" ]
-      , HH.option [ HP.value "JustRemains" ] [ HH.text "枚ちょうどデッキに残す" ]
-      , HH.option [ HP.value "Choice" ] [ HH.text "種類以上ドローする" ]
-      , HH.option [ HP.value "LeftOne" ] [ HH.text "種類以上デッキに残す" ]
-      , HH.option [ HP.value "LeftAll" ] [ HH.text "種類以上ドローしない" ]
+      [ HH.option [ HP.value $ show AtLeast ] [ HH.text "枚以上ドローする" ]
+      , HH.option [ HP.value $ show JustDraw ] [ HH.text "枚ちょうどドローする" ]
+      , HH.option [ HP.value $ show Remains ] [ HH.text "枚以上デッキに残す" ]
+      , HH.option [ HP.value $ show JustRemains ] [ HH.text "枚ちょうどデッキに残す" ]
+      , HH.option [ HP.value $ show Choice ] [ HH.text "種類以上ドローする" ]
+      , HH.option [ HP.value $ show LeftOne ] [ HH.text "種類以上デッキに残す" ]
+      , HH.option [ HP.value $ show LeftAll ] [ HH.text "種類以上ドローしない" ]
       ]
 
   action :: Action -> _
@@ -110,12 +112,12 @@ component = H.mkComponent
       updateCardSelected selected
       H.raise Updated
     UpdateConditionMode mode -> do
-      foldMap <@> readConditionMode mode $ \mode' -> do
+      readConditionMode mode # traverse_ \mode' -> do
         { cards, condition: { count, cards: selected } } <- H.get
         updateStatus cards selected mode' count
         H.raise Updated
     UpdateCardCount count -> do
-      foldMap <@> Int.fromString count $ \count' -> do
+      Int.fromString count # traverse_ \count' -> do
         { cards, condition: { mode, cards: selected } } <- H.get
         updateStatus cards selected mode count'
         H.raise Updated
@@ -134,16 +136,16 @@ component = H.mkComponent
   getMinMax :: Cards -> ConditionMode -> { min :: Int, max :: Int }
   getMinMax cards = case _ of
     AtLeast -> do
-      let max = cards <#> _.count # sum
+      let max = countCards cards
       { min: min 1 max, max }
     JustDraw -> do
-      let max = cards <#> _.count # sum
+      let max = countCards cards
       { min: 0, max }
     Remains -> do
-      let max = cards <#> _.count # sum
+      let max = countCards cards
       { min: min 1 max, max }
     JustRemains -> do
-      let max = cards <#> _.count # sum
+      let max = countCards cards
       { min: 0, max }
     Choice -> do
       let max = Array.length cards
@@ -154,6 +156,8 @@ component = H.mkComponent
     LeftAll -> do
       let max = Array.length cards
       { min: min 1 max, max }
+    where
+    countCards = alaF Additive Array.foldMap _.count
 
   query :: _ ~> _
   query = case _ of
