@@ -9,10 +9,10 @@
   "scripts": {
     "build": "npm run build:app; npm run build:worker",
     "build:app": "spago bundle --source-maps --pedantic-packages --outfile bundle/app.js",
-    "build:parcel": "parcel build --public-url . -- index.html bundle/worker.js",
     "build:worker": "spago bundle --source-maps --module Worker.Main --outfile bundle/worker.js",
-    "bundle": "npm run build && npm run build:parcel",
+    "bundle": "npm run build && npm run parcel",
     "gendevcert": "dotnet dev-certs https --format pem --no-password --export-path devcert.pem --trust",
+    "parcel": "parcel build --public-url . -- index.html bundle/worker.js",
     "postinstall": "spago install",
     "server": "parcel serve --cert devcert.pem --key devcert.key --no-hmr -- index.html bundle/worker.js",
     "test": "spago test"
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@parcel/css": "^1.14.0",
-    "esbuild": "^0.19.11",
+    "esbuild": "^0.19.12",
     "parcel": "^2.11.0",
     "purescript": "^0.15.14",
     "spago": "^0.93.24",
