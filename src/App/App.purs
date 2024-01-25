@@ -64,10 +64,15 @@ component = H.mkComponent
   render { deck, conditions } =
     HH.div
       [ HP.class_ $ H.ClassName "relative overflow-x-clip mb-[80vh]" ]
-      [ HH.header_
+      [ HH.header
+          [ HP.class_ $ H.ClassName "flex items-baseline" ]
           [ HH.h1
-              [ HP.class_ $ H.ClassName "px-2 py-1" ]
+              [ HP.class_ $ H.ClassName "text-lg px-2 py-1" ]
               [ HH.a [ HP.href "." ] [ HH.text "Draw Calculator" ] ]
+          , HH.text "-"
+          , HH.h2
+              [ HP.class_ $ H.ClassName "p-1" ]
+              [ HH.text "TCG 用ドロー確率計算機" ]
           ]
       , HH.div
           [ HP.class_ $ H.ClassName "flex flex-col gap-3 container max-w-4xl p-1" ]
@@ -92,10 +97,8 @@ component = H.mkComponent
     HH.div
       [ HP.class_ $ H.ClassName "grow basis-0 flex items-center rounded border-2 border-cyan-400 p-1" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "flex w-full" ]
-          [ HH.div
-              [ HP.class_ $ H.ClassName "mr-auto" ]
-              [ HU.button (HH.text "Save") (H.ClassName "border border-rose-500 hover:bg-rose-100") SaveState ]
+          [ HP.class_ $ H.ClassName "flex justify-end gap-3 w-full" ]
+          [ HH.div_ [ HU.button (HH.text "Save") (H.ClassName "border border-rose-500 hover:bg-rose-100") SaveState ]
           , HH.slot_ (Proxy @"result") unit Result.component unit
           ]
       ]

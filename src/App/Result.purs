@@ -19,6 +19,7 @@ import Halogen.HTML.Properties as HP
 import Halogen.Query.HalogenM (ForkId)
 import TcgCalculator as TC
 import TcgCalculator.Types (Condition, Deck)
+import Util.Halogen as HU
 
 ----------------------------------------------------------------
 
@@ -40,24 +41,29 @@ component = H.mkComponent
 
   render { combination, total, calculation } =
     HH.div
-      [ HP.class_ $ H.ClassName "flex align-baseline" ]
+      [ HP.class_ $ H.ClassName "flex justify-end items-center min-w-60" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "flex justify-end items-center w-40 py-1 px-3 text-2xl" ]
-          [ HH.text $ case calculation of
-              Just _ -> "Calculating..."
-              _ -> if total == zero
-                then "N/A"
-                else do
-                  let prob = 100.0 * ((/) `on` BigInt.toNumber) combination total
-                  Format.toStringWith (Format.fixed 4) prob <> "%"
-          ]
+          [ HP.class_ $ H.ClassName "flex justify-end items-center gap-1 mx-1 w-36" ]
+          case calculation of
+            Just _ ->
+              [ HH.span [ HP.class_ $ H.ClassName "text-2xl" ] [ HH.text "Calculating" ]
+              , HU.fa_ "fa-spinner fa-pulse"
+              ]
+            _ ->
+              [ HH.span
+                  [ HP.class_ $ H.ClassName "text-2xl" ]
+                  [ HH.text if total == zero
+                      then "N/A"
+                      else Format.toStringWith (Format.fixed 4) (100.0 * ((/) `on` BigInt.toNumber) combination total) <> "%"
+                  ]
+              ]
       , HH.div
-          [ HP.class_ $ H.ClassName "min-w-fit flex justify-end" ]
+          [ HP.class_ $ H.ClassName "flex justify-end mx-1 min-w-20" ]
           [ HH.div
-              [ HP.class_ $ H.ClassName "inline-flex flex-col mx-1" ]
-              [ HH.div [ HP.class_ $ H.ClassName "text-right px-1" ] [ HH.text $ BigInt.toString combination ]
-              , HH.hr_
-              , HH.div [ HP.class_ $ H.ClassName "text-right px-1" ] [ HH.text $ BigInt.toString total ]
+              [ HP.class_ $ H.ClassName "flex flex-col items-end" ]
+              [ HH.div [ HP.class_ $ H.ClassName "px-1" ] [ HH.text $ BigInt.toString combination ]
+              , HH.hr [ HP.class_ $ H.ClassName "border-gray-400 w-full" ]
+              , HH.div [ HP.class_ $ H.ClassName "px-1" ] [ HH.text $ BigInt.toString total ]
               ]
           ]
       ]

@@ -97,23 +97,19 @@ component = H.mkComponent
 
   renderConditionBlock cards { id, disabled } =
     HH.div
-      [ HP.class_ $ H.ClassName "rounded"
+      [ HP.classes
+          [ H.ClassName "flex gap-1 px-1 rounded"
+          , if disabled then H.ClassName "bg-slate-100 text-gray-400 line-through" else H.ClassName "bg-transparent"
+          ]
       ]
       [ HH.div
-          [ HP.classes
-              [ H.ClassName "flex gap-1 px-1 rounded"
-              , if disabled then H.ClassName "bg-slate-100 text-gray-400 line-through" else H.ClassName "bg-transparent"
-              ]
+          [ HP.class_ $ H.ClassName "flex mx-1" ]
+          [ HU.removeButton (RemoveCondition id)
+          , HU.toggleButton (ToggleItemDisabled id)
           ]
-          [ HH.div
-              [ HP.class_ $ H.ClassName "flex mx-1" ]
-              [ HU.removeButton (RemoveCondition id)
-              , HU.toggleButton (ToggleItemDisabled id)
-              ]
-          , HH.div
-              [ HP.class_ $ H.ClassName "grow min-w-0" ]
-              [ HH.slot (Proxy @"block") id ConditionBlock.component cards (const Calculate) ]
-          ]
+      , HH.div
+          [ HP.class_ $ H.ClassName "grow min-w-0" ]
+          [ HH.slot (Proxy @"block") id ConditionBlock.component cards (const Calculate) ]
       ]
 
   renderConditionAddButton =

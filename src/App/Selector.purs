@@ -66,9 +66,9 @@ component = H.mkComponent
 
   renderBackground isEditMode =
     HH.div
-      [ HP.classes $ join
-          [ [ H.ClassName "block fixed inset-0 bg-black opacity-20" ]
-          , if isEditMode then empty else [ H.ClassName "hidden" ]
+      [ HP.classes
+          [ H.ClassName "fixed inset-0 bg-black opacity-20"
+          , if isEditMode then H.ClassName "block" else H.ClassName "hidden"
           ]
       , HE.onClick $ const LeaveEdit
       ]
