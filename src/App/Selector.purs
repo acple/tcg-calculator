@@ -3,7 +3,6 @@ module App.Selector where
 import Prelude
 
 import Control.Monad.Maybe.Trans (runMaybeT)
-import Control.Plus (empty)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), maybe)
 import Halogen as H
@@ -76,11 +75,7 @@ component = H.mkComponent
 
   renderItem isEditMode item =
     HH.li
-      [ HP.classes $ join
-          [ [ H.ClassName "min-w-0" ]
-          , if item.selected || isEditMode then empty else [ H.ClassName "hidden" ]
-          ]
-      ]
+      [ HP.class_ if item.selected || isEditMode then H.ClassName "min-w-0" else H.ClassName "hidden" ]
       [ HH.button
           [ HP.classes
               [ H.ClassName "rounded border w-full h-full py-1 px-3 transition-colors duration-75"

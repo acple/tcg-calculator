@@ -73,12 +73,12 @@ component = H.mkComponent
   render { conditions, deck, disabled } =
     HH.div
       [ HP.classes
-          [ H.ClassName "w-full p-1 rounded border-2 border-violet-300"
+          [ H.ClassName "grow p-1 rounded border-2 border-violet-300"
           , if disabled then H.ClassName "bg-slate-100 text-gray-400" else H.ClassName "bg-white text-gray-700"
           ]
       ]
       [ renderConditionHeader disabled
-      , HH.div
+      , HH.ul
           [ HP.class_ $ H.ClassName "my-1" ]
           $ renderConditionBlock deck.cards <$> conditions
       , renderConditionAddButton
@@ -96,7 +96,7 @@ component = H.mkComponent
       ]
 
   renderConditionBlock cards { id, disabled } =
-    HH.div
+    HH.li
       [ HP.classes
           [ H.ClassName "flex gap-1 px-1 rounded"
           , if disabled then H.ClassName "bg-slate-100 text-gray-400 line-through" else H.ClassName "bg-transparent"
@@ -114,7 +114,7 @@ component = H.mkComponent
 
   renderConditionAddButton =
     HH.div
-      [ HP.class_ $ H.ClassName "mx-1" ]
+      [ HP.class_ $ H.ClassName "px-1" ]
       [ HU.plusButton AddCondition ]
 
   action = case _ of

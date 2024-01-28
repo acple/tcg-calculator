@@ -57,9 +57,9 @@ component = H.mkComponent
       [ HH.div
           [ HP.class_ $ H.ClassName "grow w-48 rounded border p-0.5" ]
           [ renderCardSelector cards ]
-      , HH.span
+      , HH.div
           [ HP.class_ $ H.ClassName "flex items-center" ]
-          [ HH.span [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "を" ]
+          [ HH.div [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "を" ]
           , renderCardCounter count minValue maxValue
           , renderModeSelector mode
           ]
@@ -72,7 +72,7 @@ component = H.mkComponent
   renderCardCounter count min max =
     HH.input
       [ HP.classes
-          [ H.ClassName "appearance-none w-12 shrink-0 py-1 px-1 text-right rounded border transition ease-in-out"
+          [ H.ClassName "appearance-none w-12 shrink-0 p-1 text-right rounded border transition ease-in-out"
           , H.ClassName "bg-transparent border-gray-400 hover:border-gray-500"
           , H.ClassName "focus:outline-none focus:border-blue-600"
           ]

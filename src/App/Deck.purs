@@ -63,12 +63,12 @@ component = H.mkComponent
   renderHeader deckCount handCount cardCount =
     HH.div
       [ HP.class_ $ H.ClassName "flex items-baseline gap-1" ]
-      [ HH.span
-          [ HP.class_ $ H.ClassName "grow mx-3 my-1 inline-flex items-baseline gap-2 text-sky-900" ]
+      [ HH.div
+          [ HP.class_ $ H.ClassName "grow flex items-baseline my-1 mx-3 gap-2 text-sky-900" ]
           [ HU.fa "fa-layer-group" [ H.ClassName "text-2xl" ]
           , HH.text "デッキ情報"
           ]
-      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500 text-right" ]
+      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500" ]
           [ HH.span [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "手札枚数:" ]
           , HH.input
               [ HP.class_ styleFormNumber
@@ -80,7 +80,7 @@ component = H.mkComponent
               , HE.onValueChange (UpdateHand <<< fromMaybe 0 <<< Int.fromString)
               ]
           ]
-      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500 text-right" ]
+      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500" ]
           [ HH.span [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "デッキ枚数:" ]
           , HH.input
               [ HP.class_ styleFormNumber
@@ -143,7 +143,7 @@ component = H.mkComponent
     ]
 
   styleFormInput = collect H.ClassName (String.joinWith " ")
-    [ H.ClassName "appearance-none py-1 px-1 m-0 border-b transition-colors duration-75"
+    [ H.ClassName "appearance-none p-1 border-b transition-colors duration-75"
     , H.ClassName "bg-white text-gray-700 border-transparent hover:border-gray-500"
     , H.ClassName "focus:outline-none focus:border-slate-800"
     ]
