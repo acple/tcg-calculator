@@ -23,3 +23,4 @@ main = do
       Right { deck, conditions } -> do
         let result = TC.calculate deck conditions
         Worker.postMessage $ BigInt.toString result
+    Worker.close

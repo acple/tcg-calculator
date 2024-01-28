@@ -159,11 +159,10 @@ component = H.mkComponent
       H.modify_ do
         conditions <- _.conditions
         _ { conditions = ArrayUtil.swap x y conditions }
-    ReceiveConditionUpdated id response -> case response of
-      Condition.Updated ->
-        action Calculate
-      Condition.AllConditionDeleted ->
-        action (RemoveCondition id)
+    ReceiveConditionUpdated _ Condition.Updated ->
+      action Calculate
+    ReceiveConditionUpdated id Condition.AllConditionDeleted ->
+      action $ RemoveCondition id
     Calculate -> do
       deck <- H.gets _.deck
       conditions <- H.requestAll (Proxy @"condition") Condition.GetConditions
