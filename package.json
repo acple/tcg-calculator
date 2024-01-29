@@ -7,8 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "build": "npm run build:app; npm run build:worker",
-    "build:app": "spago bundle --source-maps --pedantic-packages --outfile bundle/app.js",
+    "build": "npm run build:app -- --pedantic-packages; npm run build:worker",
+    "build:app": "spago bundle --source-maps --outfile bundle/app.js",
     "build:worker": "spago bundle --source-maps --module Worker.Main --outfile bundle/worker.js",
     "bundle": "npm run build && npm run parcel",
     "gendevcert": "dotnet dev-certs https --format pem --no-password --export-path devcert.pem --trust",

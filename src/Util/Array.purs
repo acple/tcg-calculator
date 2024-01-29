@@ -22,3 +22,11 @@ swapST x y st = do
   case a, b of
     Just a', Just b' -> void do STA.poke x b' st *> STA.poke y a' st
     _, _ -> pure unit
+
+shiftInsert :: forall a. Int -> Int -> Array a -> Array a
+shiftInsert from to array | from == to = array
+shiftInsert from to array = STA.run do
+  st <- STA.thaw array
+  item <- STA.splice from 1 [] st
+  _ <- STA.splice to 0 item st
+  pure st

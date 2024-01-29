@@ -19,6 +19,7 @@ package:
     - js-uri
     - lists
     - maybe
+    - media-types
     - newtype
     - numbers
     - ordered-collections
@@ -32,6 +33,7 @@ package:
     - tuples
     - unfoldable
     - uuid
+    - web-events
     - web-html
     - web-workers
   name: tcg-calculator
@@ -42,4 +44,4 @@ package:
 workspace:
   extra_packages: {}
   package_set:
-    registry: 48.5.0
+    registry: 49.0.0
