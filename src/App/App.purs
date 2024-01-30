@@ -86,6 +86,14 @@ component = H.mkComponent
               $ Array.mapWithIndex (renderCondition deck) conditions
           , renderConditionAddButton
           ]
+      , HH.footer
+          [ HP.class_ $ H.ClassName "flex items-baseline px-2" ]
+          [ HH.a
+              [ HP.class_ $ H.ClassName "m-1 py-1 px-2 rounded border border-sky-500 text-sm"
+              , HP.href "https://github.com/acple/tcg-calculator", HP.target "_blank", HP.rel "noopener noreferrer"
+              ]
+              [ HH.text "→ 使い方とかソース" ]
+          ]
       ]
 
   renderDeck =
