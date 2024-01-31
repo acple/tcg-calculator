@@ -63,7 +63,7 @@ component = H.mkComponent
 
   render { deck, conditions } =
     HH.div
-      [ HP.class_ $ H.ClassName "overflow-x-clip" ]
+      [ HP.class_ $ H.ClassName "relative overflow-x-clip" ]
       [ HH.header
           [ HP.class_ $ H.ClassName "flex items-baseline px-2" ]
           [ HH.h1
@@ -75,7 +75,7 @@ component = H.mkComponent
               [ HH.text "TCG 用ドロー確率計算機" ]
           ]
       , HH.main
-          [ HP.class_ $ H.ClassName "flex flex-col gap-3 container max-w-4xl p-1 mb-[80vh]" ]
+          [ HP.class_ $ H.ClassName "flex flex-col gap-3 relative max-w-4xl p-1 mb-[80vh]" ]
           [ HH.div
               [ HP.class_ $ H.ClassName "flex flex-wrap gap-1" ]
               [ renderDeck
