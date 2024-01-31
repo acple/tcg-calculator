@@ -35,6 +35,7 @@ package:
     - uuid
     - web-events
     - web-html
+    - web-uievents
     - web-workers
   name: tcg-calculator
   test:

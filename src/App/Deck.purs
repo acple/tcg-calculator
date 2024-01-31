@@ -27,7 +27,9 @@ import Web.Event.Event as Event
 import Web.HTML (window)
 import Web.HTML.Event.DataTransfer as DataTransfer
 import Web.HTML.Event.DragEvent as Drag
+import Web.HTML.HTMLInputElement as Input
 import Web.HTML.Window (confirm)
+import Web.UIEvent.FocusEvent as Focus
 
 ----------------------------------------------------------------
 
@@ -40,6 +42,7 @@ data Action
   | UpdateDeck Int
   | UpdateHand Int
   | UpdateOthers Int
+  | SelectOnFocus Focus.FocusEvent
   | StartReorder Id Drag.DragEvent
   | HandleDragBehavior Drag.DragEvent
   | ExecuteReorder Id Drag.DragEvent
@@ -78,8 +81,8 @@ component = H.mkComponent
           [ HU.fa "fa-layer-group" [ H.ClassName "text-2xl" ]
           , HH.text "デッキ情報"
           ]
-      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500" ]
-          [ HH.span [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "手札枚数:" ]
+      , HH.div [ HP.class_ $ H.ClassName "flex flex-wrap justify-end items-center mx-1 border-b border-gray-500" ]
+          [ HH.div [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "手札枚数:" ]
           , HH.input
               [ HP.class_ styleFormNumber
               , HP.type_ HP.InputNumber
@@ -87,11 +90,12 @@ component = H.mkComponent
               , HP.value $ show handCount
               , HP.min 1.0
               , HP.max $ Int.toNumber deckCount
+              , HE.onFocus SelectOnFocus
               , HE.onValueChange (UpdateHand <<< fromMaybe 0 <<< Int.fromString)
               ]
           ]
-      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500" ]
-          [ HH.span [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "デッキ枚数:" ]
+      , HH.div [ HP.class_ $ H.ClassName "flex flex-wrap justify-end items-center mx-1 border-b border-gray-500" ]
+          [ HH.div [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "デッキ枚数:" ]
           , HH.input
               [ HP.class_ styleFormNumber
               , HP.type_ HP.InputNumber
@@ -99,6 +103,7 @@ component = H.mkComponent
               , HP.value $ show deckCount
               , HP.min $ Int.toNumber cardCount
               , HP.max $ Int.toNumber deckLimit
+              , HE.onFocus SelectOnFocus
               , HE.onValueChange (UpdateDeck <<< fromMaybe 0 <<< Int.fromString)
               ]
           ]
@@ -143,6 +148,7 @@ component = H.mkComponent
               , HP.value $ show card.count
               , HP.min 0.0
               , HP.max if String.null card.name then 0.0 else Int.toNumber (card.count + others)
+              , HE.onFocus SelectOnFocus
               , HE.onValueChange $ UpdateCard <<< card { count = _ } <<< fromMaybe 0 <<< Int.fromString
               ]
           ]
@@ -163,6 +169,7 @@ component = H.mkComponent
               , HP.step $ HP.Step 1.0
               , HP.min 0.0
               , HP.max $ Int.toNumber (deckLimit - cardCount)
+              , HE.onFocus SelectOnFocus
               , HE.onValueChange $ UpdateOthers <<< fromMaybe 0 <<< Int.fromString
               ]
           ]
@@ -213,6 +220,9 @@ component = H.mkComponent
         let cardCount = countCards cards
         let deckCount = clamp cardCount deckLimit (cardCount + others)
         _ { others = deckCount - cardCount, hand = min hand deckCount }
+    SelectOnFocus event -> do
+      let element = Input.fromEventTarget <=< Event.target <<< Focus.toEvent $ event
+      H.liftEffect $ traverse_ Input.select element
     StartReorder id event -> do
       let transfer = Drag.dataTransfer event
       H.liftEffect $ DataTransfer.setData (MediaType dragItemMediaType) (Id.toString id) transfer

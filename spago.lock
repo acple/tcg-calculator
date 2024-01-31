@@ -38,6 +38,7 @@ workspace:
         - uuid
         - web-events
         - web-html
+        - web-uievents
         - web-workers
       test_dependencies:
         - spec

@@ -56,7 +56,7 @@ component = H.mkComponent
       , renderBackground isEditMode
       , HH.ul
           [ HP.class_ if isEditMode
-              then H.ClassName "flex flex-col gap-0.5 absolute p-4 w-48 min-w-fit shadow-md bg-white"
+              then H.ClassName "flex flex-col gap-0.5 absolute p-4 w-48 min-w-fit shadow-md bg-white break-words"
               else H.ClassName "flex gap-1 flex-wrap min-w-0 w-full break-words"
           , HE.onClick $ const EnterEdit
           ]
@@ -65,10 +65,7 @@ component = H.mkComponent
 
   renderBackground isEditMode =
     HH.div
-      [ HP.classes
-          [ H.ClassName "fixed inset-0 bg-black opacity-20"
-          , if isEditMode then H.ClassName "block" else H.ClassName "hidden"
-          ]
+      [ HP.class_ if isEditMode then H.ClassName "fixed inset-0 bg-black opacity-20" else H.ClassName "hidden"
       , HE.onClick $ const LeaveEdit
       ]
       []

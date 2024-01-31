@@ -63,7 +63,7 @@ component = H.mkComponent
 
   render { deck, conditions } =
     HH.div
-      [ HP.class_ $ H.ClassName "relative overflow-x-clip" ]
+      [ HP.class_ $ H.ClassName "overflow-x-clip" ]
       [ HH.header
           [ HP.class_ $ H.ClassName "flex items-baseline px-2" ]
           [ HH.h1

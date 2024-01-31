@@ -17,6 +17,9 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import TcgCalculator.Types (Cards, Condition(..), Condition', ConditionMode(..), Id, readConditionMode)
 import Type.Proxy (Proxy(..))
+import Web.Event.Event as Event
+import Web.HTML.HTMLInputElement as Input
+import Web.UIEvent.FocusEvent as Focus
 
 ----------------------------------------------------------------
 
@@ -28,6 +31,7 @@ data Action
   | UpdateCardSelected (Array Id)
   | UpdateCardCount String
   | Receive Cards
+  | SelectOnFocus Focus.FocusEvent
 
 data Query a
   = GetCondition (Condition -> a)
@@ -81,6 +85,7 @@ component = H.mkComponent
       , HP.value $ show count
       , HP.min $ Int.toNumber min
       , HP.max $ Int.toNumber max
+      , HE.onFocus SelectOnFocus
       , HE.onValueChange UpdateCardCount
       ]
 
@@ -124,6 +129,9 @@ component = H.mkComponent
     Receive cards -> do
       { condition: { cards: selected } } <- H.modify _ { cards = cards }
       updateCardSelected (selected <#> _.id)
+    SelectOnFocus event -> do
+      let element = Input.fromEventTarget <=< Event.target <<< Focus.toEvent $ event
+      H.liftEffect $ traverse_ Input.select element
     where
     updateCardSelected selected = do
       { cards, condition: { mode, count } } <- H.get
