@@ -26,7 +26,8 @@ run param = makeAff \reply -> do
     result <- lmap (error <<< intercalateMap "\n" renderForeignError) <<< runExcept <<< readString $ MessageEvent.data_ event
     note (error "BigInt.fromString") $ BigInt.fromString result
   worker # Worker.onError \event -> do
+    Worker.terminate worker
     let message = maybe "Unknown worker error" ErrorEvent.message $ ErrorEvent.fromEvent event
-    reply <<< Left $ error message
+    reply $ Left (error message)
   Worker.postMessage (encodeJson param) worker
   pure $ effectCanceler (Worker.terminate worker)

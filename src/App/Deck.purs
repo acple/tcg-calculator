@@ -126,7 +126,7 @@ component = H.mkComponent
               , HE.onDragStart $ StartReorder card.id
               ]
               [ HU.fa_ "fa-grip-vertical" ]
-          , HU.removeButton (RemoveCard card)
+          , HU.removeButton $ RemoveCard card
           ]
       , HH.div
           [ HP.class_ $ H.ClassName "grow flex border-b border-gray-500" ]
@@ -134,7 +134,7 @@ component = H.mkComponent
               [ HP.classes [ H.ClassName "grow", styleFormInput ]
               , HP.type_ HP.InputText
               , HP.value card.name
-              , HE.onValueChange (UpdateCard <<< card { name = _ })
+              , HE.onValueChange $ UpdateCard <<< card { name = _ }
               ]
           , HH.input
               [ HP.class_ styleFormNumber
@@ -143,7 +143,7 @@ component = H.mkComponent
               , HP.value $ show card.count
               , HP.min 0.0
               , HP.max if String.null card.name then 0.0 else Int.toNumber (card.count + others)
-              , HE.onValueChange (UpdateCard <<< card { count = _ } <<< fromMaybe 0 <<< Int.fromString)
+              , HE.onValueChange $ UpdateCard <<< card { count = _ } <<< fromMaybe 0 <<< Int.fromString
               ]
           ]
       ]
@@ -163,7 +163,7 @@ component = H.mkComponent
               , HP.step $ HP.Step 1.0
               , HP.min 0.0
               , HP.max $ Int.toNumber (deckLimit - cardCount)
-              , HE.onValueChange (UpdateOthers <<< fromMaybe 0 <<< Int.fromString)
+              , HE.onValueChange $ UpdateOthers <<< fromMaybe 0 <<< Int.fromString
               ]
           ]
       ]
