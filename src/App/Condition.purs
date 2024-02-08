@@ -73,7 +73,7 @@ component = H.mkComponent
   render { conditions, deck, disabled } =
     HH.div
       [ HP.classes
-          [ H.ClassName "grow p-1 rounded border-2 border-violet-300"
+          [ H.ClassName "grow rounded border-2 border-violet-300 p-1"
           , if disabled then H.ClassName "bg-slate-100 text-gray-400" else H.ClassName "bg-white text-gray-700"
           ]
       ]
@@ -88,7 +88,7 @@ component = H.mkComponent
     HH.div
       [ HP.class_ $ H.ClassName "flex items-center justify-end gap-1" ]
       [ HH.div
-          [ HP.class_ if disabled then H.ClassName "w-0 py-1 pl-3 text-xl mr-auto" else H.ClassName "hidden" ]
+          [ HP.class_ if disabled then H.ClassName "mr-auto w-0 py-1 pl-3 text-xl" else H.ClassName "hidden" ]
           [ HH.text "Disabled" ]
       , HH.div
           [ HP.class_ if disabled then H.ClassName "text-gray-400" else H.ClassName "text-black" ]
@@ -98,17 +98,17 @@ component = H.mkComponent
   renderConditionBlock cards { id, disabled } =
     HH.li
       [ HP.classes
-          [ H.ClassName "flex gap-1 px-1 rounded"
+          [ H.ClassName "flex gap-1 rounded px-1"
           , if disabled then H.ClassName "bg-slate-100 text-gray-400 line-through" else H.ClassName "bg-transparent"
           ]
       ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "flex mx-1" ]
+          [ HP.class_ $ H.ClassName "mx-1 flex" ]
           [ HU.removeButton (RemoveCondition id)
           , HU.toggleButton (ToggleItemDisabled id)
           ]
       , HH.div
-          [ HP.class_ $ H.ClassName "grow min-w-0" ]
+          [ HP.class_ $ H.ClassName "min-w-0 grow" ]
           [ HH.slot (Proxy @"block") id ConditionBlock.component cards (const Calculate) ]
       ]
 

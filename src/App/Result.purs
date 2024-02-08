@@ -41,9 +41,9 @@ component = H.mkComponent
 
   render { combination, total, calculation } =
     HH.div
-      [ HP.class_ $ H.ClassName "flex items-center min-w-60" ]
+      [ HP.class_ $ H.ClassName "flex min-w-60 items-center" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "flex justify-end items-center gap-1 mx-1 w-36" ]
+          [ HP.class_ $ H.ClassName "mx-1 flex w-36 items-center justify-end gap-1" ]
           case calculation of
             Just _ ->
               [ HH.div [ HP.class_ $ H.ClassName "text-2xl" ] [ HH.text "Calculating" ]
@@ -58,7 +58,7 @@ component = H.mkComponent
                   ]
               ]
       , HH.div
-          [ HP.class_ $ H.ClassName "flex flex-col items-end mx-1 min-w-20 divide-y divide-gray-400" ]
+          [ HP.class_ $ H.ClassName "mx-1 flex min-w-20 flex-col items-end divide-y divide-gray-400" ]
           [ HH.div [ HP.class_ $ H.ClassName "px-1" ] [ HH.text $ BigInt.toString combination ]
           , HH.div [ HP.class_ $ H.ClassName "px-1" ] [ HH.text $ BigInt.toString total ]
           ]

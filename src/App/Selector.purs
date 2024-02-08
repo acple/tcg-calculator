@@ -51,13 +51,13 @@ component = H.mkComponent
 
   render { items, isEditMode } =
     HH.div
-      [ HP.class_ $ H.ClassName "flex mx-1" ]
+      [ HP.class_ $ H.ClassName "mx-1 flex" ]
       [ if Array.all (not _.selected) items || isEditMode then renderAddButton else HU.empty
       , renderBackground isEditMode
       , HH.ul
           [ HP.class_ if isEditMode
-              then H.ClassName "flex flex-col gap-0.5 absolute p-4 min-w-48 shadow-md bg-white break-anywhere"
-              else H.ClassName "flex gap-1 flex-wrap w-full break-anywhere"
+              then H.ClassName "break-anywhere absolute flex min-w-48 flex-col gap-0.5 bg-white p-4 shadow-md"
+              else H.ClassName "break-anywhere flex w-full flex-wrap gap-1"
           , HE.onClick $ const EnterEdit
           ]
           $ items <#> renderItem isEditMode
@@ -75,10 +75,10 @@ component = H.mkComponent
       [ HP.class_ if item.selected || isEditMode then H.ClassName "min-w-0" else H.ClassName "hidden" ]
       [ HH.button
           [ HP.classes
-              [ H.ClassName "rounded border w-full h-full py-1 px-3 transition-colors duration-75"
+              [ H.ClassName "h-full w-full rounded border px-3 py-1 transition-colors duration-75"
               , if item.selected
-                  then H.ClassName "bg-sky-500 border-sky-700 text-white hover:bg-sky-600"
-                  else H.ClassName "bg-gray-300 border-gray-800 text-black hover:bg-gray-400"
+                  then H.ClassName "border-sky-700 bg-sky-500 text-white hover:bg-sky-600"
+                  else H.ClassName "border-gray-800 bg-gray-300 text-black hover:bg-gray-400"
               ]
           , HE.onClick $ const (Toggle item.id)
           ]

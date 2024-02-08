@@ -67,7 +67,7 @@ component = H.mkComponent
     let cardCount = countCards cards
     let deckCount = cardCount + others
     HH.div
-      [ HP.class_ $ H.ClassName "p-1 rounded border-2 border-amber-500" ]
+      [ HP.class_ $ H.ClassName "rounded border-2 border-amber-500 p-1" ]
       [ renderHeader deckCount hand cardCount
       , renderCardList others cards
       , renderFooter others cardCount
@@ -100,9 +100,9 @@ component = H.mkComponent
       , HE.onDrop $ ExecuteReorder card.id
       ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "flex items-center mx-1" ]
+          [ HP.class_ $ H.ClassName "mx-1 flex items-center" ]
           [ HH.div
-              [ HP.class_ $ H.ClassName "hidden md:block px-1 cursor-grab active:cursor-grabbing text-gray-500"
+              [ HP.class_ $ H.ClassName "hidden cursor-grab px-1 text-gray-500 active:cursor-grabbing md:block"
               , HP.draggable true
               , HE.onDragStart $ StartReorder card.id
               ]
@@ -110,7 +110,7 @@ component = H.mkComponent
           , HU.removeButton $ RemoveCard card
           ]
       , HH.div
-          [ HP.class_ $ H.ClassName "grow flex border-b border-gray-500" ]
+          [ HP.class_ $ H.ClassName "flex grow border-b border-gray-500" ]
           [ HH.input
               [ HP.classes [ H.ClassName "grow", styleFormInput ]
               , HP.type_ HP.InputText
@@ -134,14 +134,14 @@ component = H.mkComponent
     HH.div
       [ HP.class_ $ H.ClassName "flex items-baseline gap-1" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "grow mx-1" ]
+          [ HP.class_ $ H.ClassName "mx-1 grow" ]
           [ HU.plusButton AddCard ]
       , renderIntegerInput "その他のカード:" otherCount 0 (deckLimit - cardCount) UpdateOthers
       ]
 
   renderIntegerInput text count min max h =
     HH.div
-      [ HP.class_ $ H.ClassName "flex flex-wrap justify-end items-baseline mx-1 border-b border-gray-500" ]
+      [ HP.class_ $ H.ClassName "mx-1 flex flex-wrap items-baseline justify-end border-b border-gray-500" ]
       [ HH.div [ HP.class_ $ H.ClassName "m-1" ] [ HH.text text ]
       , HH.input
           [ HP.class_ styleFormNumber
@@ -161,9 +161,8 @@ component = H.mkComponent
     ]
 
   styleFormInput = collect H.ClassName (String.joinWith " ")
-    [ H.ClassName "appearance-none p-1 border-b transition-colors duration-75"
-    , H.ClassName "bg-white text-gray-700 border-transparent hover:border-gray-500"
-    , H.ClassName "focus:outline-none focus:border-slate-800"
+    [ H.ClassName "appearance-none border-b border-transparent bg-white p-1 text-gray-700"
+    , H.ClassName "transition-colors duration-75 hover:border-gray-500 focus:border-slate-800 focus:outline-none"
     ]
 
   action = case _ of

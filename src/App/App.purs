@@ -67,7 +67,7 @@ component = H.mkComponent
       [ HH.header
           [ HP.class_ $ H.ClassName "flex items-baseline px-2" ]
           [ HH.h1
-              [ HP.class_ $ H.ClassName "text-lg p-1" ]
+              [ HP.class_ $ H.ClassName "p-1 text-lg" ]
               [ HH.a [ HP.href "." ] [ HH.text "Draw Calculator" ] ]
           , HH.text "-"
           , HH.h2
@@ -75,7 +75,7 @@ component = H.mkComponent
               [ HH.text "TCG 用ドロー確率計算機" ]
           ]
       , HH.main
-          [ HP.class_ $ H.ClassName "flex flex-col gap-3 relative max-w-4xl p-1 mb-[80vh]" ]
+          [ HP.class_ $ H.ClassName "relative mb-[80vh] flex max-w-4xl flex-col gap-3 p-1" ]
           [ HH.div
               [ HP.class_ $ H.ClassName "flex flex-wrap gap-1" ]
               [ renderDeck
@@ -89,7 +89,7 @@ component = H.mkComponent
       , HH.footer
           [ HP.class_ $ H.ClassName "flex items-baseline px-2" ]
           [ HH.a
-              [ HP.class_ $ H.ClassName "m-1 py-1 px-2 rounded border border-sky-500 text-sm"
+              [ HP.class_ $ H.ClassName "m-1 rounded border border-sky-500 px-2 py-1 text-sm"
               , HP.href "https://github.com/acple/tcg-calculator", HP.target "_blank", HP.rel "noopener noreferrer"
               ]
               [ HH.text "→ 使い方とかソース" ]
@@ -103,9 +103,9 @@ component = H.mkComponent
 
   renderResult =
     HH.div
-      [ HP.class_ $ H.ClassName "grow basis-0 flex items-center p-1 rounded border-2 border-cyan-400" ]
+      [ HP.class_ $ H.ClassName "flex grow basis-0 items-center rounded border-2 border-cyan-400 p-1" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "flex justify-end gap-3 w-full" ]
+          [ HP.class_ $ H.ClassName "flex w-full justify-end gap-3" ]
           [ HH.div_ [ HU.button (HH.text "Save") (H.ClassName "border border-rose-500 hover:bg-rose-100") SaveState ]
           , HH.slot_ (Proxy @"result") unit Result.component unit
           ]
@@ -113,7 +113,7 @@ component = H.mkComponent
 
   renderCondition deck i id =
     HH.li
-      [ HP.class_ $ H.ClassName "flex gap-1 items-start" ]
+      [ HP.class_ $ H.ClassName "flex items-start gap-1" ]
       [ HH.div
           [ HP.class_ $ H.ClassName "flex flex-col" ]
           [ HU.upButton (Swap (i - 1) i)

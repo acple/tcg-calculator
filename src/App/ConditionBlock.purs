@@ -59,7 +59,7 @@ component = H.mkComponent
     HH.div
       [ HP.class_ $ H.ClassName "flex flex-wrap items-center justify-end" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "grow w-48 rounded border p-0.5" ]
+          [ HP.class_ $ H.ClassName "w-48 grow rounded border p-0.5" ]
           [ renderCardSelector cards ]
       , HH.div
           [ HP.class_ $ H.ClassName "flex items-center" ]
@@ -76,9 +76,8 @@ component = H.mkComponent
   renderCardCounter count min max =
     HH.input
       [ HP.classes
-          [ H.ClassName "appearance-none w-12 shrink-0 p-1 text-right rounded border transition ease-in-out"
-          , H.ClassName "bg-transparent border-gray-400 hover:border-gray-500"
-          , H.ClassName "focus:outline-none focus:border-blue-600"
+          [ H.ClassName "w-12 appearance-none rounded border border-gray-400 bg-transparent p-1 text-right"
+          , H.ClassName "transition ease-in-out hover:border-gray-500 focus:border-blue-600 focus:outline-none"
           ]
       , HP.type_ HP.InputNumber
       , HP.step $ HP.Step 1.0
@@ -92,9 +91,8 @@ component = H.mkComponent
   renderModeSelector mode =
     HH.select
       [ HP.classes
-          [ H.ClassName "appearance-none w-full py-1 px-3 rounded border"
-          , H.ClassName "bg-transparent border-gray-400 hover:border-gray-500"
-          , H.ClassName "focus:outline-none focus:border-blue-600"
+          [ H.ClassName "w-full appearance-none rounded border border-gray-400 bg-transparent px-3 py-1"
+          , H.ClassName "transition ease-in-out hover:border-gray-500 focus:border-blue-600 focus:outline-none"
           ]
       , HP.value $ show mode
       , HE.onValueChange UpdateConditionMode
