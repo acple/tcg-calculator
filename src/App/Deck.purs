@@ -77,36 +77,12 @@ component = H.mkComponent
     HH.div
       [ HP.class_ $ H.ClassName "flex items-baseline gap-1" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "grow flex items-baseline my-1 mx-3 gap-2 text-sky-900" ]
-          [ HU.fa "fa-layer-group" [ H.ClassName "text-2xl" ]
-          , HH.text "デッキ情報"
+          [ HP.class_ $ H.ClassName "mx-1 flex grow flex-wrap items-baseline text-sky-900" ]
+          [ HU.fa "fa-layer-group" [ H.ClassName "m-1 text-2xl" ]
+          , HH.div [ HP.class_ $ H.ClassName "m-1" ] [ HH.text "デッキ情報" ]
           ]
-      , HH.div [ HP.class_ $ H.ClassName "flex flex-wrap justify-end items-center mx-1 border-b border-gray-500" ]
-          [ HH.div [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "手札枚数:" ]
-          , HH.input
-              [ HP.class_ styleFormNumber
-              , HP.type_ HP.InputNumber
-              , HP.step $ HP.Step 1.0
-              , HP.value $ show handCount
-              , HP.min 1.0
-              , HP.max $ Int.toNumber deckCount
-              , HE.onFocus SelectOnFocus
-              , HE.onValueChange (UpdateHand <<< fromMaybe 0 <<< Int.fromString)
-              ]
-          ]
-      , HH.div [ HP.class_ $ H.ClassName "flex flex-wrap justify-end items-center mx-1 border-b border-gray-500" ]
-          [ HH.div [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "デッキ枚数:" ]
-          , HH.input
-              [ HP.class_ styleFormNumber
-              , HP.type_ HP.InputNumber
-              , HP.step $ HP.Step 1.0
-              , HP.value $ show deckCount
-              , HP.min $ Int.toNumber cardCount
-              , HP.max $ Int.toNumber deckLimit
-              , HE.onFocus SelectOnFocus
-              , HE.onValueChange (UpdateDeck <<< fromMaybe 0 <<< Int.fromString)
-              ]
-          ]
+      , renderIntegerInput "手札枚数:" handCount 1 deckCount UpdateHand
+      , renderIntegerInput "デッキ枚数:" deckCount cardCount deckLimit UpdateDeck
       ]
 
   renderCardList others cards =
@@ -160,18 +136,22 @@ component = H.mkComponent
       [ HH.div
           [ HP.class_ $ H.ClassName "grow mx-1" ]
           [ HU.plusButton AddCard ]
-      , HH.div [ HP.class_ $ H.ClassName "mx-1 border-b border-gray-500" ]
-          [ HH.span [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "その他のカード:" ]
-          , HH.input
-              [ HP.class_ styleFormNumber
-              , HP.type_ HP.InputNumber
-              , HP.value $ show otherCount
-              , HP.step $ HP.Step 1.0
-              , HP.min 0.0
-              , HP.max $ Int.toNumber (deckLimit - cardCount)
-              , HE.onFocus SelectOnFocus
-              , HE.onValueChange $ UpdateOthers <<< fromMaybe 0 <<< Int.fromString
-              ]
+      , renderIntegerInput "その他のカード:" otherCount 0 (deckLimit - cardCount) UpdateOthers
+      ]
+
+  renderIntegerInput text count min max h =
+    HH.div
+      [ HP.class_ $ H.ClassName "flex flex-wrap justify-end items-baseline mx-1 border-b border-gray-500" ]
+      [ HH.div [ HP.class_ $ H.ClassName "m-1" ] [ HH.text text ]
+      , HH.input
+          [ HP.class_ styleFormNumber
+          , HP.type_ HP.InputNumber
+          , HP.value $ show count
+          , HP.step $ HP.Step 1.0
+          , HP.min $ Int.toNumber min
+          , HP.max $ Int.toNumber max
+          , HE.onFocus SelectOnFocus
+          , HE.onValueChange $ h <<< fromMaybe 0 <<< Int.fromString
           ]
       ]
 
