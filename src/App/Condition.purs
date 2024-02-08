@@ -2,17 +2,16 @@ module App.Condition where
 
 import Prelude
 
-import App.ConditionBlock as ConditionBlock
+import App.ConditionLine as ConditionLine
 import App.Result as Result
 import Control.Alternative (guard)
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
-import Control.Plus (empty)
 import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NE
 import Data.Foldable (for_)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Traversable (for, traverse)
 import Effect.Aff (Aff)
 import Halogen as H
@@ -21,7 +20,6 @@ import Halogen.HTML.Properties as HP
 import Record as Record
 import TcgCalculator.Types (Condition(..), ConditionMode, Deck, Id, generateId)
 import Type.Proxy (Proxy(..))
-import Util.Array as ArrayUtil
 import Util.Halogen as HU
 
 ----------------------------------------------------------------
@@ -31,8 +29,6 @@ type Export =
   , disabled :: Boolean
   }
 
-type Index = Int
-
 data Output
   = Updated
   | AllConditionDeleted
@@ -41,7 +37,6 @@ data Action
   = Initialize
   | AddCondition
   | RemoveCondition Id
-  | Swap Index Index
   | ToggleItemDisabled Id
   | Receive Deck
   | Calculate
@@ -80,7 +75,7 @@ component = H.mkComponent
       [ renderConditionHeader disabled
       , HH.ul
           [ HP.class_ $ H.ClassName "my-1" ]
-          $ renderConditionBlock deck.cards <$> conditions
+          $ renderConditionLine deck.cards <$> conditions
       , renderConditionAddButton
       ]
 
@@ -95,7 +90,7 @@ component = H.mkComponent
           [ HH.slot_ (Proxy @"result") unit Result.component unit ]
       ]
 
-  renderConditionBlock cards { id, disabled } =
+  renderConditionLine cards { id, disabled } =
     HH.li
       [ HP.classes
           [ H.ClassName "flex gap-1 rounded px-1"
@@ -109,7 +104,7 @@ component = H.mkComponent
           ]
       , HH.div
           [ HP.class_ $ H.ClassName "min-w-0 grow" ]
-          [ HH.slot (Proxy @"block") id ConditionBlock.component cards (const Calculate) ]
+          [ HH.slot (Proxy @"line") id ConditionLine.component cards (const Calculate) ]
       ]
 
   renderConditionAddButton =
@@ -132,10 +127,6 @@ component = H.mkComponent
       if Array.null conditions
         then H.raise AllConditionDeleted
         else action Calculate
-    Swap x y -> do -- TODO
-      H.modify_ do
-        conditions <- _.conditions
-        _ { conditions = ArrayUtil.swap x y conditions }
     ToggleItemDisabled id -> do
       H.modify_ do
         conditions <- _.conditions
@@ -155,7 +146,7 @@ component = H.mkComponent
 
   getConditions = ado
     disabled <- map _.id <<< Array.filter _.disabled <$> H.gets _.conditions
-    conditions <- H.requestAll (Proxy @"block") ConditionBlock.GetCondition
+    conditions <- H.requestAll (Proxy @"line") ConditionLine.GetCondition
     in NE.fromFoldable <<< Map.values <<< Map.filterKeys (Array.notElem <@> disabled) $ conditions
 
   calculate = do
@@ -169,20 +160,20 @@ component = H.mkComponent
       guard <<< not =<< H.gets _.disabled
       conditions <- MaybeT getConditions
       in reply conditions
-    GetState reply -> do
-      { conditions: cond, disabled: parentDisabled } <- H.get
-      conditions <- H.lift $ H.requestAll (Proxy @"block") ConditionBlock.GetCondition
-      maybe empty pure ado
-        conditions' <- for cond \{ id, disabled } -> do
-          Map.lookup id conditions <#> \(Condition { mode, count, cards }) -> { mode, count, cards: cards <#> _.id, disabled }
+    GetState reply -> MaybeT ado
+      { conditions, disabled: parentDisabled } <- H.get
+      lines <- H.requestAll (Proxy @"line") ConditionLine.GetCondition
+      in ado
+        conditions' <- for conditions \{ id, disabled } -> do
+          Map.lookup id lines <#> \(Condition { mode, count, cards }) -> { mode, count, cards: cards <#> _.id, disabled }
         in reply { conditions: conditions', disabled: parentDisabled }
-    RestoreState deck { conditions, disabled: parentDisabled } a -> do
+    RestoreState deck { conditions, disabled: parentDisabled } a -> H.lift do
       conditions' <- traverse (flap $ Record.insert (Proxy @"id") <$> generateId) conditions
       H.put { conditions: conditions' <#> \{ id, disabled } -> { id, disabled }, deck, disabled: parentDisabled }
       for_ conditions' \{ id, mode, count, cards } -> do
         let cards' = Array.mapMaybe <@> cards $ \cardId -> Array.find (_.id >>> (_ == cardId)) deck.cards
-        H.lift $ H.tell (Proxy @"block") id (ConditionBlock.RestoreState deck.cards (Condition { mode, count, cards: cards' }))
-      H.lift calculate
+        H.tell (Proxy @"line") id (ConditionLine.RestoreState deck.cards (Condition { mode, count, cards: cards' }))
+      calculate
       pure a
     ToggleDisabled a -> do
       H.modify_ do

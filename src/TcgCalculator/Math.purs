@@ -14,7 +14,6 @@ module TcgCalculator.Math
 
 import Prelude
 
-import Control.Alternative (guard)
 import Control.Monad.ST (ST)
 import Data.Array (drop, filter, findLastIndex, fromFoldable, head, length, singleton, uncons, unsafeIndex, zipWith, (!!), (..), (:))
 import Data.Array.ST (STArray)
@@ -96,7 +95,6 @@ distinctPermutations = unfoldr1 \a -> Tuple a (prevPerm a)
     k <- findLastIndex identity $ zipWith (>) a (drop 1 a)
     v <- a !! k
     l <- findLastIndex (v > _) a
-    guard $ k < l
     pure $ STA.run do
       st <- STA.thaw a
       swapST k l st

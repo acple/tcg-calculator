@@ -1,4 +1,4 @@
-module App.ConditionBlock where
+module App.ConditionLine where
 
 import Prelude
 
@@ -137,7 +137,7 @@ component = H.mkComponent
       updateStatus cards selected' mode count
     updateStatus cards selected mode count = do
       let { min, max } = getMinMax selected mode
-      H.put { cards, condition: { mode: mode, cards: selected, count: clamp min max count }, minValue: min, maxValue: max }
+      H.put { cards, condition: { mode, cards: selected, count: clamp min max count }, minValue: min, maxValue: max }
 
   getMinMax :: Cards -> ConditionMode -> { min :: Int, max :: Int }
   getMinMax cards = case _ of
@@ -169,9 +169,9 @@ component = H.mkComponent
   query = case _ of
     GetCondition reply -> do
       reply <<< Condition <$> H.gets _.condition
-    RestoreState cards (Condition condition) a -> do
+    RestoreState cards (Condition condition) a -> H.lift do
       let { min, max } = getMinMax condition.cards condition.mode
       H.put { cards, condition, minValue: min, maxValue: max }
       let items = cards <#> \card -> { id: card.id, value: card.name, selected: Array.elem card condition.cards }
-      H.lift $ H.tell (Proxy @"selector") unit (Selector.SetItems items)
+      H.tell (Proxy @"selector") unit (Selector.SetItems items)
       pure a

@@ -167,9 +167,9 @@ component = H.mkComponent
       H.modify_ do
         conditions <- _.conditions
         _ { conditions = ArrayUtil.swap x y conditions }
-    ReceiveConditionUpdated _ Condition.Updated ->
+    ReceiveConditionUpdated _ Condition.Updated -> do
       action Calculate
-    ReceiveConditionUpdated id Condition.AllConditionDeleted ->
+    ReceiveConditionUpdated id Condition.AllConditionDeleted -> do
       action $ RemoveCondition id
     Calculate -> do
       deck <- H.gets _.deck
@@ -183,7 +183,7 @@ component = H.mkComponent
           action PrepareDefaultState
         Right { deck, conditions } -> do
           conditions' <- traverse (flap $ { id: _, condition: _ } <$> generateId) conditions
-          H.put { deck, conditions: _.id <$> conditions' }
+          H.put { deck, conditions: conditions' <#> _.id }
           H.tell (Proxy @"deck") unit (Deck.SetDeck deck)
           for_ conditions' \{ id, condition } -> do
             H.tell (Proxy @"condition") id (Condition.RestoreState deck condition)

@@ -35,6 +35,8 @@ import Web.UIEvent.FocusEvent as Focus
 
 type Index = Int
 
+type Output = Deck
+
 data Action
   = AddCard
   | RemoveCard Card
@@ -52,7 +54,7 @@ data Query a
 
 ----------------------------------------------------------------
 
-component :: H.Component Query Unit Deck Aff
+component :: H.Component Query Unit Output Aff
 component = H.mkComponent
   { initialState
   , render
@@ -206,8 +208,8 @@ component = H.mkComponent
       let transfer = Drag.dataTransfer event
       H.liftEffect $ DataTransfer.setData (MediaType dragItemMediaType) (Id.toString id) transfer
       elem <- H.getRef $ RefLabel (Id.toString id)
-      elem # traverse_ \e -> do
-        H.liftEffect $ DataTransfer.setDragImage transfer e 5 15
+      H.liftEffect $ elem # traverse_ \e -> do
+        DataTransfer.setDragImage transfer e 5 15
     HandleDragBehavior event -> do
       let transfer = Drag.dataTransfer event
       when (DataTransfer.types transfer == [dragItemMediaType]) do
