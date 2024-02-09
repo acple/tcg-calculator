@@ -77,9 +77,9 @@ component = H.mkComponent
 
   renderHeader deckCount handCount cardCount =
     HH.div
-      [ HP.class_ $ H.ClassName "flex items-baseline gap-1" ]
+      [ HP.class_ $ H.ClassName "flex gap-1" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "mx-1 flex grow flex-wrap items-baseline text-sky-900" ]
+          [ HP.class_ $ H.ClassName "mx-1 flex grow flex-wrap text-sky-900" ]
           [ HU.fa "fa-layer-group" [ H.ClassName "m-1 text-2xl" ]
           , HH.div [ HP.class_ $ H.ClassName "m-1" ] [ HH.text "デッキ情報" ]
           ]
@@ -134,7 +134,7 @@ component = H.mkComponent
 
   renderFooter otherCount cardCount =
     HH.div
-      [ HP.class_ $ H.ClassName "flex items-baseline gap-1" ]
+      [ HP.class_ $ H.ClassName "flex gap-1" ]
       [ HH.div
           [ HP.class_ $ H.ClassName "mx-1 grow" ]
           [ HU.plusButton AddCard ]
@@ -143,7 +143,7 @@ component = H.mkComponent
 
   renderIntegerInput text count min max h =
     HH.div
-      [ HP.class_ $ H.ClassName "mx-1 flex flex-wrap items-baseline justify-end border-b border-gray-500" ]
+      [ HP.class_ $ H.ClassName "mx-1 flex flex-wrap justify-end border-b border-gray-500" ]
       [ HH.div [ HP.class_ $ H.ClassName "m-1" ] [ HH.text text ]
       , HH.input
           [ HP.class_ styleFormNumber
@@ -163,7 +163,7 @@ component = H.mkComponent
     ]
 
   styleFormInput = collect H.ClassName (String.joinWith " ")
-    [ H.ClassName "appearance-none border-b border-transparent bg-white p-1 text-gray-700"
+    [ H.ClassName "appearance-none rounded-none border-b border-transparent bg-white p-1 text-gray-700"
     , H.ClassName "transition-colors duration-75 hover:border-gray-500 focus:border-slate-800 focus:outline-none"
     ]
 
