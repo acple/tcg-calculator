@@ -14,7 +14,6 @@ import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF, collect)
 import Data.String as String
 import Effect.Aff (Aff)
-import Halogen (RefLabel(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -33,10 +32,6 @@ import Web.UIEvent.FocusEvent as Focus
 
 ----------------------------------------------------------------
 
-type Index = Int
-
-type Output = Deck
-
 data Action
   = AddCard
   | RemoveCard Card
@@ -54,15 +49,15 @@ data Query a
 
 ----------------------------------------------------------------
 
-component :: H.Component Query Unit Output Aff
+component :: H.Component Query Unit Deck Aff
 component = H.mkComponent
   { initialState
   , render
-  , eval: H.mkEval $ H.defaultEval { handleAction = action, handleQuery = runMaybeT <<< query }
+  , eval: H.mkEval H.defaultEval { handleAction = action, handleQuery = runMaybeT <<< query }
   }
   where
 
-  initialState :: _ -> Deck
+  initialState :: _ Deck
   initialState _ = { cards: [], others: 40, hand: 5 }
 
   render { cards, others, hand } = do
@@ -207,7 +202,7 @@ component = H.mkComponent
     StartReorder id event -> do
       let transfer = Drag.dataTransfer event
       H.liftEffect $ DataTransfer.setData (MediaType dragItemMediaType) (Id.toString id) transfer
-      elem <- H.getRef $ RefLabel (Id.toString id)
+      elem <- H.getRef $ H.RefLabel (Id.toString id)
       H.liftEffect $ elem # traverse_ \e -> do
         DataTransfer.setDragImage transfer e 5 15
     HandleDragBehavior event -> do
@@ -218,6 +213,7 @@ component = H.mkComponent
       let transfer = Drag.dataTransfer event
       id <- H.liftEffect $ DataTransfer.getData (MediaType dragItemMediaType) transfer
       unless (String.null id) do
+        H.liftEffect <<< Event.preventDefault $ Drag.toEvent event
         raiseUpdated =<< H.modify do
           cards <- _.cards
           let cards' = fold do
@@ -226,7 +222,6 @@ component = H.mkComponent
                 to <- Array.findIndex (_.id >>> (_ == destination)) cards
                 pure $ ArrayUtil.shiftInsert from to cards
           _ { cards = cards' }
-        H.liftEffect <<< Event.preventDefault $ Drag.toEvent event
 
   dragItemMediaType = "tcg-calculator/card"
 

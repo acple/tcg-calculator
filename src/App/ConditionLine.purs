@@ -43,7 +43,7 @@ component :: H.Component Query Cards Output Aff
 component = H.mkComponent
   { initialState
   , render
-  , eval: H.mkEval $ H.defaultEval
+  , eval: H.mkEval H.defaultEval
       { handleAction = action
       , handleQuery = runMaybeT <<< query
       , initialize = Just Initialize
@@ -52,10 +52,10 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ -> { cards :: Cards, condition :: Condition', minValue :: Int, maxValue :: Int }
-  initialState = { cards: _, condition: { mode: AtLeast, count: 0, cards: [] }, minValue: 0, maxValue: 0 }
+  initialState :: _ { cards :: Cards, condition :: Condition', min :: Int, max :: Int }
+  initialState = { cards: _, condition: { mode: AtLeast, count: 0, cards: [] }, min: 0, max: 0 }
 
-  render { cards, condition: { mode, count }, minValue, maxValue } = do
+  render { cards, condition: { mode, count }, min, max } = do
     HH.div
       [ HP.class_ $ H.ClassName "flex flex-wrap items-center justify-end" ]
       [ HH.div
@@ -64,7 +64,7 @@ component = H.mkComponent
       , HH.div
           [ HP.class_ $ H.ClassName "flex items-center" ]
           [ HH.div [ HP.class_ $ H.ClassName "mx-1" ] [ HH.text "を" ]
-          , renderCardCounter count minValue maxValue
+          , renderCardCounter count min max
           , renderModeSelector mode
           ]
       ]
@@ -106,7 +106,6 @@ component = H.mkComponent
       , HH.option [ HP.value $ show LeftAll ] [ HH.text "種類以上ドローしない" ]
       ]
 
-  action :: Action -> _
   action = case _ of
     Initialize -> do
       { cards, condition: { mode, count, cards: selected } } <- H.get
@@ -137,7 +136,7 @@ component = H.mkComponent
       updateStatus cards selected' mode count
     updateStatus cards selected mode count = do
       let { min, max } = getMinMax selected mode
-      H.put { cards, condition: { mode, cards: selected, count: clamp min max count }, minValue: min, maxValue: max }
+      H.put { cards, condition: { mode, cards: selected, count: clamp min max count }, min, max }
 
   getMinMax :: Cards -> ConditionMode -> { min :: Int, max :: Int }
   getMinMax cards = case _ of
@@ -171,7 +170,7 @@ component = H.mkComponent
       reply <<< Condition <$> H.gets _.condition
     RestoreState cards (Condition condition) a -> H.lift do
       let { min, max } = getMinMax condition.cards condition.mode
-      H.put { cards, condition, minValue: min, maxValue: max }
+      H.put { cards, condition, min, max }
       let items = cards <#> \card -> { id: card.id, value: card.name, selected: Array.elem card condition.cards }
       H.tell (Proxy @"selector") unit (Selector.SetItems items)
       pure a

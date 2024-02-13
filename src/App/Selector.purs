@@ -38,7 +38,7 @@ component :: forall m k. Eq k => H.Component (Query k) (Input k) (Output k) m
 component = H.mkComponent
   { initialState
   , render
-  , eval: H.mkEval $ H.defaultEval
+  , eval: H.mkEval H.defaultEval
       { handleAction = action
       , handleQuery = runMaybeT <<< query
       , receive = Just <<< Receive
@@ -46,7 +46,7 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ -> { items :: Items k, isEditMode :: Boolean }
+  initialState :: _ { items :: Items k, isEditMode :: Boolean }
   initialState = { items: _, isEditMode: false } <<< map (Record.insert (Proxy @"selected") false)
 
   render { items, isEditMode } =

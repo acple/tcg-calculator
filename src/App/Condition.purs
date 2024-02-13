@@ -53,7 +53,7 @@ component :: H.Component Query Deck Output Aff
 component = H.mkComponent
   { initialState
   , render
-  , eval: H.mkEval $ H.defaultEval
+  , eval: H.mkEval H.defaultEval
       { handleAction = action
       , handleQuery = runMaybeT <<< query
       , initialize = Just Initialize
@@ -62,7 +62,7 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ -> { conditions :: Array { id :: Id, disabled :: Boolean }, deck :: Deck, disabled :: Boolean }
+  initialState :: _ { conditions :: Array { id :: Id, disabled :: Boolean }, deck :: Deck, disabled :: Boolean }
   initialState = { conditions: [], deck: _, disabled: false }
 
   render { conditions, deck, disabled } =
@@ -147,7 +147,7 @@ component = H.mkComponent
   getConditions = ado
     disabled <- map _.id <<< Array.filter _.disabled <$> H.gets _.conditions
     conditions <- H.requestAll (Proxy @"line") ConditionLine.GetCondition
-    in NE.fromFoldable <<< Map.values <<< Map.filterKeys (Array.notElem <@> disabled) $ conditions
+    in NE.fromFoldable <<< Map.filterKeys (Array.notElem <@> disabled) $ conditions
 
   calculate = do
     deck <- H.gets _.deck

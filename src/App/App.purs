@@ -58,7 +58,7 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ -> { deck :: Deck, conditions :: Array Id }
+  initialState :: _ { deck :: Deck, conditions :: Array Id }
   initialState _ = { deck: { cards: [], others: 0, hand: 0 }, conditions: [] }
 
   render { deck, conditions } =
@@ -174,7 +174,7 @@ component = H.mkComponent
     Calculate -> do
       deck <- H.gets _.deck
       conditions <- H.requestAll (Proxy @"condition") Condition.GetConditions
-      let conditions' = Array.fromFoldable <<< Map.values $ conditions
+      let conditions' = Array.fromFoldable conditions
       H.tell (Proxy @"result") unit (Result.Calculate deck conditions')
     RestoreState json -> do
       case parseJson json >>= decodeJson @Export of
