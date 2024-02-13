@@ -3,9 +3,6 @@
   "name": "tcg-calculator",
   "version": "1.0.0",
   "description": "",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "build": "npm run build:app -- --pedantic-packages; npm run build:worker",
     "build:app": "spago bundle --source-maps --outfile bundle/app.js",
@@ -28,7 +25,7 @@
     "esbuild": "^0.20.0",
     "parcel": "^2.11.0",
     "purescript": "^0.15.15",
-    "spago": "^0.93.24",
+    "spago": "^0.93.25",
     "tailwindcss": "^3.4.1"
   }
 }
