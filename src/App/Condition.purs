@@ -7,7 +7,6 @@ import App.Result as Result
 import Control.Alternative (guard)
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Data.Array as Array
-import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NE
 import Data.Foldable (for_)
 import Data.Map as Map
@@ -18,7 +17,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Record as Record
-import TcgCalculator.Types (Condition(..), ConditionMode, Deck, Id, generateId)
+import TcgCalculator.Types (Condition(..), ConditionMode, Deck, Id, Conditions, generateId)
 import Type.Proxy (Proxy(..))
 import Util.Halogen as HU
 
@@ -42,7 +41,7 @@ data Action
   | Calculate
 
 data Query a
-  = GetConditions (NonEmptyArray Condition -> a)
+  = GetConditions (Conditions -> a)
   | GetState (Export -> a)
   | RestoreState Deck Export a
   | ToggleDisabled a
@@ -56,8 +55,8 @@ component = H.mkComponent
   , eval: H.mkEval H.defaultEval
       { handleAction = action
       , handleQuery = runMaybeT <<< query
-      , initialize = Just Initialize
       , receive = Just <<< Receive
+      , initialize = Just Initialize
       }
   }
   where

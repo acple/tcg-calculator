@@ -4,7 +4,6 @@ import Prelude
 
 import App.Worker as Worker
 import Control.Monad.Maybe.Trans (runMaybeT)
-import Data.Array.NonEmpty (NonEmptyArray)
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Either (Either(..))
@@ -17,13 +16,13 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import TcgCalculator as TC
-import TcgCalculator.Types (Condition, Deck)
+import TcgCalculator.Types (Conditions, Deck)
 import Util.Halogen as HU
 
 ----------------------------------------------------------------
 
 data Query a
-  = Calculate Deck (Array (NonEmptyArray Condition)) a
+  = Calculate Deck (Array Conditions) a
 
 ----------------------------------------------------------------
 

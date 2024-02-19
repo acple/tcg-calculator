@@ -4,9 +4,10 @@ module TcgCalculator.Types
   , Condition'
   , Condition(..)
   , ConditionMode(..)
+  , Conditions
   , Deck
-  , readConditionMode
   , module Export
+  , readConditionMode
   )
   where
 
@@ -14,6 +15,7 @@ import Prelude
 
 import Data.Argonaut.Decode (class DecodeJson, JsonDecodeError(..), decodeJson)
 import Data.Argonaut.Encode (class EncodeJson, encodeJson)
+import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Either (note)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
@@ -80,3 +82,5 @@ derive newtype instance Show Condition
 
 derive newtype instance EncodeJson Condition
 derive newtype instance DecodeJson Condition
+
+type Conditions = NonEmptyArray Condition

@@ -9,6 +9,7 @@ import Data.Newtype (class Newtype)
 import Data.UUID (UUID)
 import Data.UUID as UUID
 import Effect.Class (class MonadEffect, liftEffect)
+import Safe.Coerce (coerce)
 
 ----------------------------------------------------------------
 
@@ -35,10 +36,10 @@ mkId :: String -> Id
 mkId s = Id $ UUID.genv5UUID s namespaceTcgCalculator
 
 generateId :: forall m. MonadEffect m => m Id
-generateId = liftEffect $ Id <$> UUID.genUUID
+generateId = liftEffect $ coerce UUID.genUUID
 
 toString :: Id -> String
 toString (Id uuid) = UUID.toString uuid
 
 fromString :: String -> Maybe Id
-fromString = map Id <<< UUID.parseUUID
+fromString = coerce UUID.parseUUID

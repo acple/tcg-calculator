@@ -3,8 +3,8 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty)
-import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, groupAllBy, length, nubByEq, replicate, sortBy, take, zipWith, (!!), (..))
-import Data.Array.NonEmpty (NonEmptyArray, foldl1, toArray)
+import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, groupAllBy, length, nubBy, replicate, sortBy, take, zipWith, (!!), (..))
+import Data.Array.NonEmpty (foldl1, toArray)
 import Data.BigInt (BigInt)
 import Data.Foldable (and, fold, maximum, product)
 import Data.Function (on)
@@ -12,12 +12,12 @@ import Data.Maybe (fromMaybe, maybe)
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF, unwrap)
 import TcgCalculator.Math (Combination, combinationNumber, combinations, distinctPermutations, partitionNumber, partitionNumbers)
-import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Deck)
+import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Deck, Conditions)
 
 ----------------------------------------------------------------
 
 -- 条件を満たす組み合わせの個数を計算する
-calculate :: Deck -> Array (NonEmptyArray Condition) -> BigInt
+calculate :: Deck -> Array Conditions -> BigInt
 calculate deck conditions = do
   let drawPattern = generateDrawPatterns deck
   let conditionPattern = buildConditionPattern =<< conditions
@@ -25,13 +25,13 @@ calculate deck conditions = do
   sumBy (calculatePatternCount deck) pattern
 
 -- 指定した条件式で使用していないカードをデッキから取り除く
-normalizeDeck :: Deck -> Array (NonEmptyArray Condition) -> Deck
+normalizeDeck :: Deck -> Array Conditions -> Deck
 normalizeDeck deck conditions = do
   let used = usedCards conditions
   let unused = diffCards deck.cards used
   deck { cards = used, others = deck.others + sumBy _.count unused }
   where
-  usedCards = nubByEq ((==) `on` _.id) <<< concatMap (_.cards <<< unwrap) <<< concatMap toArray
+  usedCards = nubBy (comparing _.id) <<< concatMap (_.cards <<< unwrap) <<< concatMap toArray
   diffCards = foldr $ deleteBy ((==) `on` _.id)
 
 -- 確率計算のため、全組み合わせの個数を計算する
@@ -67,7 +67,7 @@ satisfyCondition dp = all \{ card: { id }, min, max } -> do
   min <= draw && draw <= max
 
 -- 条件式をマージ (AND) して ConditionPattern のリストに変換する
-buildConditionPattern :: NonEmptyArray Condition -> Array ConditionPattern
+buildConditionPattern :: Conditions -> Array ConditionPattern
 buildConditionPattern conditions = do
   let patterns = mkConditionPattern <$> conditions
   foldl1 <@> patterns $ \left right -> do

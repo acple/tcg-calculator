@@ -46,8 +46,8 @@ component = H.mkComponent
   , eval: H.mkEval H.defaultEval
       { handleAction = action
       , handleQuery = runMaybeT <<< query
-      , initialize = Just Initialize
       , receive = Just <<< Receive
+      , initialize = Just Initialize
       }
   }
   where

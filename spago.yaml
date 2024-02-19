@@ -27,6 +27,7 @@ package:
     - prelude
     - record
     - routing
+    - safe-coerce
     - st
     - strings
     - transformers

@@ -1,8 +1,7 @@
 module SharedTypes where
 
-import Data.Array.NonEmpty (NonEmptyArray)
-import TcgCalculator.Types (Condition, Deck)
+import TcgCalculator.Types (Conditions, Deck)
 
 ----------------------------------------------------------------
 
-type TcgCalculatorWorkerParam = { deck :: Deck, conditions :: Array (NonEmptyArray Condition) }
+type TcgCalculatorWorkerParam = { deck :: Deck, conditions :: Array Conditions }

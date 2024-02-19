@@ -192,5 +192,5 @@ component = H.mkComponent
       { deck, conditions: ids } <- H.get
       conditions <- H.requestAll (Proxy @"condition") Condition.GetState
       let conditions' = Array.mapMaybe (Map.lookup <@> conditions) ids
-      let json = encodeJson { deck, conditions: conditions' }
+      let json = encodeJson @Export { deck, conditions: conditions' }
       H.liftEffect $ Hash.setHash (stringify json)
