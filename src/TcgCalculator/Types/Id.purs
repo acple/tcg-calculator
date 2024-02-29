@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Argonaut.Decode (class DecodeJson, decodeJson)
 import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Maybe (Maybe, maybe')
+import Data.Maybe (Maybe, fromMaybe')
 import Data.Newtype (class Newtype)
 import Data.UUID (UUID)
 import Data.UUID as UUID
@@ -27,19 +27,19 @@ instance EncodeJson Id where
   encodeJson (Id uuid) = encodeJson $ UUID.toString uuid
 
 instance DecodeJson Id where
-  decodeJson json = decodeJson json <#> \id -> maybe' (\_ -> mkId id) Id (UUID.parseUUID id)
+  decodeJson json = decodeJson json <#> \id -> fromMaybe' (\_ -> mkId id) (fromString id)
 
-namespaceTcgCalculator :: UUID
-namespaceTcgCalculator = UUID.genv5UUID "tcg-calculator" UUID.emptyUUID
+namespaceTcgCalculator :: Id
+namespaceTcgCalculator = coerce UUID.genv5UUID "tcg-calculator" UUID.emptyUUID
 
 mkId :: String -> Id
-mkId s = Id $ UUID.genv5UUID s namespaceTcgCalculator
+mkId s = coerce UUID.genv5UUID s namespaceTcgCalculator
 
 generateId :: forall m. MonadEffect m => m Id
 generateId = liftEffect $ coerce UUID.genUUID
 
 toString :: Id -> String
-toString (Id uuid) = UUID.toString uuid
+toString = coerce UUID.toString
 
 fromString :: String -> Maybe Id
 fromString = coerce UUID.parseUUID
