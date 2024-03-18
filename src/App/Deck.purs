@@ -27,7 +27,7 @@ import Web.HTML (window)
 import Web.HTML.Event.DataTransfer as DataTransfer
 import Web.HTML.Event.DragEvent as Drag
 import Web.HTML.HTMLInputElement as Input
-import Web.HTML.Window (confirm)
+import Web.HTML.Window as Window
 import Web.UIEvent.FocusEvent as Focus
 
 ----------------------------------------------------------------
@@ -169,7 +169,8 @@ component = H.mkComponent
         cards <- _.cards
         _ { cards = Array.snoc cards { id, name: "", count: 0 } }
     RemoveCard card -> void $ H.fork do
-      whenM (if String.null card.name then pure true else H.liftEffect $ confirm ("カード「" <> card.name <> "」を削除します。") =<< window) do
+      let confirm = H.liftEffect $ window >>= Window.confirm ("カード「" <> card.name <> "」を削除します。")
+      whenM (if String.null card.name then pure true else confirm) do
         raiseUpdated =<< H.modify do
           { cards, others } <- identity
           let cards' = Array.deleteBy ((==) `on` _.id) card cards

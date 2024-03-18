@@ -5,13 +5,14 @@ import Prelude
 import App.Condition as Condition
 import App.Deck as Deck
 import App.Result as Result
+import Control.Alternative (guard)
 import Data.Argonaut.Core (stringify)
 import Data.Argonaut.Decode (decodeJson, parseJson, printJsonDecodeError)
 import Data.Argonaut.Encode (encodeJson)
 import Data.Array as Array
 import Data.Const (Const)
 import Data.Either (Either(..))
-import Data.Foldable (for_)
+import Data.Foldable (fold, for_)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.String as String
@@ -28,6 +29,12 @@ import TcgCalculator.Types (Deck, Id, generateId)
 import Type.Proxy (Proxy(..))
 import Util.Array as ArrayUtil
 import Util.Halogen as HU
+import Web.Event.EventTarget as ET
+import Web.HTML (window)
+import Web.HTML.Event.PageTransitionEvent as PageTransition
+import Web.HTML.Event.PageTransitionEvent.EventTypes as PageTransitionEventTypes
+import Web.HTML.Location as Location
+import Web.HTML.Window as Window
 
 ----------------------------------------------------------------
 
@@ -136,6 +143,7 @@ component = H.mkComponent
         HS.notify listener if String.null hash
           then PrepareDefaultState
           else RestoreState hash
+      H.liftEffect handleBfcache
     PrepareDefaultState -> do
       { deck, conditions } <- H.get
       when (Array.null deck.cards && Array.null conditions) do
@@ -194,3 +202,11 @@ component = H.mkComponent
       let conditions' = Array.mapMaybe (Map.lookup <@> conditions) ids
       let json = encodeJson @Export { deck, conditions: conditions' }
       H.liftEffect $ Hash.setHash (stringify json)
+    where
+    handleBfcache = do
+      window <- window
+      listener <- ET.eventListener \event -> fold do
+        pt <- PageTransition.fromEvent event
+        guard $ PageTransition.persisted pt
+        pure $ Window.location window >>= Location.reload
+      ET.addEventListener PageTransitionEventTypes.pageshow listener false (Window.toEventTarget window)
