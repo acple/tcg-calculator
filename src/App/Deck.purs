@@ -13,9 +13,11 @@ import Data.MediaType (MediaType(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF, collect)
 import Data.String as String
+import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Elements.Keyed as HK
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import TcgCalculator.Types (Card, Deck, Id, generateId)
@@ -83,17 +85,18 @@ component = H.mkComponent
       ]
 
   renderCardList others cards =
-    HH.ul
+    HK.ul
       [ HP.class_ $ H.ClassName "m-1"
       , HE.onDragEnter HandleDragBehavior
       , HE.onDragOver HandleDragBehavior
       ]
       $ renderCard others <$> cards
 
-  renderCard others card =
-    HH.li
+  renderCard others card = do
+    let id = Id.toString card.id
+    Tuple id $ HH.li
       [ HP.class_ $ H.ClassName "flex"
-      , HP.ref $ H.RefLabel (Id.toString card.id)
+      , HP.ref $ H.RefLabel id
       , HE.onDrop $ ExecuteReorder card.id
       ]
       [ HH.div
