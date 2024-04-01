@@ -46,4 +46,4 @@ package:
 workspace:
   extra_packages: {}
   package_set:
-    registry: 50.1.0
+    registry: 50.5.0
