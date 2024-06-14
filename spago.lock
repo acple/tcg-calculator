@@ -135,11 +135,12 @@ workspace:
         - web-workers
   package_set:
     address:
-      registry: 50.5.0
+      registry: 51.1.0
     compiler: ">=0.15.15 <0.16.0"
     content:
       abc-parser: 2.0.1
       ace: 9.1.0
+      address-rfc2821: 0.1.1
       aff: 7.1.0
       aff-bus: 6.0.0
       aff-coroutines: 9.0.0
@@ -149,6 +150,7 @@ workspace:
       affjax-node: 1.0.0
       affjax-web: 1.0.0
       ansi: 7.0.0
+      apexcharts: 0.5.0
       applicative-phases: 1.0.0
       argonaut: 9.0.0
       argonaut-aeson-generic: 0.4.1
@@ -182,6 +184,7 @@ workspace:
       canvas-action: 9.0.0
       cartesian: 1.0.6
       catenable-lists: 7.0.0
+      cbor-stream: 1.0.4
       chameleon: 1.0.0
       chameleon-halogen: 1.0.3
       chameleon-react-basic: 1.1.0
@@ -197,7 +200,7 @@ workspace:
       classnames: 2.0.0
       codec: 6.1.0
       codec-argonaut: 10.0.0
-      codec-json: 1.1.0
+      codec-json: 1.2.0
       colors: 7.0.1
       concur-core: 0.5.0
       concur-react: 0.5.0
@@ -210,9 +213,11 @@ workspace:
       coroutines: 7.0.0
       css: 6.0.0
       css-frameworks: 1.0.1
+      csv-stream: 2.0.2
       data-mvc: 0.0.2
       datetime: 6.1.0
       datetime-parsing: 0.2.0
+      debounce: 0.1.0
       debug: 6.0.2
       decimals: 7.1.0
       default-values: 1.0.1
@@ -222,6 +227,7 @@ workspace:
       distributive: 6.0.0
       dom-filereader: 7.0.0
       dom-indexed: 12.0.0
+      dom-simple: 0.4.0
       dotenv: 4.0.3
       droplet: 0.6.0
       dts: 1.0.0
@@ -252,6 +258,7 @@ workspace:
       fetch-argonaut: 1.0.1
       fetch-core: 5.1.0
       fetch-yoga-json: 1.1.0
+      ffi-simple: 0.5.1
       fft-js: 0.1.0
       filterable: 5.0.0
       fix-functor: 0.1.0
@@ -340,7 +347,7 @@ workspace:
       js-promise-aff: 1.0.0
       js-timers: 6.1.0
       js-uri: 3.1.0
-      json: 1.0.0
+      json: 1.1.0
       json-codecs: 5.0.0
       justifill: 0.5.0
       jwt: 0.0.9
@@ -406,6 +413,7 @@ workspace:
       node-process: 11.2.0
       node-readline: 8.1.0
       node-sqlite3: 8.0.0
+      node-stream-pipes: 1.4.1
       node-streams: 9.0.0
       node-tls: 0.3.1
       node-url: 7.0.1
@@ -445,6 +453,7 @@ workspace:
       pointed-list: 0.5.1
       polymorphic-vectors: 4.0.0
       posix-types: 6.0.0
+      postgresql: 1.6.3
       precise: 6.0.0
       precise-datetime: 7.0.0
       prelude: 6.0.1
@@ -475,10 +484,11 @@ workspace:
       react-basic-storybook: 2.0.0
       react-dom: 8.0.0
       react-halo: 3.0.0
-      react-icons: 1.1.4
+      react-icons: 1.1.5
       react-markdown: 0.1.0
       react-testing-library: 4.0.1
       react-virtuoso: 1.0.0
+      reactix: 0.6.1
       read: 1.0.1
       recharts: 1.1.0
       record: 4.0.0
@@ -508,6 +518,7 @@ workspace:
       simple-emitter: 3.0.1
       simple-i18n: 2.0.1
       simple-json: 9.0.0
+      simple-json-generics: 0.2.1
       simple-ulid: 3.0.0
       sized-matrices: 1.0.0
       sized-vectors: 5.0.2
@@ -540,6 +551,7 @@ workspace:
       thermite: 6.3.1
       thermite-dom: 0.3.1
       these: 6.0.0
+      toestand: 0.9.0
       transformation-matrix: 1.0.1
       transformers: 6.0.0
       tree-rose: 4.0.2
@@ -554,6 +566,7 @@ workspace:
       typelevel-prelude: 7.0.0
       typelevel-regex: 0.0.3
       typelevel-rows: 0.1.0
+      typisch: 0.4.0
       uint: 7.0.0
       ulid: 3.0.1
       uncurried-transformers: 1.1.0

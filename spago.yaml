@@ -44,6 +44,6 @@ package:
       - spec
     main: Test.Main
 workspace:
-  extra_packages: {}
-  package_set:
-    registry: 50.5.0
+  extraPackages: {}
+  packageSet:
+    registry: 51.2.0
