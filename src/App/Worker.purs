@@ -3,16 +3,17 @@ module App.Worker where
 import Prelude
 
 import Control.Monad.Except (runExcept)
-import Data.Argonaut.Encode (encodeJson)
 import Data.Bifunctor (lmap)
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
+import Data.Codec.JSON (encode)
 import Data.Either (Either(..), note)
 import Data.Maybe (maybe)
 import Data.Semigroup.Foldable (intercalateMap)
 import Effect.Aff (Aff, effectCanceler, error, makeAff)
 import Foreign (readString, renderForeignError)
 import SharedTypes (TcgCalculatorWorkerParam)
+import TcgCalculator.Codec as Codec
 import Web.HTML.Event.ErrorEvent as ErrorEvent
 import Web.Worker.MessageEvent as MessageEvent
 import Web.Worker.Worker as Worker
@@ -29,5 +30,5 @@ run param = makeAff \reply -> do
     Worker.terminate worker
     let message = maybe "Unknown worker error" ErrorEvent.message $ ErrorEvent.fromEvent event
     reply $ Left (error message)
-  Worker.postMessage (encodeJson param) worker
+  Worker.postMessage (encode Codec.workerParam param) worker
   pure $ effectCanceler (Worker.terminate worker)

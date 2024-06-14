@@ -4,11 +4,10 @@ workspace:
       path: ./
       dependencies:
         - aff
-        - argonaut-codecs
-        - argonaut-core
         - arrays
         - bifunctors
         - bigints
+        - codec-json
         - console
         - const
         - control
@@ -20,6 +19,7 @@ workspace:
         - halogen-subscriptions
         - integers
         - js-uri
+        - json
         - lists
         - maybe
         - media-types
@@ -28,6 +28,7 @@ workspace:
         - ordered-collections
         - partial
         - prelude
+        - profunctor
         - record
         - routing
         - safe-coerce
@@ -46,14 +47,14 @@ workspace:
       build_plan:
         - aff
         - ansi
-        - argonaut-codecs
-        - argonaut-core
         - arrays
         - assert
         - avar
         - bifunctors
         - bigints
         - catenable-lists
+        - codec
+        - codec-json
         - console
         - const
         - contravariant
@@ -84,6 +85,7 @@ workspace:
         - js-date
         - js-promise
         - js-uri
+        - json
         - lazy
         - lcg
         - lists
@@ -123,6 +125,7 @@ workspace:
         - unsafe-reference
         - uuid
         - validation
+        - variant
         - web-clipboard
         - web-dom
         - web-events
@@ -661,38 +664,6 @@ packages:
       - foldable-traversable
       - lists
       - strings
-  argonaut-codecs:
-    type: registry
-    version: 9.1.0
-    integrity: sha256-N6efXByUeg848ompEqJfVvZuZPfdRYDGlTDFn0G0Oh8=
-    dependencies:
-      - argonaut-core
-      - arrays
-      - effect
-      - foreign-object
-      - identity
-      - integers
-      - maybe
-      - nonempty
-      - ordered-collections
-      - prelude
-      - record
-  argonaut-core:
-    type: registry
-    version: 7.0.0
-    integrity: sha256-RC82GfAjItydxrO24cdX373KHVZiLqybu19b5X8u7B4=
-    dependencies:
-      - arrays
-      - control
-      - either
-      - foreign-object
-      - functions
-      - gen
-      - maybe
-      - nonempty
-      - prelude
-      - strings
-      - tailrec
   arrays:
     type: registry
     version: 7.3.0
@@ -771,6 +742,25 @@ packages:
       - prelude
       - tuples
       - unfoldable
+  codec:
+    type: registry
+    version: 6.1.0
+    integrity: sha256-6vMLNlsJxQarVQ9cn1FYfl5x6opfzxAza15SzRdxFxQ=
+    dependencies:
+      - bifunctors
+      - profunctor
+  codec-json:
+    type: registry
+    version: 1.2.0
+    integrity: sha256-59+uYYe/5uTFa/Q6EqF8ekvP/Y4SOjUNfwIqIYtNiGI=
+    dependencies:
+      - codec
+      - foreign-object
+      - json
+      - ordered-collections
+      - transformers
+      - type-equality
+      - variant
   console:
     type: registry
     version: 6.1.0
@@ -1116,6 +1106,21 @@ packages:
     dependencies:
       - functions
       - maybe
+  json:
+    type: registry
+    version: 1.1.0
+    integrity: sha256-LuN8PyX/gvRR4/7X7M9P+zL7BKbv34NcUE/7MILXQSA=
+    dependencies:
+      - either
+      - foldable-traversable
+      - functions
+      - gen
+      - integers
+      - maybe
+      - prelude
+      - strings
+      - tuples
+      - unfoldable
   lazy:
     type: registry
     version: 6.0.0
@@ -1547,6 +1552,19 @@ packages:
       - foldable-traversable
       - newtype
       - prelude
+  variant:
+    type: registry
+    version: 8.0.0
+    integrity: sha256-SR//zQDg2dnbB8ZHslcxieUkCeNlbMToapvmh9onTtw=
+    dependencies:
+      - enums
+      - lists
+      - maybe
+      - partial
+      - prelude
+      - record
+      - tuples
+      - unsafe-coerce
   web-clipboard:
     type: registry
     version: 5.0.0

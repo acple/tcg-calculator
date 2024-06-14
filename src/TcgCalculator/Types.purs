@@ -5,7 +5,10 @@ module TcgCalculator.Types
   , Condition(..)
   , ConditionMode(..)
   , Conditions
+  , ConditionsJson
   , Deck
+  , ExportJson
+  , WorkerParamJson
   , module Export
   , readConditionMode
   )
@@ -13,10 +16,7 @@ module TcgCalculator.Types
 
 import Prelude
 
-import Data.Argonaut.Decode (class DecodeJson, JsonDecodeError(..), decodeJson)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
 import Data.Array.NonEmpty (NonEmptyArray)
-import Data.Either (note)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
@@ -50,12 +50,6 @@ derive instance Generic ConditionMode _
 instance Show ConditionMode where
   show = genericShow
 
-instance EncodeJson ConditionMode where
-  encodeJson = encodeJson <<< show
-
-instance DecodeJson ConditionMode where
-  decodeJson json = note (UnexpectedValue json) <<< readConditionMode =<< decodeJson json
-
 readConditionMode :: String -> Maybe ConditionMode
 readConditionMode = case _ of
   "AtLeast" -> Just AtLeast
@@ -78,9 +72,17 @@ derive newtype instance Ord Condition
 
 derive newtype instance Show Condition
 
-derive newtype instance EncodeJson Condition
-derive newtype instance DecodeJson Condition
-
 derive instance Newtype Condition _
 
 type Conditions = NonEmptyArray Condition
+
+----------------------------------------------------------------
+
+type ExportJson = { deck :: Deck, conditions :: Array ConditionsJson }
+
+type ConditionsJson =
+  { conditions :: Array { mode :: ConditionMode, count :: Int, cards :: Array Id, disabled :: Boolean }
+  , disabled :: Boolean
+  }
+
+type WorkerParamJson =  { deck :: Deck, conditions :: Array Conditions }

@@ -2,9 +2,7 @@ module TcgCalculator.Types.Id where
 
 import Prelude
 
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
-import Data.Argonaut.Encode (class EncodeJson, encodeJson)
-import Data.Maybe (Maybe, fromMaybe')
+import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
 import Data.UUID (UUID)
 import Data.UUID as UUID
@@ -22,12 +20,6 @@ derive instance Newtype Id _
 
 instance Show Id where
   show (Id uuid) = "\"" <> UUID.toString uuid <> "\""
-
-instance EncodeJson Id where
-  encodeJson (Id uuid) = encodeJson $ UUID.toString uuid
-
-instance DecodeJson Id where
-  decodeJson json = decodeJson json <#> \id -> fromMaybe' (\_ -> mkId id) (fromString id)
 
 namespaceTcgCalculator :: Id
 namespaceTcgCalculator = coerce UUID.genv5UUID "tcg-calculator" UUID.emptyUUID

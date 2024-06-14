@@ -1,11 +1,10 @@
 package:
   dependencies:
     - aff
-    - argonaut-codecs
-    - argonaut-core
     - arrays
     - bifunctors
     - bigints
+    - codec-json
     - console
     - const
     - control
@@ -17,6 +16,7 @@ package:
     - halogen-subscriptions
     - integers
     - js-uri
+    - json
     - lists
     - maybe
     - media-types
@@ -25,6 +25,7 @@ package:
     - ordered-collections
     - partial
     - prelude
+    - profunctor
     - record
     - routing
     - safe-coerce

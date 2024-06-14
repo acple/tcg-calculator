@@ -5,10 +5,10 @@ import Prelude
 import App.Condition as Condition
 import App.Deck as Deck
 import App.Result as Result
-import Data.Argonaut.Core (stringify)
-import Data.Argonaut.Decode (decodeJson, parseJson, printJsonDecodeError)
-import Data.Argonaut.Encode (encodeJson)
+import Codec.JSON.DecodeError as DecodeError
 import Data.Array as Array
+import Data.Bifunctor (lmap)
+import Data.Codec.JSON (decode, encode)
 import Data.Const (Const)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
@@ -22,8 +22,10 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
+import JSON as JSON
 import JSURI (decodeURIComponent)
 import Routing.Hash as Hash
+import TcgCalculator.Codec as Codec
 import TcgCalculator.Types (Deck, Id, generateId)
 import Type.Proxy (Proxy(..))
 import Util.Array as ArrayUtil
@@ -177,9 +179,9 @@ component = H.mkComponent
       let conditions' = Array.fromFoldable conditions
       H.tell (Proxy @"result") unit (Result.Calculate deck conditions')
     RestoreState json -> do
-      case parseJson json >>= decodeJson @Export of
+      case JSON.parse json # lmap DecodeError.basic >>= decode Codec.export of
         Left error -> do
-          Console.error $ printJsonDecodeError error
+          Console.error $ DecodeError.print error
           action PrepareDefaultState
         Right { deck, conditions } -> do
           conditions' <- traverse (flap $ { id: _, condition: _ } <$> generateId) conditions
@@ -192,5 +194,5 @@ component = H.mkComponent
       { deck, conditions: ids } <- H.get
       conditions <- H.requestAll (Proxy @"condition") Condition.GetState
       let conditions' = Array.mapMaybe (Map.lookup <@> conditions) ids
-      let json = encodeJson @Export { deck, conditions: conditions' }
-      H.liftEffect $ Hash.setHash (stringify json)
+      let json = encode Codec.export { deck, conditions: conditions' }
+      H.liftEffect $ Hash.setHash (JSON.print json)
