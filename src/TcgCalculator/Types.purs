@@ -73,14 +73,14 @@ type Condition' = { mode :: ConditionMode, count :: Int, cards :: Cards }
 
 newtype Condition = Condition Condition'
 
-derive instance Eq Condition
-derive instance Ord Condition
-
-derive instance Newtype Condition _
+derive newtype instance Eq Condition
+derive newtype instance Ord Condition
 
 derive newtype instance Show Condition
 
 derive newtype instance EncodeJson Condition
 derive newtype instance DecodeJson Condition
+
+derive instance Newtype Condition _
 
 type Conditions = NonEmptyArray Condition

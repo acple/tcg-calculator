@@ -135,7 +135,7 @@ workspace:
         - web-workers
   package_set:
     address:
-      registry: 51.1.0
+      registry: 51.2.0
     compiler: ">=0.15.15 <0.16.0"
     content:
       abc-parser: 2.0.1
@@ -251,6 +251,7 @@ workspace:
       exists: 6.0.0
       exitcodes: 4.0.0
       expect-inferred: 3.0.0
+      ezfetch: 1.0.0
       fahrtwind: 2.0.0
       fallback: 0.1.0
       fast-vect: 1.2.0
@@ -582,6 +583,7 @@ workspace:
       untagged-to-tagged: 0.1.4
       untagged-union: 1.0.0
       uri: 9.0.0
+      url-immutable: 1.0.0
       uuid: 9.0.0
       uuidv4: 1.0.0
       validation: 6.0.0

@@ -15,8 +15,8 @@ import Safe.Coerce (coerce)
 
 newtype Id = Id UUID
 
-derive instance Eq Id
-derive instance Ord Id
+derive newtype instance Eq Id
+derive newtype instance Ord Id
 
 derive instance Newtype Id _
 
