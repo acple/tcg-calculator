@@ -8,7 +8,7 @@ module TcgCalculator.Types
   , ConditionsJson
   , Deck
   , ExportJson
-  , WorkerParamJson
+  , WorkerParam
   , module Export
   , readConditionMode
   )
@@ -85,4 +85,4 @@ type ConditionsJson =
   , disabled :: Boolean
   }
 
-type WorkerParamJson =  { deck :: Deck, conditions :: Array Conditions }
+type WorkerParam =  { deck :: Deck, conditions :: Array Conditions }

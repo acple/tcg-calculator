@@ -12,15 +12,15 @@ import Data.Maybe (maybe)
 import Data.Semigroup.Foldable (intercalateMap)
 import Effect.Aff (Aff, effectCanceler, error, makeAff)
 import Foreign (readString, renderForeignError)
-import SharedTypes (TcgCalculatorWorkerParam)
 import TcgCalculator.Codec as Codec
+import TcgCalculator.Types (WorkerParam)
 import Web.HTML.Event.ErrorEvent as ErrorEvent
 import Web.Worker.MessageEvent as MessageEvent
 import Web.Worker.Worker as Worker
 
 ----------------------------------------------------------------
 
-run :: TcgCalculatorWorkerParam -> Aff BigInt
+run :: WorkerParam -> Aff BigInt
 run param = makeAff \reply -> do
   worker <- Worker.new "bundle/worker.js" Worker.defaultWorkerOptions { type = Worker.Module }
   worker # Worker.onMessage \event -> reply do

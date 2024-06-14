@@ -10,7 +10,7 @@ import Data.Array.NonEmpty as NE
 import Data.Codec.JSON as CJ
 import Data.Codec.JSON.Record as CJR
 import Data.Profunctor (wrapIso)
-import TcgCalculator.Types (Card, Condition(..), ConditionMode, Conditions, ConditionsJson, Deck, ExportJson, WorkerParamJson, readConditionMode)
+import TcgCalculator.Types (Card, Condition(..), ConditionMode, Conditions, ConditionsJson, Deck, ExportJson, WorkerParam, readConditionMode)
 import TcgCalculator.Types.Id (Id)
 import TcgCalculator.Types.Id as Id
 
@@ -32,7 +32,7 @@ conditionsExport = CJR.object
 
 ----------------------------------------------------------------
 
-workerParam :: CJ.Codec WorkerParamJson
+workerParam :: CJ.Codec WorkerParam
 workerParam = CJR.object { deck, conditions: CJ.array conditions }
 
 conditions :: CJ.Codec Conditions
