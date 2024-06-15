@@ -85,4 +85,4 @@ type ConditionsJson =
   , disabled :: Boolean
   }
 
-type WorkerParam =  { deck :: Deck, conditions :: Array Conditions }
+type WorkerParam = { deck :: Deck, conditions :: Array Conditions }
