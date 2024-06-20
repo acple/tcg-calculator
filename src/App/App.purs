@@ -33,8 +33,6 @@ import Util.Halogen as HU
 
 ----------------------------------------------------------------
 
-type Export = { deck :: Deck, conditions :: Array Condition.Export }
-
 type Index = Int
 
 data Action
@@ -139,18 +137,14 @@ component = H.mkComponent
           then PrepareDefaultState
           else RestoreState hash
     PrepareDefaultState -> do
-      { deck, conditions } <- H.get
-      when (Array.null deck.cards && Array.null conditions) do
-        id <- generateId
-        let defaultDeck = { cards: [{ id, name: "Card1", count: 3 }], others: 37, hand: 5 }
-        H.modify_ _ { deck = defaultDeck }
-        H.tell (Proxy @"deck") unit (Deck.SetDeck defaultDeck)
-        action AddCondition
+      id <- generateId
+      let defaultDeck = { cards: [{ id, name: "Card1", count: 3 }], others: 37, hand: 5 }
+      H.put { deck: defaultDeck, conditions: [] }
+      H.tell (Proxy @"deck") unit (Deck.SetDeck defaultDeck)
+      action AddCondition
     UpdateDeck deck -> do
-      current <- H.gets _.deck
-      when (deck /= current) do
-        H.modify_ _ { deck = deck }
-        action Calculate
+      H.modify_ _ { deck = deck }
+      action Calculate
     AddCondition -> do
       id <- generateId
       H.modify_ do
@@ -160,7 +154,7 @@ component = H.mkComponent
     RemoveCondition id -> do
       H.modify_ do
         conditions <- _.conditions
-        _ { conditions = Array.filter (_ /= id) conditions }
+        _ { conditions = Array.delete id conditions }
       action Calculate
     ToggleDisabled id -> do
       H.tell (Proxy @"condition") id Condition.ToggleDisabled
@@ -178,8 +172,8 @@ component = H.mkComponent
       conditions <- H.requestAll (Proxy @"condition") Condition.GetConditions
       let conditions' = Array.fromFoldable conditions
       H.tell (Proxy @"result") unit (Result.Calculate deck conditions')
-    RestoreState json -> do
-      case JSON.parse json # lmap DecodeError.basic >>= decode Codec.export of
+    RestoreState hash -> do
+      case JSON.parse hash # lmap DecodeError.basic >>= decode Codec.export of
         Left error -> do
           Console.error $ DecodeError.print error
           action PrepareDefaultState
@@ -192,7 +186,7 @@ component = H.mkComponent
           action Calculate
     SaveState -> do
       { deck, conditions: ids } <- H.get
-      conditions <- H.requestAll (Proxy @"condition") Condition.GetState
+      conditions <- H.requestAll (Proxy @"condition") Condition.Export
       let conditions' = Array.mapMaybe (Map.lookup <@> conditions) ids
       let json = encode Codec.export { deck, conditions: conditions' }
-      H.liftEffect $ Hash.setHash (JSON.print json)
+      H.liftEffect $ Hash.setHash <<< JSON.print $ json

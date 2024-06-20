@@ -2,6 +2,7 @@ module App.Deck where
 
 import Prelude
 
+import Control.Alternative (guard)
 import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Array ((!!))
 import Data.Array as Array
@@ -215,14 +216,13 @@ component = H.mkComponent
       id <- H.liftEffect $ DataTransfer.getData (MediaType dragItemMediaType) transfer
       unless (String.null id) do
         H.liftEffect <<< Event.preventDefault $ Drag.toEvent event
-        raiseUpdated =<< H.modify do
-          cards <- _.cards
-          let cards' = fold do
-                target <- Id.fromString id
-                from <- Array.findIndex (_.id >>> (_ == target)) cards
-                to <- Array.findIndex (_.id >>> (_ == destination)) cards
-                pure $ ArrayUtil.shiftInsert from to cards
-          _ { cards = cards' }
+        cards <- H.gets _.cards
+        traverse_ (raiseUpdated <=< H.modify <<< flip _ { cards = _ }) do
+          target <- Id.fromString id
+          guard $ target /= destination
+          from <- Array.findIndex (_.id >>> (_ == target)) cards
+          to <- Array.findIndex (_.id >>> (_ == destination)) cards
+          pure $ ArrayUtil.shiftInsert from to cards
 
   dragItemMediaType = "tcg-calculator/card"
 

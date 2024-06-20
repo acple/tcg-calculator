@@ -17,16 +17,11 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Record as Record
-import TcgCalculator.Types (Condition(..), ConditionMode, Deck, Id, Conditions, generateId)
+import TcgCalculator.Types (Condition(..), Conditions, ConditionsJson, Deck, Id, generateId)
 import Type.Proxy (Proxy(..))
 import Util.Halogen as HU
 
 ----------------------------------------------------------------
-
-type Export =
-  { conditions :: Array { mode :: ConditionMode, count :: Int, cards :: Array Id, disabled :: Boolean }
-  , disabled :: Boolean
-  }
 
 data Output
   = Updated
@@ -42,8 +37,8 @@ data Action
 
 data Query a
   = GetConditions (Conditions -> a)
-  | GetState (Export -> a)
-  | RestoreState Deck Export a
+  | Export (ConditionsJson -> a)
+  | RestoreState Deck ConditionsJson a
   | ToggleDisabled a
 
 ----------------------------------------------------------------
@@ -135,10 +130,8 @@ component = H.mkComponent
           pure _ { conditions = conditions' }
       action Calculate
     Receive deck -> do
-      current <- H.gets _.deck
-      when (deck /= current) do
-        H.modify_ _ { deck = deck }
-        calculate
+      H.modify_ _ { deck = deck }
+      calculate
     Calculate -> do
       calculate
       H.raise Updated
@@ -159,7 +152,7 @@ component = H.mkComponent
       guard <<< not =<< H.gets _.disabled
       conditions <- MaybeT getConditions
       in reply conditions
-    GetState reply -> MaybeT ado
+    Export reply -> MaybeT ado
       { conditions, disabled: parentDisabled } <- H.get
       lines <- H.requestAll (Proxy @"line") ConditionLine.GetCondition
       in ado

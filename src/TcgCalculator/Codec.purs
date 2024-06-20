@@ -9,6 +9,7 @@ import Prelude
 import Data.Array.NonEmpty as NE
 import Data.Codec.JSON as CJ
 import Data.Codec.JSON.Record as CJR
+import Data.Codec.JSON.Sum as CJS
 import Data.Profunctor (wrapIso)
 import TcgCalculator.Types (Card, Condition(..), ConditionMode, Conditions, ConditionsJson, Deck, ExportJson, WorkerParam, readConditionMode)
 import TcgCalculator.Types.Id (Id)
@@ -53,4 +54,4 @@ id :: CJ.Codec Id
 id = CJ.prismaticCodec "Id" Id.fromString Id.toString CJ.string
 
 conditionMode :: CJ.Codec ConditionMode
-conditionMode = CJ.prismaticCodec "ConditionMode" readConditionMode show CJ.string
+conditionMode = CJS.enumSum show readConditionMode
