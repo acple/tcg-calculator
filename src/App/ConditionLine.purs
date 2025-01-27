@@ -59,7 +59,7 @@ component = H.mkComponent
     HH.div
       [ HP.class_ $ H.ClassName "flex flex-wrap items-center justify-end" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "w-48 grow rounded border p-0.5" ]
+          [ HP.class_ $ H.ClassName "w-48 grow rounded border border-gray-200 p-0.5" ]
           [ renderCardSelector cards ]
       , HH.div
           [ HP.class_ $ H.ClassName "flex items-center" ]
