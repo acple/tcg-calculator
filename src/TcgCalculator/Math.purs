@@ -10,7 +10,8 @@ module TcgCalculator.Math
   , partitionNumber
   , partitionNumbers
   , pascalTriangle
-  ) where
+  )
+  where
 
 import Prelude
 
@@ -101,7 +102,8 @@ distinctPermutations = unfoldr1 \a -> Tuple a (prevPerm a)
       reverseST (k + 1) (length a - 1) st
       pure st
   reverseST :: forall h. Int -> Int -> STArray h a -> ST h Unit
-  reverseST x y st = when (x < y) do
+  reverseST x y _ | x >= y = pure unit
+  reverseST x y st = do
     swapST x y st
     reverseST (x + 1) (y - 1) st
 

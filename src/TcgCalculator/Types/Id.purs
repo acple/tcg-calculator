@@ -1,9 +1,16 @@
-module TcgCalculator.Types.Id where
+module TcgCalculator.Types.Id
+  ( Id
+  , fromString
+  , generateId
+  , mkId
+  , namespaceTcgCalculator
+  , toString
+  )
+  where
 
 import Prelude
 
 import Data.Maybe (Maybe)
-import Data.Newtype (class Newtype)
 import Data.UUID (UUID)
 import Data.UUID as UUID
 import Effect.Class (class MonadEffect, liftEffect)
@@ -15,8 +22,6 @@ newtype Id = Id UUID
 
 derive newtype instance Eq Id
 derive newtype instance Ord Id
-
-derive instance Newtype Id _
 
 instance Show Id where
   show (Id uuid) = "\"" <> UUID.toString uuid <> "\""

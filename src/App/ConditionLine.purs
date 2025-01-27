@@ -55,7 +55,7 @@ component = H.mkComponent
   initialState :: _ { cards :: Cards, condition :: Condition', min :: Int, max :: Int }
   initialState = { cards: _, condition: { mode: AtLeast, count: 0, cards: [] }, min: 0, max: 0 }
 
-  render { cards, condition: { mode, count }, min, max } = do
+  render { cards, condition: { mode, count }, min, max } =
     HH.div
       [ HP.class_ $ H.ClassName "flex flex-wrap items-center justify-end" ]
       [ HH.div

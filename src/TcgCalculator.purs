@@ -3,16 +3,18 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty)
-import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, groupAllBy, length, nubBy, replicate, sortBy, take, zipWith, (!!), (..))
+import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, groupAllBy, length, nub, nubBy, replicate, sortBy, take, zipWith)
 import Data.Array.NonEmpty (foldl1, toArray)
 import Data.BigInt (BigInt)
-import Data.Foldable (and, fold, maximum, product)
+import Data.Foldable (and, fold, product)
 import Data.Function (on)
-import Data.Maybe (fromMaybe, maybe)
+import Data.Map as Map
+import Data.Maybe (maybe)
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF, unwrap)
-import TcgCalculator.Math (Combination, combinationNumber, combinations, distinctPermutations, partitionNumber, partitionNumbers)
-import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Deck, Conditions)
+import Data.Tuple (Tuple(..))
+import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber, partitionNumbers)
+import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Conditions, Deck)
 
 ----------------------------------------------------------------
 
@@ -32,7 +34,7 @@ normalizeDeck deck conditions = do
   deck { cards = used, others = deck.others + sumBy _.count unused }
   where
   usedCards = nubBy (comparing _.id) <<< concatMap (_.cards <<< unwrap) <<< concatMap toArray
-  diffCards = foldr $ deleteBy ((==) `on` _.id)
+  diffCards = foldr $ deleteBy (eq `on` _.id)
 
 -- 確率計算のため、全組み合わせの個数を計算する
 calculateTotal :: Deck -> BigInt
@@ -125,19 +127,19 @@ mkDrawPattern cards count = mkDrawPattern' cards $ partitionNumber count
 
 -- 指定の枚数パターンに合致するカードの組み合わせを全て列挙する
 -- 引数 pattern の各要素は予め降順にソートされている必要がある
-mkDrawPattern' :: Cards -> Combination Int -> Array DrawPattern
+mkDrawPattern' :: Cards -> Array (Array Int) -> Array DrawPattern
 mkDrawPattern' _ [] = []
 mkDrawPattern' _ [[]] = [[]]
 mkDrawPattern' cards pattern = do
   let cardsLength = length cards
   let cardCounts = sortBy (flip compare) $ _.count <$> cards
   let pattern' = filter (length >>> (_ <= cardsLength) && and <<< zipWith (>=) cardCounts) pattern
-  let maxPatternLength = fromMaybe 0 <<< maximum $ length <$> pattern'
-  let cardCombinations = combinations <@> cards <$> 0 .. maxPatternLength
+  let patternLength = nub $ length <$> pattern'
+  let cardCombinations = Map.fromFoldable $ Tuple <*> flip combinations cards <$> patternLength
   p <- pattern'
-  let con = fold $ cardCombinations !! length p
+  let cardCombination = fold $ Map.lookup (length p) cardCombinations
   p' <- distinctPermutations p
-  filter (all \d -> d.draw <= d.card.count) $ zipWith { draw: _, card: _ } p' <$> con
+  filter (all \d -> d.draw <= d.card.count) $ zipWith { draw: _, card: _ } p' <$> cardCombination
 
 ----------------------------------------------------------------
 

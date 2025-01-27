@@ -173,7 +173,7 @@ component = H.mkComponent
     RemoveCard card -> do
       raiseUpdated =<< H.modify do
         { cards, others } <- identity
-        let cards' = Array.deleteBy ((==) `on` _.id) card cards
+        let cards' = Array.deleteBy (eq `on` _.id) card cards
         _ { cards = cards', others = others + card.count }
     UpdateCard card -> do
       { cards, others } <- H.get
@@ -199,8 +199,8 @@ component = H.mkComponent
         let deckCount = clamp cardCount deckLimit (cardCount + others)
         _ { others = deckCount - cardCount, hand = min hand deckCount }
     SelectOnFocus event -> do
-      let element = Input.fromEventTarget <=< Event.target <<< Focus.toEvent $ event
-      H.liftEffect $ traverse_ Input.select element
+      let target = Input.fromEventTarget <=< Event.target <<< Focus.toEvent $ event
+      H.liftEffect $ traverse_ Input.select target
     StartReorder id event -> do
       let transfer = Drag.dataTransfer event
       H.liftEffect $ DataTransfer.setData (MediaType dragItemMediaType) (Id.toString id) transfer

@@ -73,7 +73,7 @@ component = H.mkComponent
       , renderConditionAddButton
       ]
 
-  renderConditionHeader disabled = do
+  renderConditionHeader disabled =
     HH.div
       [ HP.class_ $ H.ClassName "flex items-center justify-end gap-1" ]
       [ HH.div
@@ -155,10 +155,8 @@ component = H.mkComponent
     Export reply -> MaybeT ado
       { conditions, disabled: parentDisabled } <- H.get
       lines <- H.requestAll (Proxy @"line") ConditionLine.GetCondition
-      in ado
-        conditions' <- for conditions \{ id, disabled } -> do
-          Map.lookup id lines <#> \(Condition { mode, count, cards }) -> { mode, count, cards: cards <#> _.id, disabled }
-        in reply { conditions: conditions', disabled: parentDisabled }
+      in reply <<< { conditions: _, disabled: parentDisabled } <$> for conditions \{ id, disabled } -> do
+        Map.lookup id lines <#> \(Condition { mode, count, cards }) -> { mode, count, cards: cards <#> _.id, disabled }
     RestoreState deck { conditions, disabled: parentDisabled } a -> H.lift do
       conditions' <- traverse (flap $ Record.insert (Proxy @"id") <$> generateId) conditions
       H.put { conditions: conditions' <#> \{ id, disabled } -> { id, disabled }, deck, disabled: parentDisabled }
