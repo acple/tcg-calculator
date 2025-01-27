@@ -6,7 +6,6 @@ import Data.Array as Array
 import Data.Array.NonEmpty as NE
 import Data.BigInt as BigInt
 import Effect (Effect)
-import Effect.Aff (launchAff_)
 import TcgCalculator (buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, normalizeDeck)
 import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber)
 import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..))
@@ -14,10 +13,10 @@ import TcgCalculator.Types.Id (mkId)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.Reporter (consoleReporter)
-import Test.Spec.Runner (runSpec)
+import Test.Spec.Runner.Node (runSpecAndExitProcess)
 
 main :: Effect Unit
-main = launchAff_ $ runSpec [consoleReporter] do
+main = runSpecAndExitProcess [consoleReporter] do
   mathTest
   tcgCalculatorTest
 

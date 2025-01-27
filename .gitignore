@@ -11,6 +11,7 @@
 /.spago
 /.parcel-cache/
 /.vscode
+/.spec-results
 
 /bundle/
 /dist/

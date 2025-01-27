@@ -43,6 +43,7 @@ package:
   test:
     dependencies:
       - spec
+      - spec-node
     main: Test.Main
 workspace:
   extraPackages: {}
