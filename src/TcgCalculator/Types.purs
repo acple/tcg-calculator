@@ -1,12 +1,19 @@
 module TcgCalculator.Types
   ( Card
+  , CardJson
   , Cards
   , Condition'
   , Condition(..)
+  , ConditionGroup
+  , ConditionGroupExport
+  , ConditionGroupJson
   , ConditionMode(..)
-  , Conditions
-  , ConditionsJson
+  , ConditionSet
+  , ConditionSetExport
+  , ConditionSetJson
   , Deck
+  , DeckJson
+  , Export
   , ExportJson
   , WorkerParam
   , module Export
@@ -30,7 +37,7 @@ type Card = { id :: Id, name :: String, count :: Int }
 
 type Cards = Array Card
 
-type Deck = { cards :: Array Card, others :: Int, hand :: Int }
+type Deck = { cards :: Cards, others :: Int, hand :: Int }
 
 ----------------------------------------------------------------
 
@@ -74,15 +81,36 @@ derive newtype instance Show Condition
 
 derive instance Newtype Condition _
 
-type Conditions = NonEmptyArray Condition
+----------------------------------------------------------------
+
+type ConditionSet = Array ConditionGroup
+
+type ConditionGroup = NonEmptyArray Condition
+
+type WorkerParam = { deck :: Deck, condition :: ConditionSet }
 
 ----------------------------------------------------------------
 
-type ExportJson = { deck :: Deck, conditions :: Array ConditionsJson }
+type Export = { deck :: Deck, condition :: ConditionSetExport }
 
-type ConditionsJson =
-  { conditions :: Array { mode :: ConditionMode, count :: Int, cards :: Array Id, disabled :: Boolean }
+type ConditionSetExport = Array ConditionGroupExport
+
+type ConditionGroupExport =
+  { conditions :: NonEmptyArray { condition :: Condition, disabled :: Boolean }
   , disabled :: Boolean
   }
 
-type WorkerParam = { deck :: Deck, conditions :: Array Conditions }
+----------------------------------------------------------------
+
+type ExportJson = { deck :: DeckJson, condition :: ConditionSetJson }
+
+type DeckJson = { cards :: Array CardJson, hand :: Int, others :: Int }
+
+type CardJson = { name :: String, count :: Int }
+
+type ConditionSetJson = Array ConditionGroupJson
+
+type ConditionGroupJson =
+  { conditions :: NonEmptyArray { mode :: ConditionMode, count :: Int, cards :: Array Int, disabled :: Boolean }
+  , disabled :: Boolean
+  }

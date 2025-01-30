@@ -9,6 +9,7 @@
             "arrays",
             "bifunctors",
             "bigints",
+            "codec",
             "codec-json",
             "console",
             "const",

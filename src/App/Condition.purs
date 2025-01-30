@@ -11,13 +11,13 @@ import Data.Array.NonEmpty as NE
 import Data.Foldable (for_)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Traversable (for, traverse)
+import Data.Traversable (traverse)
 import Effect.Aff (Aff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Record as Record
-import TcgCalculator.Types (Condition(..), Conditions, ConditionsJson, Deck, Id, generateId)
+import TcgCalculator.Types (ConditionGroup, ConditionGroupExport, Deck, Id, generateId)
 import Type.Proxy (Proxy(..))
 import Util.Halogen as HU
 
@@ -36,9 +36,9 @@ data Action
   | Calculate
 
 data Query a
-  = GetConditions (Conditions -> a)
-  | Export (ConditionsJson -> a)
-  | RestoreState Deck ConditionsJson a
+  = GetConditions (ConditionGroup -> a)
+  | Export (ConditionGroupExport -> a)
+  | RestoreState Deck ConditionGroupExport a
   | ToggleDisabled a
 
 ----------------------------------------------------------------
@@ -155,14 +155,13 @@ component = H.mkComponent
     Export reply -> MaybeT ado
       { conditions, disabled: parentDisabled } <- H.get
       lines <- H.requestAll (Proxy @"line") ConditionLine.GetCondition
-      in reply <<< { conditions: _, disabled: parentDisabled } <$> for conditions \{ id, disabled } -> do
-        Map.lookup id lines <#> \(Condition { mode, count, cards }) -> { mode, count, cards: cards <#> _.id, disabled }
+      in reply <<< { conditions: _, disabled: parentDisabled } <$> do
+        NE.fromArray conditions >>= traverse \{ id, disabled } -> { condition: _, disabled } <$> Map.lookup id lines
     RestoreState deck { conditions, disabled: parentDisabled } a -> H.lift do
-      conditions' <- traverse (flap $ Record.insert (Proxy @"id") <$> generateId) conditions
-      H.put { conditions: conditions' <#> \{ id, disabled } -> { id, disabled }, deck, disabled: parentDisabled }
-      for_ conditions' \{ id, mode, count, cards } -> do
-        let cards' = Array.mapMaybe <@> cards $ \cardId -> Array.find (_.id >>> (_ == cardId)) deck.cards
-        H.tell (Proxy @"line") id (ConditionLine.RestoreState deck.cards (Condition { mode, count, cards: cards' }))
+      conditions' <- traverse (flap $ Record.insert (Proxy @"id") <$> generateId) $ NE.toArray conditions
+      H.put { conditions: conditions' <#> \{id, disabled } -> { id, disabled }, deck, disabled: parentDisabled }
+      for_ conditions' \{ id, condition } -> do
+        H.tell (Proxy @"line") id (ConditionLine.RestoreState deck.cards condition)
       calculate
       pure a
     ToggleDisabled a -> do

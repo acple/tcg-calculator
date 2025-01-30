@@ -16,13 +16,13 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import TcgCalculator as TC
-import TcgCalculator.Types (Conditions, Deck)
+import TcgCalculator.Types (ConditionSet, Deck)
 import Util.Halogen as HU
 
 ----------------------------------------------------------------
 
 data Query a
-  = Calculate Deck (Array Conditions) a
+  = Calculate Deck ConditionSet a
 
 ----------------------------------------------------------------
 
@@ -64,10 +64,10 @@ component = H.mkComponent
 
   query :: _ ~> _
   query = case _ of
-    Calculate deck conditions a -> H.lift do
+    Calculate deck condition a -> H.lift do
       newCalculation <- H.fork do
-        let deck' = TC.normalizeDeck deck conditions
-        result <- H.liftAff <<< attempt $ Worker.run { deck: deck', conditions }
+        let deck' = TC.normalizeDeck deck condition
+        result <- H.liftAff <<< attempt $ Worker.run { deck: deck', condition }
         case result of
           Left error -> do
             H.put { combination: zero, total: zero, calculation: Nothing }

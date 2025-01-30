@@ -6,9 +6,9 @@ import App.Condition as Condition
 import App.Deck as Deck
 import App.Result as Result
 import Codec.JSON.DecodeError as DecodeError
+import Control.Monad.Except (except, runExceptT)
 import Data.Array as Array
 import Data.Bifunctor (lmap)
-import Data.Codec.JSON (decode, encode)
 import Data.Const (Const)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
@@ -173,20 +173,22 @@ component = H.mkComponent
       let conditions' = Array.fromFoldable conditions
       H.tell (Proxy @"result") unit (Result.Calculate deck conditions')
     RestoreState hash -> do
-      case JSON.parse hash # lmap DecodeError.basic >>= decode Codec.export of
+      let parse = Codec.decode Codec.export <=< except <<< lmap DecodeError.basic <<< JSON.parse
+      result <- H.liftEffect <<< runExceptT <<< parse $ hash
+      case result of
         Left error -> do
           Console.error $ DecodeError.print error
           action PrepareDefaultState
-        Right { deck, conditions } -> do
-          conditions' <- traverse (flap $ { id: _, condition: _ } <$> generateId) conditions
-          H.put { deck, conditions: conditions' <#> _.id }
+        Right { deck, condition: set } -> do
+          condition' <- traverse (flap $ { id: _, condition: _ } <$> generateId) set
+          H.put { deck, conditions: condition' <#> _.id }
           H.tell (Proxy @"deck") unit (Deck.SetDeck deck)
-          for_ conditions' \{ id, condition } -> do
+          for_ condition' \{ id, condition } -> do
             H.tell (Proxy @"condition") id (Condition.RestoreState deck condition)
           action Calculate
     SaveState -> do
       { deck, conditions: ids } <- H.get
       conditions <- H.requestAll (Proxy @"condition") Condition.Export
-      let conditions' = Array.mapMaybe (Map.lookup <@> conditions) ids
-      let json = encode Codec.export { deck, conditions: conditions' }
-      H.liftEffect $ Hash.setHash <<< JSON.print $ json
+      let condition' = Array.mapMaybe (Map.lookup <@> conditions) ids
+      let json = Codec.encode Codec.export { deck, condition: condition' }
+      H.liftEffect <<< Hash.setHash <<< JSON.print $ json

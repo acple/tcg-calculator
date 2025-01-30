@@ -14,22 +14,22 @@ import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF, unwrap)
 import Data.Tuple (Tuple(..))
 import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber, partitionNumbers)
-import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Conditions, Deck)
+import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Deck, ConditionGroup, ConditionSet)
 
 ----------------------------------------------------------------
 
 -- 条件を満たす組み合わせの個数を計算する
-calculate :: Deck -> Array Conditions -> BigInt
-calculate deck conditions = do
+calculate :: Deck -> ConditionSet -> BigInt
+calculate deck set = do
   let drawPattern = generateDrawPatterns deck
-  let conditionPattern = buildConditionPattern =<< conditions
-  let pattern = filter (\dp -> any (satisfyCondition dp) conditionPattern) drawPattern
+  let conditionPatterns = buildConditionPattern =<< set
+  let pattern = filter (\dp -> any (satisfyCondition dp) conditionPatterns) drawPattern
   sumBy (calculatePatternCount deck) pattern
 
 -- 指定した条件式で使用していないカードをデッキから取り除く
-normalizeDeck :: Deck -> Array Conditions -> Deck
-normalizeDeck deck conditions = do
-  let used = usedCards conditions
+normalizeDeck :: Deck -> ConditionSet -> Deck
+normalizeDeck deck set = do
+  let used = usedCards set
   let unused = diffCards deck.cards used
   deck { cards = used, others = deck.others + sumBy _.count unused }
   where
@@ -69,9 +69,9 @@ satisfyCondition dp = all \{ card: { id }, min, max } -> do
   min <= draw && draw <= max
 
 -- 条件式をマージ (AND) して ConditionPattern のリストに変換する
-buildConditionPattern :: Conditions -> Array ConditionPattern
-buildConditionPattern conditions = do
-  let patterns = mkConditionPattern <$> conditions
+buildConditionPattern :: ConditionGroup -> Array ConditionPattern
+buildConditionPattern group = do
+  let patterns = mkConditionPattern <$> group
   foldl1 <@> patterns $ \left right -> do
     l <- left
     r <- right

@@ -70,8 +70,8 @@ component = H.mkComponent
       ]
 
   renderCardSelector cards = do
-    let cards' = cards <#> \card -> { id: card.id, value: card.name }
-    HH.slot (Proxy @"selector") unit Selector.component cards' UpdateCardSelected
+    let items = cards <#> \card -> { id: card.id, value: card.name }
+    HH.slot (Proxy @"selector") unit Selector.component items UpdateCardSelected
 
   renderCardCounter count min max =
     HH.input

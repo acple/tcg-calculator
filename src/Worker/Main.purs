@@ -21,7 +21,7 @@ main = do
   Worker.onMessage \event -> do
     case decode Codec.workerParam <<< unsafeFromForeign $ MessageEvent.data_ event of
       Left error -> Console.error $ DecodeError.print error
-      Right { deck, conditions } -> do
-        let result = TC.calculate deck conditions
+      Right { deck, condition } -> do
+        let result = TC.calculate deck condition
         Worker.postMessage $ BigInt.toString result
     Worker.close
