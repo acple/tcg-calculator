@@ -130,8 +130,10 @@ component = H.mkComponent
           pure _ { conditions = conditions' }
       action Calculate
     Receive deck -> do
-      H.modify_ _ { deck = deck }
-      calculate
+      current <- H.gets _.deck
+      when (deck /= current) do
+        H.modify_ _ { deck = deck }
+        calculate
     Calculate -> do
       calculate
       H.raise Updated

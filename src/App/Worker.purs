@@ -6,7 +6,6 @@ import Control.Monad.Except (runExcept)
 import Data.Bifunctor (lmap)
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
-import Data.Codec.JSON (encode)
 import Data.Either (Either(..), note)
 import Data.Maybe (maybe)
 import Data.Semigroup.Foldable (intercalateMap)
@@ -30,5 +29,5 @@ run param = makeAff \reply -> do
     Worker.terminate worker
     let message = maybe "Unknown worker error" ErrorEvent.message $ ErrorEvent.fromEvent event
     reply $ Left (error message)
-  Worker.postMessage (encode Codec.workerParam param) worker
+  Worker.postMessage (Codec.encode Codec.workerParam param) worker
   pure $ effectCanceler (Worker.terminate worker)

@@ -111,8 +111,11 @@ component = H.mkComponent
       { cards, condition: { mode, count, cards: selected } } <- H.get
       updateStatus cards selected mode count
     UpdateCardSelected selected -> do
-      updateCardSelected selected
-      H.raise Updated
+      { cards, condition: { mode, count, cards: current } } <- H.get
+      let selected' = Array.filter (_.id >>> Array.elem <@> selected) cards
+      when (selected' /= current) do
+        updateStatus cards selected' mode count
+        H.raise Updated
     UpdateConditionMode mode -> do
       readConditionMode mode # traverse_ \mode' -> do
         { cards, condition: { count, cards: selected } } <- H.get
@@ -124,16 +127,13 @@ component = H.mkComponent
         updateStatus cards selected mode count'
         H.raise Updated
     Receive cards -> do
-      { condition: { cards: selected } } <- H.modify _ { cards = cards }
-      updateCardSelected (selected <#> _.id)
+      { mode, count, cards: selected } <- H.gets _.condition
+      let selected' = Array.difference selected cards
+      updateStatus cards selected' mode count
     SelectOnFocus event -> do
       let element = Input.fromEventTarget <=< Event.target <<< Focus.toEvent $ event
       H.liftEffect $ traverse_ Input.select element
     where
-    updateCardSelected selected = do
-      { cards, condition: { mode, count } } <- H.get
-      let selected' = cards # Array.filter \{ id } -> Array.elem id selected
-      updateStatus cards selected' mode count
     updateStatus cards selected mode count = do
       let { min, max } = getMinMax selected mode
       H.put { cards, condition: { mode, cards: selected, count: clamp min max count }, min, max }
