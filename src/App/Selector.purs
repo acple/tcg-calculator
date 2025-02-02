@@ -15,11 +15,11 @@ import Util.Halogen as HU
 
 ----------------------------------------------------------------
 
-type Item key = { id :: key, value :: String, selected :: Boolean }
+type Item key = { key :: key, value :: String, selected :: Boolean }
 
 type Items key = Array (Item key)
 
-type Input key = Array { id :: key, value :: String }
+type Input key = Array { key :: key, value :: String }
 
 type Output key = Array key
 
@@ -80,7 +80,7 @@ component = H.mkComponent
                   then H.ClassName "border-sky-700 bg-sky-500 text-white hover:bg-sky-600"
                   else H.ClassName "border-gray-800 bg-gray-300 text-black hover:bg-gray-400"
               ]
-          , HE.onClick $ const (Toggle item.id)
+          , HE.onClick $ const (Toggle item.key)
           ]
           [ HH.text item.value ]
       ]
@@ -94,17 +94,17 @@ component = H.mkComponent
       H.modify_ _ { isEditMode = true }
     LeaveEdit -> do
       { items } <- H.modify _ { isEditMode = false }
-      H.raise $ items # Array.filter _.selected <#> _.id
-    Toggle id -> do
+      H.raise $ items # Array.filter _.selected <#> _.key
+    Toggle key -> do
       whenM (H.gets _.isEditMode) do
         H.modify_ do
           items <- _.items
-          let items' = items <#> \item -> if item.id == id then item { selected = not item.selected } else item
+          let items' = items <#> \item -> if item.key == key then item { selected = not item.selected } else item
           _ { items = items' }
     Receive input -> do
       H.modify_ do
         items <- _.items
-        let items' = input <#> \{ id, value } -> { id, value, selected: maybe false _.selected (Array.find (_.id >>> (_ == id)) items) }
+        let items' = input <#> \{ key, value } -> { key, value, selected: maybe false _.selected (Array.find (_.key >>> (_ == key)) items) }
         _ { items = items' }
 
   query :: _ ~> _

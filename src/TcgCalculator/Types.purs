@@ -2,8 +2,7 @@ module TcgCalculator.Types
   ( Card
   , CardJson
   , Cards
-  , Condition'
-  , Condition(..)
+  , Condition
   , ConditionGroup
   , ConditionGroupExport
   , ConditionGroupJson
@@ -26,7 +25,6 @@ import Prelude
 import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (class Newtype)
 import Data.Show.Generic (genericShow)
 import TcgCalculator.Types.Id (Id)
 import TcgCalculator.Types.Id (Id, generateId) as Export
@@ -70,26 +68,15 @@ readConditionMode = case _ of
 
 ----------------------------------------------------------------
 
-type Condition' = { mode :: ConditionMode, count :: Int, cards :: Cards }
-
-newtype Condition = Condition Condition'
-
-derive newtype instance Eq Condition
-derive newtype instance Ord Condition
-
-derive newtype instance Show Condition
-
-derive instance Newtype Condition _
-
-----------------------------------------------------------------
-
-type ConditionSet = Array ConditionGroup
+type Condition = { mode :: ConditionMode, count :: Int, cards :: Cards }
 
 type ConditionGroup = NonEmptyArray Condition
 
-type WorkerParam = { deck :: Deck, condition :: ConditionSet }
+type ConditionSet = Array ConditionGroup
 
 ----------------------------------------------------------------
+
+type WorkerParam = { deck :: Deck, condition :: ConditionSet }
 
 type Export = { deck :: Deck, condition :: ConditionSetExport }
 

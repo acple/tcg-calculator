@@ -23,12 +23,12 @@
   },
   "devDependencies": {
     "@parcel/css": "^1.14.0",
-    "@tailwindcss/postcss": "^4.0.1",
+    "@tailwindcss/postcss": "^4.0.3",
     "esbuild": "^0.24.2",
     "parcel": "^2.13.3",
     "purescript": "^0.15.15",
     "purs-backend-es": "^1.4.3",
     "spago": "^0.93.42",
-    "tailwindcss": "^4.0.0"
+    "tailwindcss": "^4.0.3"
   }
 }

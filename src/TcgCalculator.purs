@@ -11,10 +11,10 @@ import Data.Function (on)
 import Data.Map as Map
 import Data.Maybe (maybe)
 import Data.Monoid.Additive (Additive(..))
-import Data.Newtype (alaF, unwrap)
+import Data.Newtype (alaF)
 import Data.Tuple (Tuple(..))
 import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber, partitionNumbers)
-import TcgCalculator.Types (Card, Cards, Condition(..), ConditionMode(..), Deck, ConditionGroup, ConditionSet)
+import TcgCalculator.Types (Card, Cards, Condition, ConditionGroup, ConditionMode(..), ConditionSet, Deck)
 
 ----------------------------------------------------------------
 
@@ -33,7 +33,7 @@ normalizeDeck deck set = do
   let unused = diffCards deck.cards used
   deck { cards = used, others = deck.others + sumBy _.count unused }
   where
-  usedCards = nubBy (comparing _.id) <<< concatMap (_.cards <<< unwrap) <<< concatMap toArray
+  usedCards = nubBy (comparing _.id) <<< concatMap _.cards <<< concatMap toArray
   diffCards = foldr $ deleteBy (eq `on` _.id)
 
 -- 確率計算のため、全組み合わせの個数を計算する
@@ -88,7 +88,7 @@ isValidConditionPattern = all \{ card: { count }, min, max } -> min <= max && mi
 
 -- 一つの Condition に対応する全パターンのリストを出力する
 mkConditionPattern :: Condition -> Array ConditionPattern
-mkConditionPattern (Condition { mode, count, cards }) = case mode of
+mkConditionPattern { mode, count, cards } = case mode of
   -- cards の中から count 枚以上を引くパターン
   AtLeast -> ado
     pattern <- mkDrawPattern cards count
@@ -107,7 +107,7 @@ mkConditionPattern (Condition { mode, count, cards }) = case mode of
       { card, min: 0, max: draw }
   -- ちょうど count 枚デッキに残すパターン
   JustRemains ->
-    mkConditionPattern (Condition { mode: JustDraw, count: (sumBy _.count cards - count), cards })
+    mkConditionPattern { mode: JustDraw, count: (sumBy _.count cards - count), cards }
   -- cards の中から count 種類以上を1枚以上引くパターン
   Choice -> ado
     pattern <- mkDrawPattern' cards [replicate count 1]

@@ -18,12 +18,11 @@ import Data.Codec.JSON.Common as CJC
 import Data.Codec.JSON.Record as CJR
 import Data.Codec.JSON.Sum as CJS
 import Data.Either (note)
-import Data.Profunctor (wrapIso)
 import Data.Traversable (for, traverse)
 import Effect (Effect)
 import JSON (JSON)
 import Record as Record
-import TcgCalculator.Types (Card, CardJson, Condition(..), ConditionGroup, ConditionGroupJson, ConditionMode, ConditionSet, ConditionSetJson, Deck, DeckJson, Export, ExportJson, Id, WorkerParam, generateId, readConditionMode)
+import TcgCalculator.Types (Card, CardJson, Condition, ConditionGroup, ConditionGroupJson, ConditionMode, ConditionSet, ConditionSetJson, Deck, DeckJson, Export, ExportJson, Id, WorkerParam, generateId, readConditionMode)
 import TcgCalculator.Types.Id as Id
 import Type.Proxy (Proxy(..))
 
@@ -42,13 +41,13 @@ export' = codec' decode encode
     set' <- except $ note (DecodeError.basic "Could not decode conditions") do
       for set \group -> do
         { conditions: _, disabled: group.disabled } <$> for group.conditions \{ mode, count, cards: ids, disabled } -> do
-          { condition: _, disabled } <<< Condition <<< { mode, count, cards: _ } <$> traverse (cards' !! _) ids
+          { condition: _, disabled } <<< { mode, count, cards: _ } <$> traverse (cards' !! _) ids
     pure { deck: { cards: cards', hand, others }, condition: set' }
 
   encode :: Export -> ExportJson
   encode { deck: { cards, hand, others }, condition: set } = do
     let set' = set <#> Record.modify (Proxy @"conditions") do
-          map \{ condition: Condition { mode, count, cards: cards' }, disabled } -> { mode, count, cards: mapMaybe (flip elemIndex cards) cards', disabled }
+          map \{ condition: { mode, count, cards: cards' }, disabled } -> { mode, count, cards: mapMaybe (flip elemIndex cards) cards', disabled }
     let cards' = cards <#> \{ name, count } -> { name, count }
     { deck: { cards: cards', hand, others }, condition: set' }
 
@@ -64,7 +63,7 @@ conditionGroup :: CJ.Codec ConditionGroup
 conditionGroup = CJC.nonEmptyArray condition
 
 condition :: CJ.Codec Condition
-condition = wrapIso Condition $ CJR.object { mode: conditionMode, count: CJ.int, cards: CJ.array card }
+condition = CJR.object { mode: conditionMode, count: CJ.int, cards: CJ.array card }
 
 deck :: CJ.Codec Deck
 deck = CJR.object { cards: CJ.array card, others: CJ.int, hand: CJ.int }

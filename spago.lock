@@ -31,7 +31,6 @@
             "ordered-collections",
             "partial",
             "prelude",
-            "profunctor",
             "record",
             "routing",
             "safe-coerce",
@@ -224,7 +223,7 @@
     },
     "package_set": {
       "address": {
-        "registry": "63.0.0"
+        "registry": "63.0.1"
       },
       "compiler": ">=0.15.15 <0.16.0",
       "content": {
@@ -733,7 +732,7 @@
         "webextension-polyfill": "0.1.0",
         "webgpu": "0.0.1",
         "which": "2.0.0",
-        "whine-core": "0.0.24",
+        "whine-core": "0.0.25",
         "xterm": "1.0.0",
         "yoga-fetch": "1.0.1",
         "yoga-json": "5.1.0",
