@@ -105,7 +105,7 @@ component = H.mkComponent
     HH.div
       [ HP.class_ $ H.ClassName "flex grow basis-0 items-center rounded border-2 border-cyan-400 p-1" ]
       [ HH.div
-          [ HP.class_ $ H.ClassName "flex w-full justify-end gap-1" ]
+          [ HP.class_ $ H.ClassName "flex w-full justify-between gap-1" ]
           [ HH.div_ [ HU.button (HH.text "Save") (H.ClassName "border border-rose-500 hover:bg-rose-100") SaveState ]
           , HH.slot_ (Proxy @"result") unit Result.component unit
           ]
