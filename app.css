@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@layer utilities {
-  .break-anywhere {
-    overflow-wrap: anywhere;
-  }
+@utility break-anywhere {
+  overflow-wrap: anywhere;
 }
