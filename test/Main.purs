@@ -41,12 +41,16 @@ mathTest = do
     combinationNumber 5 2 `shouldEqual` BigInt.fromInt 10
     combinationNumber 40 5 `shouldEqual` BigInt.fromInt 658008
     combinationNumber 120 3 `shouldEqual` BigInt.fromInt 280840
+    combinationNumber (-1) 0 `shouldEqual` BigInt.fromInt 0
+    combinationNumber 5 (-1) `shouldEqual` BigInt.fromInt 0
 
   partitionNumberTest = do
+    partitionNumber 5 `shouldEqual` [[5], [4, 1], [3, 2], [3, 1, 1], [2, 2, 1], [2, 1, 1, 1], [1, 1, 1, 1, 1]]
     partitionNumber 4 `shouldEqual` [[4], [3, 1], [2, 2], [2, 1, 1], [1, 1, 1, 1]]
     partitionNumber 2 `shouldEqual` [[2], [1, 1]]
     partitionNumber 1 `shouldEqual` [[1]]
     partitionNumber 0 `shouldEqual` [[]]
+    partitionNumber (-1) `shouldEqual` []
 
   permutationsTest = do
     distinctPermutations [3, 2, 1] `shouldEqual` [[3, 2, 1], [3, 1, 2], [2, 3, 1], [2, 1, 3], [1, 3, 2], [1, 2, 3]]
@@ -67,6 +71,7 @@ mathTest = do
     combinations 4 [1, 2, 3, 4] `shouldEqual` [[1, 2, 3, 4]]
     combinations 5 [1, 2, 3, 4] `shouldEqual` []
     combinations 0 [1, 2, 3, 4] `shouldEqual` [[]]
+    combinations (-1) [1, 2, 3, 4] `shouldEqual` []
 
 ----------------------------------------------------------------
 
@@ -328,7 +333,6 @@ calculateTest = do
       let deck16 = deck15
       let cond16 = buildCondition [[{ cards: [cardA, cardB, cardE], count: 2, mode: LeftAll }]]
       runTest deck16 cond16 11753
-
   where
   runTest deck cond expected = calculate (normalizeDeck deck cond) cond `shouldEqual` BigInt.fromInt expected
   buildCondition = Array.mapMaybe NE.fromArray
