@@ -16,14 +16,14 @@ module TcgCalculator.Math
 import Prelude
 
 import Control.Monad.ST (ST)
-import Data.Array (drop, filter, findLastIndex, fromFoldable, head, length, singleton, uncons, unsafeIndex, zipWith, (!!), (..), (:))
+import Data.Array (drop, dropWhile, findLastIndex, fromFoldable, head, length, singleton, uncons, unsafeIndex, zipWith, (!!), (..), (:))
 import Data.Array.ST (STArray)
 import Data.Array.ST as STA
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Foldable (fold, product)
 import Data.List as L
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable (iterateN, unfoldr1)
 import Partial.Unsafe (unsafePartial)
@@ -77,7 +77,7 @@ buildPartitionNumbers k = do
   new prev 1 L.: prev
   where
   new :: L.List PartitionNumber -> Int -> PartitionNumber
-  new (h L.: t) i = new t (i + 1) <> ((i : _) <$> filter ((_ <= i) <<< fromMaybe 0 <<< head) h)
+  new (h L.: t) i = new t (i + 1) <> ((i : _) <$> dropWhile (maybe false (i < _) <<< head) h)
   new _         _ = []
 
 ----------------------------------------------------------------
