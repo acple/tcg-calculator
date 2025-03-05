@@ -223,7 +223,7 @@
     },
     "package_set": {
       "address": {
-        "registry": "63.0.4"
+        "registry": "63.3.0"
       },
       "compiler": ">=0.15.15 <0.16.0",
       "content": {
@@ -511,6 +511,7 @@
         "node-streams": "9.0.1",
         "node-tls": "0.3.1",
         "node-url": "7.0.1",
+        "node-workerbees": "0.3.1",
         "node-zlib": "0.4.0",
         "nonempty": "7.0.0",
         "now": "6.0.0",
@@ -555,7 +556,7 @@
         "postgresql": "2.0.20",
         "precise": "6.0.0",
         "precise-datetime": "7.0.0",
-        "prelude": "6.0.1",
+        "prelude": "6.0.2",
         "prettier-printer": "3.0.0",
         "printf": "0.1.0",
         "priority-queue": "0.1.2",
@@ -661,11 +662,14 @@
         "thermite-dom": "0.3.1",
         "these": "6.0.0",
         "threading": "0.0.3",
+        "tidy": "0.11.1",
+        "tidy-codegen": "4.0.1",
         "tldr": "0.0.0",
         "toestand": "0.9.0",
         "transformation-matrix": "1.0.1",
         "transformers": "6.1.0",
         "tree-rose": "4.0.2",
+        "trivial-unfold": "0.1.1",
         "ts-bridge": "4.0.0",
         "tuples": "7.0.0",
         "two-or-more": "1.0.0",
@@ -732,7 +736,7 @@
         "webextension-polyfill": "0.1.0",
         "webgpu": "0.0.1",
         "which": "2.0.0",
-        "whine-core": "0.0.27",
+        "whine-core": "0.0.28",
         "xterm": "1.0.0",
         "yoga-fetch": "1.0.1",
         "yoga-json": "5.1.0",
@@ -1714,8 +1718,8 @@
     },
     "prelude": {
       "type": "registry",
-      "version": "6.0.1",
-      "integrity": "sha256-o8p6SLYmVPqzXZhQFd2hGAWEwBoXl1swxLG/scpJ0V0=",
+      "version": "6.0.2",
+      "integrity": "sha256-kiAPZxihtAel8uRiTNdccf4qylp/9J3jNkEHNAD0MsE=",
       "dependencies": []
     },
     "profunctor": {

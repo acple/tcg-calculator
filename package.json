@@ -19,16 +19,17 @@
   "license": "MIT",
   "dependencies": {
     "big-integer": "^1.6.52",
-    "uuid": "^11.0.5"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@parcel/css": "^1.14.0",
-    "@tailwindcss/postcss": "^4.0.6",
+    "@tailwindcss/postcss": "^4.0.9",
     "esbuild": "^0.25.0",
     "parcel": "^2.13.3",
     "purescript": "^0.15.15",
+    "purescript-psa": "^0.9.0",
     "purs-backend-es": "^1.4.3",
-    "spago": "^0.93.42",
+    "spago": "^0.93.43",
     "tailwindcss": "^4.0.6"
   }
 }
