@@ -111,7 +111,7 @@ distinctPermutations = unfoldr1 \a -> Tuple a (prevPerm a)
 
 type Combination a = Array (Array a)
 
--- combination 2 [1, 2, 3, 4] -> [[1, 2], [1, 3], [1, 4], [2, 3], [2, 4], [3, 4]]
+-- combinations 2 [1, 2, 3, 4] -> [[1, 2], [1, 3], [1, 4], [2, 3], [2, 4], [3, 4]]
 combinations :: forall a. Int -> Array a -> Combination a
 combinations n a
   | n == 0        = [[]]
