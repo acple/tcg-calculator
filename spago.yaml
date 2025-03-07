@@ -18,11 +18,11 @@ package:
     - integers
     - js-uri
     - json
-    - lists
     - maybe
     - media-types
     - newtype
     - numbers
+    - open-memoize
     - ordered-collections
     - partial
     - prelude

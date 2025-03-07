@@ -8,7 +8,6 @@ module TcgCalculator.Math
   , createPascalTriangle
   , distinctPermutations
   , partitionNumber
-  , partitionNumbers
   , pascalTriangle
   )
   where
@@ -16,14 +15,14 @@ module TcgCalculator.Math
 import Prelude
 
 import Control.Monad.ST (ST)
-import Data.Array (drop, dropWhile, findLastIndex, fromFoldable, head, length, singleton, uncons, unsafeIndex, zipWith, (!!), (..), (:))
+import Data.Array (drop, findLastIndex, length, singleton, uncons, unsafeIndex, zipWith, (!!), (..), (:))
 import Data.Array.ST (STArray)
 import Data.Array.ST as STA
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
-import Data.Foldable (fold, product)
-import Data.List as L
-import Data.Maybe (Maybe(..), maybe)
+import Data.Foldable (product)
+import Data.Function.Memoize (memoize2)
+import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Unfoldable (iterateN, unfoldr1)
 import Partial.Unsafe (unsafePartial)
@@ -60,25 +59,14 @@ type PartitionNumber = Array (Array Int)
 
 -- partitionNumber 4 -> [[4], [3, 1], [2, 2], [2, 1, 1], [1, 1, 1, 1]]
 partitionNumber :: Int -> PartitionNumber
-partitionNumber n | n < 0 = []
-partitionNumber 0 = [[]]
-partitionNumber n = fold <<< L.head $ buildPartitionNumbers n
-
--- partitionNumbers 3 -> [partitionNumber 3, partitionNumber 2, paritionNumber 1, partitionNumber 0]
-partitionNumbers :: Int -> Array PartitionNumber
-partitionNumbers n | n < 0 = []
-partitionNumbers 0 = [[[]]]
-partitionNumbers n = fromFoldable $ buildPartitionNumbers n
-
-buildPartitionNumbers :: Int -> L.List PartitionNumber
-buildPartitionNumbers 0 = L.singleton [[]]
-buildPartitionNumbers k = do
-  let prev = buildPartitionNumbers (k - 1)
-  new prev 1 L.: prev
+partitionNumber = go
   where
-  new :: L.List PartitionNumber -> Int -> PartitionNumber
-  new (h L.: t) i = new t (i + 1) <> ((i : _) <$> dropWhile (maybe false (i < _) <<< head) h)
-  new _         _ = []
+  go n | n < 0 = []
+  go n = go' n n
+  go' = memoize2 impl
+    where
+    impl 0 _ = [[]]
+    impl n k = k .. 1 >>= \i -> (i : _) <$> go' (n - i) (min (n - i) i)
 
 ----------------------------------------------------------------
 

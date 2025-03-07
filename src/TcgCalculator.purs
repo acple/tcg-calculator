@@ -3,7 +3,7 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty)
-import Data.Array (all, any, concat, concatMap, deleteBy, filter, find, foldMap, foldr, groupAllBy, length, nub, nubBy, replicate, sortBy, take, zipWith)
+import Data.Array (all, any, concatMap, deleteBy, filter, find, foldMap, foldr, groupAllBy, length, nub, nubBy, replicate, sortBy, zipWith, (..))
 import Data.Array.NonEmpty (foldl1, toArray)
 import Data.BigInt (BigInt)
 import Data.Foldable (and, fold, product)
@@ -13,7 +13,7 @@ import Data.Maybe (maybe)
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF)
 import Data.Tuple (Tuple(..))
-import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber, partitionNumbers)
+import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber)
 import TcgCalculator.Types (Card, Cards, Condition, ConditionGroup, ConditionMode(..), ConditionSet, Deck)
 
 ----------------------------------------------------------------
@@ -49,8 +49,8 @@ type DrawPattern = Array { card :: Card, draw :: Int }
 generateDrawPatterns :: Deck -> Array DrawPattern
 generateDrawPatterns { cards, others, hand } = do
   let maxDrawCount = min hand (sumBy _.count cards)
-  let maxPatternLength = maxDrawCount + others - hand + 1 -- others が hand より少ない場合に成り立たないパターンは予めフィルタする
-  mkDrawPattern' cards <<< concat <<< take maxPatternLength $ partitionNumbers maxDrawCount
+  let minDrawCount = max 0 (hand - others) -- others が hand より少ない場合に成り立たないパターンは予めフィルタする
+  mkDrawPattern' cards <<< partitionNumber =<< maxDrawCount .. minDrawCount
 
 -- 与えた DrawPattern にマッチする組み合わせの個数を返す
 calculatePatternCount :: Deck -> DrawPattern -> BigInt
