@@ -12,7 +12,7 @@ module TcgCalculator.Math
 import Prelude
 
 import Control.Monad.ST (ST)
-import Data.Array (drop, findLastIndex, index, length, singleton, uncons, zipWith, (!!), (..), (:))
+import Data.Array (drop, findLastIndex, index, length, reverse, singleton, uncons, zipWith, (!!), (..), (:))
 import Data.Array.Partial as P
 import Data.Array.ST (STArray)
 import Data.Array.ST as STA
@@ -79,8 +79,8 @@ distinctPermutations = unfoldr1 \a -> Tuple a (prevPerm a)
   reverseST :: forall h. Int -> Int -> STArray h a -> ST h Unit
   reverseST x y _ | x >= y = pure unit
   reverseST x y st = do
-    swapST x y st
-    reverseST (x + 1) (y - 1) st
+    a <- STA.splice x (y - x + 1) [] st
+    void $ STA.splice x 0 (reverse a) st
 
 ----------------------------------------------------------------
 
