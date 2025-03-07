@@ -56,9 +56,12 @@ component = H.mkComponent
                   ]
               ]
       , HH.div
-          [ HP.class_ $ H.ClassName "mx-1 flex min-w-20 flex-col items-end divide-y divide-gray-400" ]
-          [ HH.div [ HP.class_ $ H.ClassName "px-1" ] [ HH.text $ BigInt.toString combination ]
-          , HH.div [ HP.class_ $ H.ClassName "px-1" ] [ HH.text $ BigInt.toString total ]
+          [ HP.class_ $ H.ClassName "mx-1 flex min-w-20 justify-end" ]
+          [ HH.div
+              [ HP.class_ $ H.ClassName "flex flex-col divide-y divide-gray-400" ]
+              [ HH.div [ HP.class_ $ H.ClassName "w-full px-1 text-right" ] [ HH.text $ BigInt.toString combination ]
+              , HH.div [ HP.class_ $ H.ClassName "w-full px-1 text-right" ] [ HH.text $ BigInt.toString total ]
+              ]
           ]
       ]
 
