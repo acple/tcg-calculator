@@ -1,57 +1,44 @@
 module TcgCalculator.Math
   ( Combination
   , PartitionNumber
-  , PascalTriangle
   , Permutation
   , combinationNumber
   , combinations
-  , createPascalTriangle
   , distinctPermutations
   , partitionNumber
-  , pascalTriangle
   )
   where
 
 import Prelude
 
 import Control.Monad.ST (ST)
-import Data.Array (drop, findLastIndex, length, singleton, uncons, unsafeIndex, zipWith, (!!), (..), (:))
+import Data.Array (drop, findLastIndex, index, length, singleton, uncons, zipWith, (!!), (..), (:))
+import Data.Array.Partial as P
 import Data.Array.ST (STArray)
 import Data.Array.ST as STA
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
-import Data.Foldable (product)
 import Data.Function.Memoize (memoize2)
-import Data.Maybe (Maybe(..))
+import Data.List.Lazy as L
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
-import Data.Unfoldable (iterateN, unfoldr1)
+import Data.Unfoldable (unfoldr1)
 import Partial.Unsafe (unsafePartial)
 import Util.Array (swapST)
 
 ----------------------------------------------------------------
 
-type PascalTriangle = Array (Array BigInt)
-
-createPascalTriangle :: Int -> PascalTriangle
-createPascalTriangle size | size <= 0 = []
-createPascalTriangle size = [one] # iterateN size \r -> zipWith (+) ([zero] <> r) (r <> [zero])
-
-ptCacheSize :: Int
-ptCacheSize = 64
-
-pascalTriangle :: PascalTriangle
-pascalTriangle = createPascalTriangle ptCacheSize
-
+-- nCr
 combinationNumber :: Int -> Int -> BigInt
-combinationNumber n r
-  | n < 0 || r < 0  = zero
-  | r == 0          = one
-  | r == 1          = BigInt.fromInt n
-  | n - r < r       = combinationNumber n (n - r)
-  | n < ptCacheSize = unsafePartial $ pascalTriangle `unsafeIndex` n `unsafeIndex` r -- fast path using cached pascal triangle
-  | otherwise       = product' ((n - r + 1) .. n) / product' (1 .. r)
+combinationNumber = go
   where
-  product' = product <<< map BigInt.fromInt
+  go n r | n < 0 || n < r = zero
+  go n r | n - r < r = go n (n - r)
+  go _ 0 = one
+  go n 1 = BigInt.fromInt n
+  go n r = fromMaybe zero $ pascalTriangle L.!! (n - 2) >>= flip index (r - 1)
+  pascalTriangle = L.iterate step [BigInt.fromInt 2] -- pascal triangle starting at the third row, omitting the first element and the second half
+  step prev = unsafePartial $ zipWith (+) ([one] <> prev) if BigInt.odd (P.head prev) then prev <> [P.last prev] else prev
 
 ----------------------------------------------------------------
 

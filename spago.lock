@@ -23,6 +23,7 @@
             "integers",
             "js-uri",
             "json",
+            "lists",
             "maybe",
             "media-types",
             "newtype",
