@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@parcel/css": "^1.14.0",
-    "@tailwindcss/postcss": "^4.0.9",
+    "@tailwindcss/postcss": "^4.0.12",
     "esbuild": "^0.25.0",
     "parcel": "^2.13.3",
     "purescript": "^0.15.15",
