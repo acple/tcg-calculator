@@ -50,7 +50,7 @@ generateDrawPatterns :: Deck -> Array DrawPattern
 generateDrawPatterns { cards, others, hand } = do
   let maxDrawCount = min hand (sumBy _.count cards)
   let minDrawCount = max 0 (hand - others) -- others が hand より少ない場合に成り立たないパターンは予めフィルタする
-  mkDrawPattern' cards <<< partitionNumber =<< maxDrawCount .. minDrawCount
+  mkDrawPattern cards =<< maxDrawCount .. minDrawCount
 
 -- 与えた DrawPattern にマッチする組み合わせの個数を返す
 calculatePatternCount :: Deck -> DrawPattern -> BigInt

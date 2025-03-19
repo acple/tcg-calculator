@@ -64,7 +64,7 @@ type Permutation a = Array (Array a)
 -- input array must be sorted in DESCENDING order
 -- https://en.wikipedia.org/wiki/Permutation#Generation_in_lexicographic_order
 distinctPermutations :: forall a. Ord a => Array a -> Permutation a
-distinctPermutations = unfoldr1 \a -> Tuple a (prevPerm a)
+distinctPermutations = unfoldr1 $ Tuple <*> prevPerm
   where
   prevPerm :: Array a -> Maybe (Array a)
   prevPerm a = do
