@@ -5,8 +5,10 @@ import Prelude
 import Data.Array as Array
 import Data.Array.NonEmpty as NE
 import Data.BigInt as BigInt
+import Data.Function (on)
 import Effect (Effect)
-import TcgCalculator (buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, normalizeDeck)
+import Effect.Aff (Aff)
+import TcgCalculator (ConditionPattern, buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, normalizeDeck)
 import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber)
 import TcgCalculator.Types (Card, Cards, ConditionMode(..))
 import TcgCalculator.Types.Id (mkId)
@@ -99,40 +101,40 @@ mkConditionPatternTest = do
   where
 
   mkConditionPatternAtLeastTest = do
-    mkConditionPattern { mode: AtLeast, count: 1, cards: [cardA] } `shouldEqual` [[{ card: cardA, min: 1, max: 3 }]]
-    mkConditionPattern { mode: AtLeast, count: 2, cards: [cardA] } `shouldEqual` [[{ card: cardA, min: 2, max: 3 }]]
-    mkConditionPattern { mode: AtLeast, count: 4, cards: [cardA] } `shouldEqual` []
-    mkConditionPattern { mode: AtLeast, count: 1, cards: [cardA, cardB] } `shouldEqual` [[{ card: cardA, min: 1, max: 3 }], [{ card: cardB, min: 1, max: 2 }]]
-    mkConditionPattern { mode: AtLeast, count: 2, cards: [cardA, cardB] } `shouldEqual`
+    mkConditionPattern { mode: AtLeast, count: 1, cards: [cardA] } `conditionEqual` [[{ card: cardA, min: 1, max: 3 }]]
+    mkConditionPattern { mode: AtLeast, count: 2, cards: [cardA] } `conditionEqual` [[{ card: cardA, min: 2, max: 3 }]]
+    mkConditionPattern { mode: AtLeast, count: 4, cards: [cardA] } `conditionEqual` []
+    mkConditionPattern { mode: AtLeast, count: 1, cards: [cardA, cardB] } `conditionEqual` [[{ card: cardA, min: 1, max: 3 }], [{ card: cardB, min: 1, max: 2 }]]
+    mkConditionPattern { mode: AtLeast, count: 2, cards: [cardA, cardB] } `conditionEqual`
       [ [{ card: cardA, min: 2, max: 3 }]
       , [{ card: cardB, min: 2, max: 2 }]
       , [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]
       ]
-    mkConditionPattern { mode: AtLeast, count: 3, cards: [cardA, cardB] } `shouldEqual`
+    mkConditionPattern { mode: AtLeast, count: 3, cards: [cardA, cardB] } `conditionEqual`
       [ [{ card: cardA, min: 3, max: 3 }]
       , [{ card: cardA, min: 2, max: 3 }, { card: cardB, min: 1, max: 2 }]
       , [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 2, max: 2 }]
       ]
 
   mkConditionPatternJustDrawTest = do
-    mkConditionPattern { mode: JustDraw, count: 1, cards: [cardA] } `shouldEqual` [[{ card: cardA, min: 1, max: 1 }]]
-    mkConditionPattern { mode: JustDraw, count: 2, cards: [cardA] } `shouldEqual` [[{ card: cardA, min: 2, max: 2 }]]
-    mkConditionPattern { mode: JustDraw, count: 4, cards: [cardA] } `shouldEqual` []
-    mkConditionPattern { mode: JustDraw, count: 1, cards: [cardA, cardB] } `shouldEqual`
+    mkConditionPattern { mode: JustDraw, count: 1, cards: [cardA] } `conditionEqual` [[{ card: cardA, min: 1, max: 1 }]]
+    mkConditionPattern { mode: JustDraw, count: 2, cards: [cardA] } `conditionEqual` [[{ card: cardA, min: 2, max: 2 }]]
+    mkConditionPattern { mode: JustDraw, count: 4, cards: [cardA] } `conditionEqual` []
+    mkConditionPattern { mode: JustDraw, count: 1, cards: [cardA, cardB] } `conditionEqual`
       [ [{ card: cardA, min: 1, max: 1 }, { card: cardB, min: 0, max: 0 }]
       , [{ card: cardA, min: 0, max: 0 }, { card: cardB, min: 1, max: 1 }]
       ]
-    mkConditionPattern { mode: JustDraw, count: 2, cards: [cardA, cardB] } `shouldEqual`
+    mkConditionPattern { mode: JustDraw, count: 2, cards: [cardA, cardB] } `conditionEqual`
       [ [{ card: cardA, min: 2, max: 2 }, { card: cardB, min: 0, max: 0 }]
       , [{ card: cardA, min: 0, max: 0 }, { card: cardB, min: 2, max: 2 }]
       , [{ card: cardA, min: 1, max: 1 }, { card: cardB, min: 1, max: 1 }]
       ]
-    mkConditionPattern { mode: JustDraw, count: 3, cards: [cardA, cardB] } `shouldEqual`
+    mkConditionPattern { mode: JustDraw, count: 3, cards: [cardA, cardB] } `conditionEqual`
       [ [{ card: cardA, min: 3, max: 3 }, { card: cardB, min: 0, max: 0 }] -- [3, 0]
       , [{ card: cardA, min: 2, max: 2 }, { card: cardB, min: 1, max: 1 }] -- [2, 1]
       , [{ card: cardA, min: 1, max: 1 }, { card: cardB, min: 2, max: 2 }] -- [1, 2]
       ]
-    mkConditionPattern { mode: JustDraw, count: 3, cards: [cardA, cardB, cardC] } `shouldEqual`
+    mkConditionPattern { mode: JustDraw, count: 3, cards: [cardA, cardB, cardC] } `conditionEqual`
       [ [{ card: cardA, min: 3, max: 3 }, { card: cardB, min: 0, max: 0 }, { card: cardC, min: 0, max: 0 }]
       -- , [{ card: cardA, min: 0, max: 0 }, { card: cardB, min: 3, max: 3 }, { card: cardC, min: 0, max: 0 }] -- cardB.count < 3
       , [{ card: cardA, min: 0, max: 0 }, { card: cardB, min: 0, max: 0 }, { card: cardC, min: 3, max: 3 }]
@@ -149,20 +151,20 @@ mkConditionPatternTest = do
       ]
 
   mkConditionPatternRemainsTest = do
-    mkConditionPattern { mode: Remains, count: 1, cards: [cardA] } `shouldEqual` [[{ card: cardA, min: 0, max: 3 - 1 }]]
-    mkConditionPattern { mode: Remains, count: 2, cards: [cardA] } `shouldEqual` [[{ card: cardA, min: 0, max: 3 - 2 }]]
-    mkConditionPattern { mode: Remains, count: 4, cards: [cardA] } `shouldEqual` []
-    mkConditionPattern { mode: Remains, count: 1, cards: [cardA, cardB] } `shouldEqual`
+    mkConditionPattern { mode: Remains, count: 1, cards: [cardA] } `conditionEqual` [[{ card: cardA, min: 0, max: 3 - 1 }]]
+    mkConditionPattern { mode: Remains, count: 2, cards: [cardA] } `conditionEqual` [[{ card: cardA, min: 0, max: 3 - 2 }]]
+    mkConditionPattern { mode: Remains, count: 4, cards: [cardA] } `conditionEqual` []
+    mkConditionPattern { mode: Remains, count: 1, cards: [cardA, cardB] } `conditionEqual`
       [ [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 0, max: 1 }]
       , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 2 }]
       ]
-    mkConditionPattern { mode: Remains, count: 2, cards: [cardA, cardB] } `shouldEqual`
+    mkConditionPattern { mode: Remains, count: 2, cards: [cardA, cardB] } `conditionEqual`
       -- cardA.count + cardB.count - 2 == 3
       [ [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 0, max: 0 }]
       , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 1 }]
       , [{ card: cardA, min: 0, max: 1 }, { card: cardB, min: 0, max: 2 }]
       ]
-    mkConditionPattern { mode: Remains, count: 3, cards: [cardA, cardB, cardC] } `shouldEqual`
+    mkConditionPattern { mode: Remains, count: 3, cards: [cardA, cardB, cardC] } `conditionEqual`
       -- [3, 2]
       [ [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 0, max: 2 }, { card: cardC, min: 0, max: 0 }]
       , [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 0, max: 0 }, { card: cardC, min: 0, max: 2 }]
@@ -182,26 +184,26 @@ mkConditionPatternTest = do
 
   mkConditionPatternJustRemainsTest = do
     -- Condition JustRemains n cards == Condition JustDraw (cardCount - n) cards
-    mkConditionPattern { mode: JustRemains, count: 1, cards: [cardA] } `shouldEqual` [[{ card: cardA, min: 2, max: 2 }]]
-    mkConditionPattern { mode: JustRemains, count: 2, cards: [cardA] } `shouldEqual` [[{ card: cardA, min: 1, max: 1 }]]
-    mkConditionPattern { mode: JustRemains, count: 3, cards: [cardA] } `shouldEqual` [[{ card: cardA, min: 0, max: 0 }]]
-    mkConditionPattern { mode: JustRemains, count: 4, cards: [cardA] } `shouldEqual` []
-    mkConditionPattern { mode: JustRemains, count: 2, cards: [cardA, cardB] } `shouldEqual`
+    mkConditionPattern { mode: JustRemains, count: 1, cards: [cardA] } `conditionEqual` [[{ card: cardA, min: 2, max: 2 }]]
+    mkConditionPattern { mode: JustRemains, count: 2, cards: [cardA] } `conditionEqual` [[{ card: cardA, min: 1, max: 1 }]]
+    mkConditionPattern { mode: JustRemains, count: 3, cards: [cardA] } `conditionEqual` [[{ card: cardA, min: 0, max: 0 }]]
+    mkConditionPattern { mode: JustRemains, count: 4, cards: [cardA] } `conditionEqual` []
+    mkConditionPattern { mode: JustRemains, count: 2, cards: [cardA, cardB] } `conditionEqual`
       [ [{ card: cardA, min: 3, max: 3 }, { card: cardB, min: 0, max: 0 }]
       , [{ card: cardA, min: 2, max: 2 }, { card: cardB, min: 1, max: 1 }]
       , [{ card: cardA, min: 1, max: 1 }, { card: cardB, min: 2, max: 2 }]
       ]
 
   mkConditionPatternChoiceTest = do
-    mkConditionPattern { mode: Choice, count: 1, cards: [cardA] } `shouldEqual` [[{ card: cardA, min: 1, max: 3 }]]
-    mkConditionPattern { mode: Choice, count: 1, cards: [cardA, cardB] } `shouldEqual` [[{ card: cardA, min: 1, max: 3 }], [{ card: cardB, min: 1, max: 2 }]]
-    mkConditionPattern { mode: Choice, count: 2, cards: [cardA, cardB] } `shouldEqual` [[{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]]
-    mkConditionPattern { mode: Choice, count: 1, cards: [cardA, cardB, cardC] } `shouldEqual`
+    mkConditionPattern { mode: Choice, count: 1, cards: [cardA] } `conditionEqual` [[{ card: cardA, min: 1, max: 3 }]]
+    mkConditionPattern { mode: Choice, count: 1, cards: [cardA, cardB] } `conditionEqual` [[{ card: cardA, min: 1, max: 3 }], [{ card: cardB, min: 1, max: 2 }]]
+    mkConditionPattern { mode: Choice, count: 2, cards: [cardA, cardB] } `conditionEqual` [[{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]]
+    mkConditionPattern { mode: Choice, count: 1, cards: [cardA, cardB, cardC] } `conditionEqual`
       [ [{ card: cardA, min: 1, max: 3 }]
       , [{ card: cardB, min: 1, max: 2 }]
       , [{ card: cardC, min: 1, max: 3 }]
       ]
-    mkConditionPattern { mode: Choice, count: 2, cards: [cardA, cardB, cardC] } `shouldEqual`
+    mkConditionPattern { mode: Choice, count: 2, cards: [cardA, cardB, cardC] } `conditionEqual`
       [ [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]
       , [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 1, max: 3 }]
       , [{ card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }]
@@ -215,68 +217,69 @@ mergeConditionPatternTest = do
     it "merges many condition" do
       mergeConditionPattern
         [{ card: cardA, min: 1, max: 3 }] [{ card: cardB, min: 1, max: 2 }] `shouldEqual`
-        sort' [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]
+        sort [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]
       mergeConditionPattern
         [{ card: cardA, min: 1, max: 3 }] [{ card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max : 3 }] `shouldEqual`
-        sort' [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }]
+        sort [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }]
     it "merges same condition" do
       mergeConditionPattern
         [{ card: cardA, min: 1, max: 3 }] [{ card: cardA, min: 1, max: 3 }] `shouldEqual`
-        [{ card: cardA, min: 2, max: 3 }]
+        sort [{ card: cardA, min: 2, max: 3 }]
       mergeConditionPattern
         [{ card: cardA, min: 1, max: 3 }] [{ card: cardA, min: 1, max: 2 }] `shouldEqual`
-        [{ card: cardA, min: 2, max: 2 }]
+        sort [{ card: cardA, min: 2, max: 2 }]
       mergeConditionPattern
         [{ card: cardA, min: 2, max: 3 }] [{ card: cardA, min: 2, max: 3 }] `shouldEqual`
-        [{ card: cardA, min: 4, max: 3 }] -- invalid condition by max < min
+        sort [{ card: cardA, min: 4, max: 3 }] -- invalid condition by max < min
     it "merges multiple condition" do
       mergeConditionPattern
         [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]
         [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 1, max: 3 }] `shouldEqual`
-        sort' [{ card: cardA, min: 2, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }]
+        sort [{ card: cardA, min: 2, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }]
   where
-  sort' = Array.sortBy $ comparing _.card.id
+  sort = Array.sortBy $ comparing _.card.id
 
 buildConditionPatternTest :: Spec Unit
 buildConditionPatternTest = do
   describe "buildConditionPattern" do
     it "build normal" do
-      buildConditionPattern (NE.singleton { mode: AtLeast, count: 1, cards: [cardA] }) `shouldEqual` [[{ card: cardA, min: 1, max: 3 }]]
-      buildConditionPattern (NE.singleton { mode: JustDraw, count: 2, cards: [cardA] }) `shouldEqual` [[{ card: cardA, min: 2, max: 2 }]]
-      buildConditionPattern (NE.singleton { mode: Remains, count: 2, cards: [cardA] }) `shouldEqual` [[{ card: cardA, min: 0, max: 1 }]]
+      buildConditionPattern (NE.singleton { mode: AtLeast, count: 1, cards: [cardA] }) `conditionEqual` [[{ card: cardA, min: 1, max: 3 }]]
+      buildConditionPattern (NE.singleton { mode: JustDraw, count: 2, cards: [cardA] }) `conditionEqual` [[{ card: cardA, min: 2, max: 2 }]]
+      buildConditionPattern (NE.singleton { mode: Remains, count: 2, cards: [cardA] }) `conditionEqual` [[{ card: cardA, min: 0, max: 1 }]]
     it "build with multiple conditions" do
-      buildConditionPattern (NE.cons' { mode: AtLeast, count: 1, cards: [cardA] } [{ mode: AtLeast, count: 1, cards: [cardB] }]) `shouldEqual`
-        [sort' [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]]
-      buildConditionPattern (NE.cons' { mode: JustDraw, count: 1, cards: [cardA] } [{ mode: AtLeast, count: 1, cards: [cardA] }]) `shouldEqual`
+      buildConditionPattern (NE.cons' { mode: AtLeast, count: 1, cards: [cardA] } [{ mode: AtLeast, count: 1, cards: [cardB] }]) `conditionEqual`
+        [[{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]]
+      buildConditionPattern (NE.cons' { mode: JustDraw, count: 1, cards: [cardA] } [{ mode: AtLeast, count: 1, cards: [cardA] }]) `conditionEqual`
         [] -- invalid condition
-      buildConditionPattern (NE.cons' { mode: Remains, count: 2, cards: [cardA] } [{ mode: JustDraw, count: 2, cards: [cardC] }]) `shouldEqual`
-        [sort' [{ card: cardA, min: 0, max: 1 }, { card: cardC, min: 2, max: 2 }]]
+      buildConditionPattern (NE.cons' { mode: Remains, count: 2, cards: [cardA] } [{ mode: JustDraw, count: 2, cards: [cardC] }]) `conditionEqual`
+        [[{ card: cardA, min: 0, max: 1 }, { card: cardC, min: 2, max: 2 }]]
     it "expanded pattern" do
-      buildConditionPattern (NE.singleton { mode: Choice, count: 1, cards: [cardA, cardB, cardC] }) `shouldEqual`
+      buildConditionPattern (NE.singleton { mode: Choice, count: 1, cards: [cardA, cardB, cardC] }) `conditionEqual`
         [ [{ card: cardA, min: 1, max: 3 }]
         , [{ card: cardB, min: 1, max: 2 }]
         , [{ card: cardC, min: 1, max: 3 }]
         ]
-      buildConditionPattern (NE.cons' { mode: Choice, count: 1, cards: [cardA, cardB] } [{ mode: AtLeast, count: 2, cards: [cardC] }]) `shouldEqual`
-        [ sort' [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 2, max: 3 }]
-        , sort' [{ card: cardB, min: 1, max: 2 }, { card: cardC, min: 2, max: 3 }]
+      buildConditionPattern (NE.cons' { mode: Choice, count: 1, cards: [cardA, cardB] } [{ mode: AtLeast, count: 2, cards: [cardC] }]) `conditionEqual`
+        [ [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 2, max: 3 }]
+        , [{ card: cardB, min: 1, max: 2 }, { card: cardC, min: 2, max: 3 }]
         ]
     it "complicated pattern" do
-      buildConditionPattern (NE.cons' { mode: Choice, count: 1, cards: [cardA, cardB] } [{ mode: Choice, count: 2, cards: [cardB, cardC, cardD] }]) `shouldEqual`
-        [ sort' [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }] -- A + BC
-        , sort' [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardD, min: 1, max: 1 }] -- A + BD
-        , sort' [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 1, max: 3 }, { card: cardD, min: 1, max: 1 }] -- A + CD
-        , sort' [{ card: cardB, min: 1 + 1, max: 2 }, { card: cardC, min: 1, max: 3 }] -- B + BC
-        , sort' [{ card: cardB, min: 1 + 1, max: 2 }, { card: cardD, min: 1, max: 1 }] -- B + BD
-        , sort' [{ card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }, { card: cardD, min: 1, max: 1 }] -- B + CD
+      buildConditionPattern (NE.cons' { mode: Choice, count: 1, cards: [cardA, cardB] } [{ mode: Choice, count: 2, cards: [cardB, cardC, cardD] }]) `conditionEqual`
+        [ [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }] -- A + BC
+        , [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardD, min: 1, max: 1 }] -- A + BD
+        , [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 1, max: 3 }, { card: cardD, min: 1, max: 1 }] -- A + CD
+        , [{ card: cardB, min: 1 + 1, max: 2 }, { card: cardC, min: 1, max: 3 }] -- B + BC
+        , [{ card: cardB, min: 1 + 1, max: 2 }, { card: cardD, min: 1, max: 1 }] -- B + BD
+        , [{ card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }, { card: cardD, min: 1, max: 1 }] -- B + CD
         ]
-      buildConditionPattern (NE.cons' { mode: AtLeast, count: 1, cards: [cardD] } [{ mode: Choice, count: 2, cards: [cardB, cardC, cardD] }]) `shouldEqual`
-        [ sort' [{ card: cardD, min: 1, max: 1 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }] -- D + BC
-        -- , sort' [{ card: cardD, min: 1 + 1, max: 1 }, { card: cardB, min: 1, max: 2 }] -- D + BD invalid min < max
-        -- , sort' [{ card: cardD, min: 1 + 1, max: 1 }, { card: cardC, min: 1, max: 3 }] -- D + CD invalid min < max
+      buildConditionPattern (NE.cons' { mode: AtLeast, count: 1, cards: [cardD] } [{ mode: Choice, count: 2, cards: [cardB, cardC, cardD] }]) `conditionEqual`
+        [ [{ card: cardD, min: 1, max: 1 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }] -- D + BC
+        -- , [{ card: cardD, min: 1 + 1, max: 1 }, { card: cardB, min: 1, max: 2 }] -- D + BD invalid min < max
+        -- , [{ card: cardD, min: 1 + 1, max: 1 }, { card: cardC, min: 1, max: 3 }] -- D + CD invalid min < max
         ]
-  where
-  sort' = Array.sortBy $ comparing _.card.id
+
+conditionEqual :: Array ConditionPattern -> Array ConditionPattern -> Aff Unit
+conditionEqual = shouldEqual `on` (Array.sort <<< map Array.sort)
 
 calculateTest :: Spec Unit
 calculateTest = do
