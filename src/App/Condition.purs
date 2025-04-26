@@ -4,7 +4,6 @@ import Prelude
 
 import App.ConditionLine as ConditionLine
 import App.Result as Result
-import Control.Alternative (guard)
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
 import Data.Array as Array
 import Data.Array.NonEmpty as NE
@@ -16,8 +15,7 @@ import Effect.Aff (Aff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
-import Record as Record
-import TcgCalculator.Types (ConditionGroup, ConditionGroupExport, Deck, Id, generateId)
+import TcgCalculator.Types (AppConditionGroup, Deck, Id, generateId, toConditionGroup)
 import Type.Proxy (Proxy(..))
 import Util.Halogen as HU
 
@@ -33,12 +31,11 @@ data Action
   | RemoveCondition Id
   | ToggleItemDisabled Id
   | Receive Deck
-  | Calculate
+  | ReceiveConditionUpdated
 
 data Query a
-  = GetConditions (ConditionGroup -> a)
-  | Export (ConditionGroupExport -> a)
-  | RestoreState Deck ConditionGroupExport a
+  = GetState ({ conditions :: AppConditionGroup, disabled :: Boolean } -> a)
+  | UpdateState AppConditionGroup Boolean a
   | ToggleDisabled a
 
 ----------------------------------------------------------------
@@ -98,7 +95,7 @@ component = H.mkComponent
           ]
       , HH.div
           [ HP.class_ $ H.ClassName "min-w-0 grow" ]
-          [ HH.slot (Proxy @"line") id ConditionLine.component cards (const Calculate) ]
+          [ HH.slot (Proxy @"line") id ConditionLine.component cards (const ReceiveConditionUpdated) ]
       ]
 
   renderConditionAddButton =
@@ -108,66 +105,48 @@ component = H.mkComponent
 
   action = case _ of
     Initialize -> do
-      action AddCondition
-      calculate
+      id <- generateId
+      H.modify_ _ { conditions = [{ id, disabled: false }] }
     AddCondition -> do
       conditions <- H.gets _.conditions
       id <- generateId
       H.modify_ _ { conditions = Array.snoc conditions { id, disabled: false } }
+      H.raise Updated
     RemoveCondition id -> do
       { conditions } <- H.modify do
         conditions <- _.conditions
         _ { conditions = Array.filter (_.id >>> (_ /= id)) conditions }
-      if Array.null conditions
-        then H.raise AllConditionDeleted
-        else action Calculate
+      H.raise if Array.null conditions then AllConditionDeleted else Updated
     ToggleItemDisabled id -> do
       H.modify_ do
         conditions <- _.conditions
         fromMaybe identity do
           i <- Array.findIndex (_.id >>> (_ == id)) conditions
-          conditions' <- Array.modifyAt i (\s -> s { disabled = not s.disabled }) conditions
+          conditions' <- Array.modifyAt i toggleDisabled conditions
           pure _ { conditions = conditions' }
-      action Calculate
+      H.raise Updated
     Receive deck -> do
-      current <- H.gets _.deck
-      when (deck /= current) do
-        H.modify_ _ { deck = deck }
-        calculate
-    Calculate -> do
-      calculate
+      H.modify_ _ { deck = deck }
+    ReceiveConditionUpdated -> do
       H.raise Updated
 
-  getConditions = ado
-    disabled <- map _.id <<< Array.filter _.disabled <$> H.gets _.conditions
-    conditions <- H.requestAll (Proxy @"line") ConditionLine.GetCondition
-    in NE.fromFoldable <<< Map.filterKeys (Array.notElem <@> disabled) $ conditions
-
-  calculate = do
-    deck <- H.gets _.deck
-    conditions <- Array.fromFoldable <$> getConditions
-    H.tell (Proxy @"result") unit (Result.Calculate deck conditions)
+  toggleDisabled :: forall r. { disabled :: Boolean | r } -> { disabled :: Boolean | r }
+  toggleDisabled = _ { disabled = _ } <*> not _.disabled
 
   query :: _ ~> _
   query = case _ of
-    GetConditions reply -> ado
-      guard <<< not =<< H.gets _.disabled
-      conditions <- MaybeT getConditions
-      in reply conditions
-    Export reply -> MaybeT ado
-      { conditions, disabled: parentDisabled } <- H.get
+    GetState reply -> MaybeT ado
+      { conditions, disabled: groupDisabled } <- H.get
       lines <- H.requestAll (Proxy @"line") ConditionLine.GetCondition
-      in reply <<< { conditions: _, disabled: parentDisabled } <$> do
-        NE.fromArray conditions >>= traverse \{ id, disabled } -> { condition: _, disabled } <$> Map.lookup id lines
-    RestoreState deck { conditions, disabled: parentDisabled } a -> H.lift do
-      conditions' <- traverse (flap $ Record.insert (Proxy @"id") <$> generateId) $ NE.toArray conditions
-      H.put { conditions: conditions' <#> \{id, disabled } -> { id, disabled }, deck, disabled: parentDisabled }
-      for_ conditions' \{ id, condition } -> do
-        H.tell (Proxy @"line") id (ConditionLine.RestoreState deck.cards condition)
-      calculate
+      in reply <<< { conditions: _, disabled: groupDisabled } <$> do
+        NE.fromArray conditions >>= traverse \{ id, disabled } -> { id, condition: _, disabled } <$> Map.lookup id lines
+    UpdateState conditions groupDisabled a -> H.lift do
+      { deck } <- H.modify _ { conditions = NE.toArray conditions <#> \{ id, disabled } -> { id, disabled }, disabled = groupDisabled }
+      for_ conditions \{ id, condition } -> do
+        H.tell (Proxy @"line") id (ConditionLine.UpdateState condition)
+      let set = Array.fromFoldable <<< toConditionGroup $ conditions
+      H.tell (Proxy @"result") unit (Result.Calculate deck set)
       pure a
     ToggleDisabled a -> do
-      H.modify_ do
-        disabled <- _.disabled
-        _ { disabled = not disabled }
+      H.modify_ toggleDisabled
       pure a

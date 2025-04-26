@@ -6,7 +6,7 @@ import Control.Alternative (guard)
 import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Array ((!!))
 import Data.Array as Array
-import Data.Foldable (fold, traverse_)
+import Data.Foldable (fold, foldMap)
 import Data.Function (on)
 import Data.Int as Int
 import Data.Maybe (fromMaybe)
@@ -37,7 +37,7 @@ data Action
   = AddCard
   | RemoveCard Card
   | UpdateCard Card
-  | UpdateDeck Int
+  | UpdateTotal Int
   | UpdateHand Int
   | UpdateOthers Int
   | SelectOnFocus Focus.FocusEvent
@@ -80,7 +80,7 @@ component = H.mkComponent
           , HH.div [ HP.class_ $ H.ClassName "m-1" ] [ HH.text "デッキ情報" ]
           ]
       , renderIntegerInput "手札枚数:" handCount 1 deckCount UpdateHand
-      , renderIntegerInput "デッキ枚数:" deckCount cardCount deckLimit UpdateDeck
+      , renderIntegerInput "デッキ枚数:" deckCount cardCount deckLimit UpdateTotal
       ]
 
   renderCardList others cards =
@@ -138,7 +138,7 @@ component = H.mkComponent
       , renderIntegerInput "その他のカード:" otherCount 0 (deckLimit - cardCount) UpdateOthers
       ]
 
-  renderIntegerInput text count min max h =
+  renderIntegerInput text count min max handler =
     HH.div
       [ HP.class_ $ H.ClassName "mx-1 flex flex-wrap justify-end border-b border-gray-500" ]
       [ HH.div [ HP.class_ $ H.ClassName "m-1" ] [ HH.text text ]
@@ -150,7 +150,7 @@ component = H.mkComponent
           , HP.min $ Int.toNumber min
           , HP.max $ Int.toNumber max
           , HE.onFocus SelectOnFocus
-          , HE.onValueChange $ h <<< fromMaybe 0 <<< Int.fromString
+          , HE.onValueChange $ handler <<< fromMaybe 0 <<< Int.fromString
           ]
       ]
 
@@ -167,11 +167,11 @@ component = H.mkComponent
   action = case _ of
     AddCard -> do
       id <- generateId
-      H.modify_ do
+      H.raise =<< H.modify do
         cards <- _.cards
         _ { cards = Array.snoc cards { id, name: "", count: 0 } }
     RemoveCard card -> do
-      raiseUpdated =<< H.modify do
+      H.raise =<< H.modify do
         { cards, others } <- identity
         let cards' = Array.deleteBy (eq `on` _.id) card cards
         _ { cards = cards', others = others + card.count }
@@ -180,32 +180,32 @@ component = H.mkComponent
       fold do
         i <- Array.findIndex (_.id >>> (_ == card.id)) cards
         old <- cards !! i
-        let new = if String.null card.name then card { count = 0 } else card { count = clamp 0 (old.count + others) card.count }
+        let new = card { count = if String.null card.name then 0 else clamp 0 (old.count + others) card.count }
         cards' <- Array.updateAt i new cards
-        pure $ raiseUpdated =<< H.modify _ { cards = cards', others = others - (new.count - old.count) }
-    UpdateDeck total -> do
+        pure $ H.raise =<< H.modify _ { cards = cards', others = others - (new.count - old.count) }
+    UpdateTotal total -> do
       cards <- H.gets _.cards
       let cardCount = countCards cards
       action $ UpdateOthers (total - cardCount)
     UpdateHand hand -> do
-      raiseUpdated =<< H.modify do
+      H.raise =<< H.modify do
         { cards, others } <- identity
         let deckCount = countCards cards + others
         _ { hand = clamp 1 deckCount hand }
     UpdateOthers others -> do
-      raiseUpdated =<< H.modify do
+      H.raise =<< H.modify do
         { cards, hand } <- identity
         let cardCount = countCards cards
         let deckCount = clamp cardCount deckLimit (cardCount + others)
         _ { others = deckCount - cardCount, hand = min hand deckCount }
     SelectOnFocus event -> do
       let target = Input.fromEventTarget <=< Event.target <<< Focus.toEvent $ event
-      H.liftEffect $ traverse_ Input.select target
+      H.liftEffect $ foldMap Input.select target
     StartReorder id event -> do
       let transfer = Drag.dataTransfer event
       H.liftEffect $ DataTransfer.setData (MediaType dragItemMediaType) (Id.toString id) transfer
       elem <- H.getRef $ H.RefLabel (Id.toString id)
-      H.liftEffect $ elem # traverse_ \e -> do
+      H.liftEffect $ elem # foldMap \e -> do
         DataTransfer.setDragImage transfer e 5 15
     HandleDragBehavior event -> do
       let transfer = Drag.dataTransfer event
@@ -217,7 +217,7 @@ component = H.mkComponent
       unless (String.null id) do
         H.liftEffect <<< Event.preventDefault $ Drag.toEvent event
         cards <- H.gets _.cards
-        traverse_ (raiseUpdated <=< H.modify <<< flip _ { cards = _ }) do
+        foldMap (H.raise <=< H.modify <<< flip _ { cards = _ }) do
           target <- Id.fromString id
           guard $ target /= destination
           from <- Array.findIndex (_.id >>> (_ == target)) cards
@@ -225,9 +225,6 @@ component = H.mkComponent
           pure $ ArrayUtil.shiftInsert from to cards
 
   dragItemMediaType = "tcg-calculator/card"
-
-  raiseUpdated deck =
-    H.raise deck { cards = Array.filter (_.name >>> not String.null) deck.cards }
 
   countCards = alaF Additive Array.foldMap _.count
 

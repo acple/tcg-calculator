@@ -3,11 +3,12 @@ module App.Result where
 import Prelude
 
 import App.Worker as Worker
+import Control.Alternative (guard)
 import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
 import Data.Either (Either(..))
-import Data.Foldable (traverse_)
+import Data.Foldable (foldMap)
 import Data.Function (on)
 import Data.Maybe (Maybe(..))
 import Data.Number.Format as Format
@@ -34,8 +35,8 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ { combination :: BigInt, total :: BigInt, calculation :: Maybe H.ForkId }
-  initialState _ = { combination: zero, total: zero, calculation: Nothing }
+  initialState :: _ { deck :: Deck, condition :: ConditionSet, combination :: BigInt, total :: BigInt, calculation :: Maybe H.ForkId }
+  initialState _ = { deck: { cards: [], others: 0, hand: 0 }, condition: [], combination: zero, total: zero, calculation: Nothing }
 
   render { combination, total, calculation } =
     HH.div
@@ -67,18 +68,21 @@ component = H.mkComponent
 
   query :: _ ~> _
   query = case _ of
-    Calculate deck condition a -> H.lift do
-      newCalculation <- H.fork do
-        let deck' = TC.normalizeDeck deck condition
+    Calculate deck condition a -> do
+      let deck' = TC.normalizeDeck deck condition
+      { deck: currentDeck, condition: currentCondition } <- H.get
+      guard $ deck' /= currentDeck || condition /= currentCondition
+      H.modify_ _ { deck = deck', condition = condition }
+      newCalculation <- H.lift $ H.fork do
         result <- H.liftAff <<< attempt $ Worker.run { deck: deck', condition }
         case result of
           Left error -> do
-            H.put { combination: zero, total: zero, calculation: Nothing }
+            H.modify_ _ { combination = zero, total = zero, calculation = Nothing }
             throwError error
           Right combination -> do
             let total = TC.calculateTotal deck'
-            H.put { combination, total, calculation: Nothing }
+            H.modify_ _ { combination = combination, total = total, calculation = Nothing }
       currentCalculation <- H.gets _.calculation
       H.modify_ _ { calculation = Just newCalculation }
-      traverse_ H.kill currentCalculation
+      H.lift $ foldMap H.kill currentCalculation
       pure a

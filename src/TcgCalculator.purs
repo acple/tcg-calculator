@@ -3,18 +3,17 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty)
-import Data.Array (all, any, concatMap, deleteBy, filter, find, findIndex, foldMap, groupAllBy, length, nub, nubBy, replicate, sortBy, updateAt, zipWith, (..), (:))
+import Data.Array (all, any, concatMap, filter, find, findIndex, foldMap, groupAllBy, length, notElem, nub, replicate, sortBy, updateAt, zipWith, (..), (:))
 import Data.Array.NonEmpty (foldl1, toArray)
 import Data.BigInt (BigInt)
 import Data.Foldable (and, fold, foldr, product)
-import Data.Function (on)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF)
 import Data.Tuple (Tuple(..))
 import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber)
-import TcgCalculator.Types (Card, Cards, Condition, ConditionGroup, ConditionMode(..), ConditionSet, Deck)
+import TcgCalculator.Types (Card, Cards, Condition, ConditionGroup, ConditionMode(..), ConditionSet, Deck, filterCards)
 
 ----------------------------------------------------------------
 
@@ -22,19 +21,20 @@ import TcgCalculator.Types (Card, Cards, Condition, ConditionGroup, ConditionMod
 calculate :: Deck -> ConditionSet -> BigInt
 calculate deck set = do
   let drawPattern = generateDrawPatterns deck
-  let conditionPatterns = normalizeConditionPatterns $ buildConditionPattern =<< set
+  let conditionPatterns = normalizeConditionPatterns $ buildConditionPattern deck.cards =<< set
   let pattern = filter (\dp -> any (satisfyCondition dp) conditionPatterns) drawPattern
   sumBy (calculatePatternCount deck) pattern
 
 -- 指定した条件式で使用していないカードをデッキから取り除く
 normalizeDeck :: Deck -> ConditionSet -> Deck
-normalizeDeck deck set = do
+normalizeDeck { cards, others, hand } set = do
   let used = usedCards set
-  let unused = diffCards deck.cards used
-  deck { cards = used, others = deck.others + sumBy _.count unused }
+  let cards' = sortBy (comparing _.id) <<< filterCards used $ cards
+  let unused = diffCards used cards
+  { cards: cards', others: others + sumBy _.count unused, hand }
   where
-  usedCards = nubBy (comparing _.id) <<< concatMap _.cards <<< concatMap toArray
-  diffCards = foldr $ deleteBy (eq `on` _.id)
+  usedCards = nub <<< concatMap _.cards <<< concatMap toArray
+  diffCards used = filter (_.id >>> notElem <@> used)
 
 -- 確率計算のため、全組み合わせの個数を計算する
 calculateTotal :: Deck -> BigInt
@@ -70,9 +70,9 @@ satisfyCondition dp = all \{ card: { id }, min, max } -> do
   min <= draw && draw <= max
 
 -- 条件式をマージ (AND) して ConditionPattern のリストに変換する
-buildConditionPattern :: ConditionGroup -> Array ConditionPattern
-buildConditionPattern group = do
-  let patterns = mkConditionPattern <$> group
+buildConditionPattern :: Cards -> ConditionGroup -> Array ConditionPattern
+buildConditionPattern cards group = do
+  let patterns = mkConditionPattern cards <$> group
   foldl1 <@> patterns $ \left right -> do
     l <- left
     r <- right
@@ -99,9 +99,9 @@ normalizeConditionPatterns = groupAllBy (comparing $ map _.card.id) >=> foldr co
   include = map and <<< zipWith \{ min: min1, max: max1 } { min: min2, max: max2 } -> min2 <= min1 && max1 <= max2
 
 -- 一つの Condition に対応する全パターンのリストを出力する
-mkConditionPattern :: Condition -> Array ConditionPattern
-mkConditionPattern { mode, count, cards } = do
-  let cards' = sortBy (comparing _.id) cards
+mkConditionPattern :: Cards -> Condition -> Array ConditionPattern
+mkConditionPattern cards { mode, count, cards: ids } = do
+  let cards' = filterCards ids cards
   case mode of
     -- cards の中から count 枚以上を引くパターン
     AtLeast -> ado
@@ -120,8 +120,11 @@ mkConditionPattern { mode, count, cards } = do
         let draw = maybe 0 _.draw $ find (_.card.id >>> (_ == card.id)) pattern
         { card, min: 0, max: draw }
     -- ちょうど count 枚デッキに残すパターン
-    JustRemains ->
-      mkConditionPattern { mode: JustDraw, count: (sumBy _.count cards' - count), cards: cards' }
+    JustRemains -> ado
+      pattern <- mkDrawPattern cards' (sumBy _.count cards' - count)
+      in cards' <#> \card -> do
+        let draw = maybe 0 _.draw $ find (_.card.id >>> (_ == card.id)) pattern
+        { card, min: draw, max: draw }
     -- cards の中から count 種類以上を1枚以上引くパターン
     Choice -> ado
       pattern <- mkDrawPattern' cards' [replicate count 1]

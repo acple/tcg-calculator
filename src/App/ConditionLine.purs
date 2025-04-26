@@ -5,8 +5,7 @@ import Prelude
 import App.Selector as Selector
 import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Array as Array
-import Data.Foldable (traverse_)
-import Data.Function (on)
+import Data.Foldable (foldMap)
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
@@ -16,7 +15,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import TcgCalculator.Types (Cards, Condition, ConditionMode(..), Id, readConditionMode)
+import TcgCalculator.Types (Cards, Condition, ConditionMode(..), Id, filterCards, readConditionMode)
 import Type.Proxy (Proxy(..))
 import Web.Event.Event as Event
 import Web.HTML.HTMLInputElement as Input
@@ -36,7 +35,7 @@ data Action
 
 data Query a
   = GetCondition (Condition -> a)
-  | RestoreState Cards Condition a
+  | UpdateState Condition a
 
 ----------------------------------------------------------------
 
@@ -112,32 +111,32 @@ component = H.mkComponent
       { cards, condition: { mode, count, cards: selected } } <- H.get
       updateStatus cards selected mode count
     UpdateCardSelected selected -> do
+      let selected' = Array.sort selected
       { cards, condition: { mode, count, cards: current } } <- H.get
-      when (selected /= (current <#> _.id)) do
-        let selected' = Array.filter (_.id >>> Array.elem <@> selected) cards
+      when (selected' /= current) do
         updateStatus cards selected' mode count
         H.raise Updated
     UpdateConditionMode mode -> do
-      readConditionMode mode # traverse_ \mode' -> do
+      readConditionMode mode # foldMap \mode' -> do
         { cards, condition: { count, cards: selected } } <- H.get
         updateStatus cards selected mode' count
         H.raise Updated
     UpdateCardCount count -> do
-      Int.fromString count # traverse_ \count' -> do
+      Int.fromString count # foldMap \count' -> do
         { cards, condition: { mode, cards: selected } } <- H.get
         updateStatus cards selected mode count'
         H.raise Updated
     Receive cards -> do
       { mode, count, cards: selected } <- H.gets _.condition
-      let selected' = Array.intersectBy (eq `on` _.id) cards selected
-      updateStatus cards selected' mode count
+      updateStatus cards selected mode count
     SelectOnFocus event -> do
       let element = Input.fromEventTarget <=< Event.target <<< Focus.toEvent $ event
-      H.liftEffect $ traverse_ Input.select element
+      H.liftEffect $ foldMap Input.select element
     where
     updateStatus cards selected mode count = do
-      let { min, max } = getMinMax selected mode
-      H.put { cards, condition: { mode, count: clamp min max count, cards: selected }, min, max }
+      let cards' = filterCards selected cards
+      let { min, max } = getMinMax cards' mode
+      H.put { cards, condition: { mode, count: clamp min max count, cards: Array.sort $ cards' <#> _.id }, min, max }
 
   getMinMax :: Cards -> ConditionMode -> { min :: Int, max :: Int }
   getMinMax cards = case _ of
@@ -169,9 +168,11 @@ component = H.mkComponent
   query = case _ of
     GetCondition reply -> do
       reply <$> H.gets _.condition
-    RestoreState cards condition@{ mode, cards: selected } a -> H.lift do
-      let { min, max } = getMinMax selected mode
+    UpdateState condition@{ mode, cards: selected } a -> H.lift do
+      cards <- H.gets _.cards
+      let cards' = filterCards selected cards
+      let { min, max } = getMinMax cards' mode
       H.put { cards, condition, min, max }
-      let items = cards <#> \card -> { key: card.id, value: card.name, selected: Array.elem card selected }
+      let items = cards <#> \card -> { key: card.id, value: card.name, selected: Array.elem card cards' }
       H.tell (Proxy @"selector") unit (Selector.SetItems items)
       pure a

@@ -4,11 +4,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "npm run build:app -- --pedantic-packages; npm run build:worker",
-    "build:app": "spago bundle --source-maps --outfile bundle/app.js",
-    "build:opt": "spago build --pedantic-packages && purs-backend-es bundle-app -t ./bundle/app.js && purs-backend-es bundle-app -s -m Worker.Main -t ./bundle/worker.js",
-    "build:worker": "spago bundle --source-maps --module Worker.Main --outfile bundle/worker.js",
-    "bundle": "npm run build:opt && npm run parcel",
+    "build": "spago build --pedantic-packages && purs-backend-es bundle-app -t ./bundle/app.js && purs-backend-es bundle-app -s -m Worker.Main -t ./bundle/worker.js",
+    "bundle": "npm run build && npm run parcel",
     "gendevcert": "dotnet dev-certs https --format pem --no-password --export-path devcert.pem --trust",
     "parcel": "PARCEL_WORKER_BACKEND=process parcel build --public-url . -- index.html bundle/worker.js",
     "postinstall": "spago install",

@@ -13,6 +13,7 @@ package:
     - either
     - foldable-traversable
     - foreign
+    - functors
     - halogen
     - halogen-subscriptions
     - integers

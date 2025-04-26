@@ -1,28 +1,35 @@
 module TcgCalculator.Types
-  ( Card
+  ( AppCondition
+  , AppConditionGroup
+  , AppConditionSet
+  , AppState
+  , AppStateJson
+  , Card
   , CardJson
   , Cards
   , Condition
   , ConditionGroup
-  , ConditionGroupExport
   , ConditionGroupJson
+  , ConditionJson
   , ConditionMode(..)
   , ConditionSet
-  , ConditionSetExport
   , ConditionSetJson
   , Deck
   , DeckJson
-  , Export
-  , ExportJson
   , WorkerParam
   , module Export
   , readConditionMode
+  , filterCards
+  , toConditionGroup
+  , toConditionSet
   )
   where
 
 import Prelude
 
+import Data.Array as Array
 import Data.Array.NonEmpty (NonEmptyArray)
+import Data.Array.NonEmpty as NE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Show.Generic (genericShow)
@@ -68,36 +75,45 @@ readConditionMode = case _ of
 
 ----------------------------------------------------------------
 
-type Condition = { mode :: ConditionMode, count :: Int, cards :: Cards }
+type ConditionSet = Array ConditionGroup
 
 type ConditionGroup = NonEmptyArray Condition
 
-type ConditionSet = Array ConditionGroup
+type Condition = { mode :: ConditionMode, count :: Int, cards :: Array Id }
+
+filterCards :: Array Id -> Cards -> Cards
+filterCards ids = Array.filter (_.id >>> Array.elem <@> ids)
 
 ----------------------------------------------------------------
 
 type WorkerParam = { deck :: Deck, condition :: ConditionSet }
 
-type Export = { deck :: Deck, condition :: ConditionSetExport }
+----------------------------------------------------------------
 
-type ConditionSetExport = Array ConditionGroupExport
+type AppState = { deck :: Deck, condition :: AppConditionSet }
 
-type ConditionGroupExport =
-  { conditions :: NonEmptyArray { condition :: Condition, disabled :: Boolean }
-  , disabled :: Boolean
-  }
+type AppConditionSet = Array { id :: Id, conditions :: AppConditionGroup, disabled :: Boolean }
+
+type AppConditionGroup = NonEmptyArray AppCondition
+
+type AppCondition = { id :: Id, condition :: Condition, disabled :: Boolean }
+
+toConditionSet :: AppConditionSet -> ConditionSet
+toConditionSet = Array.filter (not _.disabled) >>> Array.sortBy (comparing _.id) >>> Array.mapMaybe (_.conditions >>> toConditionGroup)
+
+toConditionGroup :: AppConditionGroup -> Maybe ConditionGroup
+toConditionGroup = NE.filter (not _.disabled) >>> Array.sortBy (comparing _.id) >>> map _.condition >>> NE.fromArray
 
 ----------------------------------------------------------------
 
-type ExportJson = { deck :: DeckJson, condition :: ConditionSetJson }
+type AppStateJson = { deck :: DeckJson, condition :: ConditionSetJson }
 
 type DeckJson = { cards :: Array CardJson, hand :: Int, others :: Int }
 
 type CardJson = { name :: String, count :: Int }
 
-type ConditionSetJson = Array ConditionGroupJson
+type ConditionSetJson = Array { conditions :: ConditionGroupJson, disabled :: Boolean }
 
-type ConditionGroupJson =
-  { conditions :: NonEmptyArray { mode :: ConditionMode, count :: Int, cards :: Array Int, disabled :: Boolean }
-  , disabled :: Boolean
-  }
+type ConditionGroupJson = NonEmptyArray ConditionJson
+
+type ConditionJson = { mode :: ConditionMode, count :: Int, cards :: Array Int, disabled :: Boolean }

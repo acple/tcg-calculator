@@ -8,25 +8,29 @@ import App.Result as Result
 import Codec.JSON.DecodeError as DecodeError
 import Control.Monad.Except (except, runExceptT)
 import Data.Array as Array
+import Data.Array.NonEmpty as NE
 import Data.Bifunctor (lmap)
 import Data.Const (Const)
 import Data.Either (Either(..))
-import Data.Foldable (for_)
+import Data.Foldable (fold, for_)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.Traversable (traverse)
+import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class.Console as Console
+import Foreign as Foreign
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
 import JSON as JSON
 import JSURI (decodeURIComponent)
-import Routing.Hash as Hash
+import Record as Record
+import Routing.PushState as PushState
 import TcgCalculator.Codec as Codec
-import TcgCalculator.Types (Deck, Id, generateId)
+import TcgCalculator.Types (AppState, ConditionMode(..), Deck, Id, generateId, toConditionSet)
 import Type.Proxy (Proxy(..))
 import Util.Array as ArrayUtil
 import Util.Halogen as HU
@@ -44,8 +48,8 @@ data Action
   | ToggleDisabled Id
   | Swap Index Index
   | ReceiveConditionUpdated Id Condition.Output
-  | Calculate
   | RestoreState String
+  | ApplyState AppState
   | SaveState
 
 ----------------------------------------------------------------
@@ -58,17 +62,18 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ { deck :: Deck, conditions :: Array Id }
-  initialState _ = { deck: { cards: [], others: 0, hand: 0 }, conditions: [] }
+  initialState :: _ { deck :: Deck, conditions :: Array Id, pushState :: AppState -> Effect Unit, replaceState :: AppState -> Effect Unit }
+  initialState _ = { deck: { cards: [], others: 0, hand: 0 }, conditions: [], pushState: mempty, replaceState: mempty }
 
-  render { deck, conditions } =
+  render { deck, conditions } = do
+    let deck' = deck { cards = Array.filter (_.name >>> not String.null) deck.cards }
     HH.div
       [ HP.class_ $ H.ClassName "relative overflow-x-clip" ]
       [ HH.header
           [ HP.class_ $ H.ClassName "flex items-baseline px-2" ]
           [ HH.h1
               [ HP.class_ $ H.ClassName "p-1 text-lg" ]
-              [ HH.a [ HP.href "." ] [ HH.text "Draw Calculator" ] ]
+              [ HH.a [ HP.href "#" ] [ HH.text "Draw Calculator" ] ]
           , HH.text "-"
           , HH.h2
               [ HP.class_ $ H.ClassName "p-1" ]
@@ -83,7 +88,7 @@ component = H.mkComponent
               ]
           , HH.ul
               [ HP.class_ $ H.ClassName "flex flex-col gap-1" ]
-              $ Array.mapWithIndex (renderCondition deck) conditions
+              $ Array.mapWithIndex (renderCondition deck') conditions
           , renderConditionAddButton
           ]
       , HH.footer
@@ -103,13 +108,8 @@ component = H.mkComponent
 
   renderResult =
     HH.div
-      [ HP.class_ $ H.ClassName "flex grow basis-0 items-center rounded border-2 border-cyan-400 p-1" ]
-      [ HH.div
-          [ HP.class_ $ H.ClassName "flex w-full justify-between gap-1" ]
-          [ HH.div_ [ HU.button (HH.text "Save") (H.ClassName "border border-rose-500 hover:bg-rose-100") SaveState ]
-          , HH.slot_ (Proxy @"result") unit Result.component unit
-          ]
-      ]
+      [ HP.class_ $ H.ClassName "flex grow basis-0 items-center justify-end rounded border-2 border-cyan-400 p-1" ]
+      [ HH.slot_ (Proxy @"result") unit Result.component unit ]
 
   renderCondition deck i id =
     HH.li
@@ -132,63 +132,78 @@ component = H.mkComponent
     Initialize -> do
       { emitter, listener } <- H.liftEffect HS.create
       _ <- H.subscribe emitter
-      void <<< H.liftEffect $ Hash.matchesWith decodeURIComponent \_ hash -> do
-        HS.notify listener if String.null hash
-          then PrepareDefaultState
-          else RestoreState hash
+      psi <- H.liftEffect PushState.makeInterface
+      H.modify_ _ { pushState = update psi.pushState, replaceState = update psi.replaceState }
+      _ <- H.liftEffect $ psi.listen (HS.notify listener <<< handle)
+      action <<< handle =<< H.liftEffect psi.locationState
+      where
+      update f export = do
+        let json = Codec.encode Codec.appState export
+        f (Foreign.unsafeToForeign export) ("#" <> JSON.print json)
+      handle { state, hash }
+        | not Foreign.isNull state = ApplyState (Foreign.unsafeFromForeign state) -- this works only with purescript-backend-optimizer
+        | not String.null hash = RestoreState hash
+        | otherwise = PrepareDefaultState
     PrepareDefaultState -> do
-      id <- generateId
-      let defaultDeck = { cards: [{ id, name: "Card1", count: 3 }], others: 37, hand: 5 }
-      H.put { deck: defaultDeck, conditions: [] }
-      H.tell (Proxy @"deck") unit (Deck.SetDeck defaultDeck)
-      action AddCondition
+      cardId <- generateId
+      conditionId <- generateId
+      groupId <- generateId
+      let card1 = { id: cardId, name: "Card1", count: 3 }
+      let defaultDeck = { cards: [card1], others: 37, hand: 5 }
+      let defaultCondition = { mode: AtLeast, count: 1, cards: [cardId] }
+      let defaultConditionGroup = NE.singleton { id: conditionId, condition: defaultCondition, disabled: false }
+      let defaultConditionSet = [{ id: groupId, conditions: defaultConditionGroup, disabled: false }]
+      replaceState <- H.gets _.replaceState
+      H.liftEffect $ replaceState { deck: defaultDeck, condition: defaultConditionSet }
     UpdateDeck deck -> do
       H.modify_ _ { deck = deck }
-      action Calculate
+      action SaveState
     AddCondition -> do
       id <- generateId
       H.modify_ do
         conditions <- _.conditions
         _ { conditions = Array.snoc conditions id }
-      action Calculate
+      action SaveState
     RemoveCondition id -> do
       H.modify_ do
         conditions <- _.conditions
         _ { conditions = Array.delete id conditions }
-      action Calculate
+      action SaveState
     ToggleDisabled id -> do
       H.tell (Proxy @"condition") id Condition.ToggleDisabled
-      action Calculate
+      action SaveState
     Swap x y -> do
       H.modify_ do
         conditions <- _.conditions
         _ { conditions = ArrayUtil.swap x y conditions }
+      action SaveState
     ReceiveConditionUpdated _ Condition.Updated -> do
-      action Calculate
+      action SaveState
     ReceiveConditionUpdated id Condition.AllConditionDeleted -> do
       action $ RemoveCondition id
-    Calculate -> do
-      deck <- H.gets _.deck
-      conditions <- H.requestAll (Proxy @"condition") Condition.GetConditions
-      let conditions' = Array.fromFoldable conditions
-      H.tell (Proxy @"result") unit (Result.Calculate deck conditions')
     RestoreState hash -> do
-      let parse = Codec.decode Codec.export <=< except <<< lmap DecodeError.basic <<< JSON.parse
-      result <- H.liftEffect <<< runExceptT <<< parse $ hash
+      let json = fold $ String.stripPrefix (String.Pattern "#") =<< decodeURIComponent hash
+      result <- H.liftEffect <<< runExceptT <<< parse $ json
       case result of
         Left error -> do
-          Console.error $ DecodeError.print error
+          Console.error $ "Failed to decode JSON: " <> DecodeError.print error
           action PrepareDefaultState
-        Right { deck, condition: set } -> do
-          condition' <- traverse (flap $ { id: _, condition: _ } <$> generateId) set
-          H.put { deck, conditions: condition' <#> _.id }
-          H.tell (Proxy @"deck") unit (Deck.SetDeck deck)
-          for_ condition' \{ id, condition } -> do
-            H.tell (Proxy @"condition") id (Condition.RestoreState deck condition)
-          action Calculate
+        Right state -> do
+          replaceState <- H.gets _.replaceState
+          H.liftEffect $ replaceState state
+      where
+      parse = Codec.decode Codec.appState <=< except <<< lmap DecodeError.basic <<< JSON.parse
+    ApplyState { deck, condition: set } -> do
+      let ids = set <#> _.id
+      { deck: currentDeck, conditions: currentConditions } <- H.get
+      when (deck /= currentDeck || ids /= currentConditions) do
+        H.modify_ _ { deck = deck, conditions = ids }
+        H.tell (Proxy @"deck") unit (Deck.SetDeck deck)
+      for_ set \{ id, conditions, disabled } -> do
+        H.tell (Proxy @"condition") id (Condition.UpdateState conditions disabled)
+      H.tell (Proxy @"result") unit (Result.Calculate deck (toConditionSet set))
     SaveState -> do
-      { deck, conditions: ids } <- H.get
-      conditions <- H.requestAll (Proxy @"condition") Condition.Export
-      let condition' = Array.mapMaybe (Map.lookup <@> conditions) ids
-      let json = Codec.encode Codec.export { deck, condition: condition' }
-      H.liftEffect <<< Hash.setHash <<< JSON.print $ json
+      { deck, conditions: ids, pushState } <- H.get
+      conditions <- H.requestAll (Proxy @"condition") Condition.GetState
+      let condition = fold $ ids # traverse \id -> Record.insert (Proxy @"id") id <$> Map.lookup id conditions
+      H.liftEffect $ pushState { deck, condition }
