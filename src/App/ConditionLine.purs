@@ -15,7 +15,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import TcgCalculator.Types (Cards, Condition, ConditionMode(..), Id, filterCards, readConditionMode)
+import TcgCalculator.Types (CardId, Cards, Condition, ConditionMode(..), filterCards, readConditionMode)
 import Type.Proxy (Proxy(..))
 import Web.Event.Event as Event
 import Web.HTML.HTMLInputElement as Input
@@ -28,7 +28,7 @@ data Output = Updated
 data Action
   = Initialize
   | UpdateConditionMode String
-  | UpdateCardSelected (Array Id)
+  | UpdateCardSelected (Array CardId)
   | UpdateCardCount String
   | Receive Cards
   | SelectOnFocus Focus.FocusEvent

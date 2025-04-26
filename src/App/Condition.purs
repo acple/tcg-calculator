@@ -15,7 +15,7 @@ import Effect.Aff (Aff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
-import TcgCalculator.Types (AppConditionGroup, Deck, Id, generateId, toConditionGroup)
+import TcgCalculator.Types (AppConditionGroup, ConditionId, Deck, generateId, toConditionGroup)
 import Type.Proxy (Proxy(..))
 import Util.Halogen as HU
 
@@ -28,8 +28,8 @@ data Output
 data Action
   = Initialize
   | AddCondition
-  | RemoveCondition Id
-  | ToggleItemDisabled Id
+  | RemoveCondition ConditionId
+  | ToggleItemDisabled ConditionId
   | Receive Deck
   | ReceiveConditionUpdated
 
@@ -53,7 +53,7 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ { conditions :: Array { id :: Id, disabled :: Boolean }, deck :: Deck, disabled :: Boolean }
+  initialState :: _ { conditions :: Array { id :: ConditionId, disabled :: Boolean }, deck :: Deck, disabled :: Boolean }
   initialState = { conditions: [], deck: _, disabled: false }
 
   render { conditions, deck, disabled } =

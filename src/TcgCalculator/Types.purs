@@ -5,17 +5,20 @@ module TcgCalculator.Types
   , AppState
   , AppStateJson
   , Card
+  , CardId
   , CardJson
   , Cards
   , Condition
   , ConditionGroup
   , ConditionGroupJson
+  , ConditionId
   , ConditionJson
   , ConditionMode(..)
   , ConditionSet
   , ConditionSetJson
   , Deck
   , DeckJson
+  , GroupId
   , WorkerParam
   , module Export
   , readConditionMode
@@ -38,7 +41,9 @@ import TcgCalculator.Types.Id (Id, generateId) as Export
 
 ----------------------------------------------------------------
 
-type Card = { id :: Id, name :: String, count :: Int }
+type CardId = Id "card"
+
+type Card = { id :: CardId, name :: String, count :: Int }
 
 type Cards = Array Card
 
@@ -79,9 +84,9 @@ type ConditionSet = Array ConditionGroup
 
 type ConditionGroup = NonEmptyArray Condition
 
-type Condition = { mode :: ConditionMode, count :: Int, cards :: Array Id }
+type Condition = { mode :: ConditionMode, count :: Int, cards :: Array CardId }
 
-filterCards :: Array Id -> Cards -> Cards
+filterCards :: Array CardId -> Cards -> Cards
 filterCards ids = Array.filter (_.id >>> Array.elem <@> ids)
 
 ----------------------------------------------------------------
@@ -90,13 +95,17 @@ type WorkerParam = { deck :: Deck, condition :: ConditionSet }
 
 ----------------------------------------------------------------
 
+type GroupId = Id "group"
+
+type ConditionId = Id "condition"
+
 type AppState = { deck :: Deck, condition :: AppConditionSet }
 
-type AppConditionSet = Array { id :: Id, conditions :: AppConditionGroup, disabled :: Boolean }
+type AppConditionSet = Array { id :: GroupId, conditions :: AppConditionGroup, disabled :: Boolean }
 
 type AppConditionGroup = NonEmptyArray AppCondition
 
-type AppCondition = { id :: Id, condition :: Condition, disabled :: Boolean }
+type AppCondition = { id :: ConditionId, condition :: Condition, disabled :: Boolean }
 
 toConditionSet :: AppConditionSet -> ConditionSet
 toConditionSet = Array.filter (not _.disabled) >>> Array.sortBy (comparing _.id) >>> Array.mapMaybe (_.conditions >>> toConditionGroup)

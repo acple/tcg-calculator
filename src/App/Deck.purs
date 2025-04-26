@@ -21,7 +21,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Elements.Keyed as HK
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import TcgCalculator.Types (Card, Deck, Id, generateId)
+import TcgCalculator.Types (Card, CardId, Deck, generateId)
 import TcgCalculator.Types.Id as Id
 import Util.Array as ArrayUtil
 import Util.Halogen as HU
@@ -41,9 +41,9 @@ data Action
   | UpdateHand Int
   | UpdateOthers Int
   | SelectOnFocus Focus.FocusEvent
-  | StartReorder Id Drag.DragEvent
+  | StartReorder CardId Drag.DragEvent
   | HandleDragBehavior Drag.DragEvent
-  | ExecuteReorder Id Drag.DragEvent
+  | ExecuteReorder CardId Drag.DragEvent
 
 data Query a
   = SetDeck Deck a

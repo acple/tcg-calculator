@@ -18,25 +18,27 @@ import Safe.Coerce (coerce)
 
 ----------------------------------------------------------------
 
-newtype Id = Id UUID
+newtype Id :: forall k. k -> Type
+newtype Id a = Id UUID
+type role Id nominal
 
-derive newtype instance Eq Id
-derive newtype instance Ord Id
+derive newtype instance Eq (Id a)
+derive newtype instance Ord (Id a)
 
-instance Show Id where
+instance Show (Id a) where
   show (Id uuid) = "\"" <> UUID.toString uuid <> "\""
 
-namespaceTcgCalculator :: Id
+namespaceTcgCalculator :: forall a. Id a
 namespaceTcgCalculator = coerce UUID.genv5UUID "tcg-calculator" UUID.emptyUUID
 
-mkId :: String -> Id
+mkId :: forall a. String -> Id a
 mkId s = coerce UUID.genv5UUID s namespaceTcgCalculator
 
-generateId :: forall m. MonadEffect m => m Id
+generateId :: forall m a. MonadEffect m => m (Id a)
 generateId = liftEffect $ coerce UUID.genUUID
 
-toString :: Id -> String
+toString :: forall a. Id a -> String
 toString = coerce UUID.toString
 
-fromString :: String -> Maybe Id
+fromString :: forall a. String -> Maybe (Id a)
 fromString = coerce UUID.parseUUID

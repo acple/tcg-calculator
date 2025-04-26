@@ -48,7 +48,7 @@ appState' = codec' decode encode
     set' <- traverse insertId conditions
     pure { deck: { cards: cards', hand, others }, condition: set' }
 
-  insertId :: forall m r. Row.Lacks "id" r => MonadEffect m => { | r } -> m { id :: Id | r }
+  insertId :: forall m r a. Row.Lacks "id" r => MonadEffect m => { | r } -> m { id :: Id a | r }
   insertId = flap $ Record.insert (Proxy @"id") <$> generateId
 
   encode :: AppState -> AppStateJson

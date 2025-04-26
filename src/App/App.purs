@@ -30,7 +30,7 @@ import JSURI (decodeURIComponent)
 import Record as Record
 import Routing.PushState as PushState
 import TcgCalculator.Codec as Codec
-import TcgCalculator.Types (AppState, ConditionMode(..), Deck, Id, generateId, toConditionSet)
+import TcgCalculator.Types (AppState, ConditionMode(..), Deck, GroupId, generateId, toConditionSet)
 import Type.Proxy (Proxy(..))
 import Util.Array as ArrayUtil
 import Util.Halogen as HU
@@ -44,10 +44,10 @@ data Action
   | PrepareDefaultState
   | UpdateDeck Deck
   | AddCondition
-  | RemoveCondition Id
-  | ToggleDisabled Id
+  | RemoveCondition GroupId
+  | ToggleDisabled GroupId
   | Swap Index Index
-  | ReceiveConditionUpdated Id Condition.Output
+  | ReceiveConditionUpdated GroupId Condition.Output
   | RestoreState String
   | ApplyState AppState
   | SaveState
@@ -62,7 +62,7 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ { deck :: Deck, conditions :: Array Id, pushState :: AppState -> Effect Unit, replaceState :: AppState -> Effect Unit }
+  initialState :: _ { deck :: Deck, conditions :: Array GroupId, pushState :: AppState -> Effect Unit, replaceState :: AppState -> Effect Unit }
   initialState _ = { deck: { cards: [], others: 0, hand: 0 }, conditions: [], pushState: mempty, replaceState: mempty }
 
   render { deck, conditions } = do
