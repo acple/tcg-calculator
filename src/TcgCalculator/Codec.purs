@@ -55,7 +55,8 @@ appState' = codec' decode encode
   encode { deck: { cards, hand, others }, condition: set } = do
     let ids = cards <#> _.id
     let set' = set <#> \{ conditions, disabled: groupDisabled } -> do
-          { conditions: conditions <#> \{ condition: { mode, count, cards: cards' }, disabled } -> { mode, count, cards: fold $ traverse (elemIndex <@> ids) cards', disabled }
+          { conditions: conditions <#> \{ condition: { mode, count, cards: selected }, disabled } ->
+              { mode, count, cards: sort <<< fold $ traverse (elemIndex <@> ids) selected, disabled }
           , disabled: groupDisabled
           }
     let cards' = cards <#> \{ name, count } -> { name, count }
