@@ -225,7 +225,7 @@
     },
     "package_set": {
       "address": {
-        "registry": "64.6.0"
+        "registry": "64.7.1"
       },
       "compiler": ">=0.15.15 <0.16.0",
       "content": {
@@ -605,7 +605,7 @@
         "recharts": "1.1.0",
         "record": "4.0.0",
         "record-extra": "5.0.1",
-        "record-extra-srghma": "0.1.1",
+        "record-extra-srghma": "0.2.8",
         "record-ptional-fields": "0.1.2",
         "record-studio": "1.0.4",
         "refs": "6.0.0",
@@ -749,7 +749,7 @@
         "webextension-polyfill": "0.1.0",
         "webgpu": "0.0.1",
         "which": "2.0.0",
-        "whine-core": "0.0.28",
+        "whine-core": "0.0.30",
         "xterm": "1.0.0",
         "yoga-fetch": "1.0.1",
         "yoga-json": "5.1.0",
