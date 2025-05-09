@@ -75,7 +75,7 @@ component = H.mkComponent
       [ HP.class_ if item.selected || isEditMode then H.ClassName "min-w-0" else H.ClassName "hidden" ]
       [ HH.button
           [ HP.classes
-              [ H.ClassName "h-full w-full rounded border px-3 py-1 transition-colors duration-75"
+              [ H.ClassName "h-full w-full rounded border px-3 py-1 whitespace-pre-wrap transition-colors duration-75"
               , if item.selected
                   then H.ClassName "border-sky-700 bg-sky-500 text-white hover:bg-sky-600"
                   else H.ClassName "border-gray-800 bg-gray-300 text-black hover:bg-gray-400"
