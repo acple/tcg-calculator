@@ -142,8 +142,8 @@ component = H.mkComponent
         f (Foreign.unsafeToForeign export) ("#" <> JSON.print json)
       handle { state, hash }
         | not Foreign.isNull state = ApplyState (Foreign.unsafeFromForeign state) -- this works only with purescript-backend-optimizer
-        | not String.null hash = RestoreState hash
-        | otherwise = PrepareDefaultState
+        | not String.null hash     = RestoreState hash
+        | otherwise                = PrepareDefaultState
     PrepareDefaultState -> do
       cardId <- generateId
       conditionId <- generateId
@@ -182,7 +182,7 @@ component = H.mkComponent
     ReceiveConditionUpdated id Condition.AllConditionDeleted -> do
       action $ RemoveCondition id
     RestoreState hash -> do
-      let json = fold $ String.stripPrefix (String.Pattern "#") =<< decodeURIComponent hash
+      let json = fold $ decodeURIComponent =<< String.stripPrefix (String.Pattern "#") hash
       result <- H.liftEffect <<< runExceptT <<< parse $ json
       case result of
         Left error -> do
