@@ -5,6 +5,7 @@ import Prelude
 import Data.Array as Array
 import Data.Array.NonEmpty as NE
 import Data.BigInt as BigInt
+import Data.Foldable (foldMap)
 import Data.Function (on)
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -245,28 +246,28 @@ buildConditionPatternTest :: Spec Unit
 buildConditionPatternTest = do
   describe "buildConditionPattern" do
     it "build normal" do
-      test (NE.singleton { mode: AtLeast, count: 1, cards: [cardA.id] }) `conditionEqual` [[{ card: cardA, min: 1, max: 3 }]]
-      test (NE.singleton { mode: JustDraw, count: 2, cards: [cardA.id] }) `conditionEqual` [[{ card: cardA, min: 2, max: 2 }]]
-      test (NE.singleton { mode: Remains, count: 2, cards: [cardA.id] }) `conditionEqual` [[{ card: cardA, min: 0, max: 1 }]]
+      test [{ mode: AtLeast, count: 1, cards: [cardA.id] }] `conditionEqual` [[{ card: cardA, min: 1, max: 3 }]]
+      test [{ mode: JustDraw, count: 2, cards: [cardA.id] }] `conditionEqual` [[{ card: cardA, min: 2, max: 2 }]]
+      test [{ mode: Remains, count: 2, cards: [cardA.id] }] `conditionEqual` [[{ card: cardA, min: 0, max: 1 }]]
     it "build with multiple conditions" do
-      test (NE.cons' { mode: AtLeast, count: 1, cards: [cardA.id] } [{ mode: AtLeast, count: 1, cards: [cardB.id] }]) `conditionEqual`
+      test [{ mode: AtLeast, count: 1, cards: [cardA.id] }, { mode: AtLeast, count: 1, cards: [cardB.id] }] `conditionEqual`
         [[{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]]
-      test (NE.cons' { mode: JustDraw, count: 1, cards: [cardA.id] } [{ mode: AtLeast, count: 1, cards: [cardA.id] }]) `conditionEqual`
+      test [{ mode: JustDraw, count: 1, cards: [cardA.id] }, { mode: AtLeast, count: 1, cards: [cardA.id] }] `conditionEqual`
         [] -- invalid condition
-      test (NE.cons' { mode: Remains, count: 2, cards: [cardA.id] } [{ mode: JustDraw, count: 2, cards: [cardC.id] }]) `conditionEqual`
+      test [{ mode: Remains, count: 2, cards: [cardA.id] }, { mode: JustDraw, count: 2, cards: [cardC.id] }] `conditionEqual`
         [[{ card: cardA, min: 0, max: 1 }, { card: cardC, min: 2, max: 2 }]]
     it "expanded pattern" do
-      test (NE.singleton { mode: Choice, count: 1, cards: [cardA.id, cardB.id, cardC.id] }) `conditionEqual`
+      test [{ mode: Choice, count: 1, cards: [cardA.id, cardB.id, cardC.id] }] `conditionEqual`
         [ [{ card: cardA, min: 1, max: 3 }]
         , [{ card: cardB, min: 1, max: 2 }]
         , [{ card: cardC, min: 1, max: 3 }]
         ]
-      test (NE.cons' { mode: Choice, count: 1, cards: [cardA.id, cardB.id] } [{ mode: AtLeast, count: 2, cards: [cardC.id] }]) `conditionEqual`
+      test [{ mode: Choice, count: 1, cards: [cardA.id, cardB.id] }, { mode: AtLeast, count: 2, cards: [cardC.id] }] `conditionEqual`
         [ [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 2, max: 3 }]
         , [{ card: cardB, min: 1, max: 2 }, { card: cardC, min: 2, max: 3 }]
         ]
     it "complicated pattern" do
-      test (NE.cons' { mode: Choice, count: 1, cards: [cardA.id, cardB.id] } [{ mode: Choice, count: 2, cards: [cardB.id, cardC.id, cardD.id] }]) `conditionEqual`
+      test [{ mode: Choice, count: 1, cards: [cardA.id, cardB.id] }, { mode: Choice, count: 2, cards: [cardB.id, cardC.id, cardD.id] }] `conditionEqual`
         [ [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }] -- A + BC
         , [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }, { card: cardD, min: 1, max: 1 }] -- A + BD
         , [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 1, max: 3 }, { card: cardD, min: 1, max: 1 }] -- A + CD
@@ -274,13 +275,13 @@ buildConditionPatternTest = do
         , [{ card: cardB, min: 1 + 1, max: 2 }, { card: cardD, min: 1, max: 1 }] -- B + BD
         , [{ card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }, { card: cardD, min: 1, max: 1 }] -- B + CD
         ]
-      test (NE.cons' { mode: AtLeast, count: 1, cards: [cardD.id] } [{ mode: Choice, count: 2, cards: [cardB.id, cardC.id, cardD.id] }]) `conditionEqual`
+      test [{ mode: AtLeast, count: 1, cards: [cardD.id] }, { mode: Choice, count: 2, cards: [cardB.id, cardC.id, cardD.id] }] `conditionEqual`
         [ [{ card: cardD, min: 1, max: 1 }, { card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }] -- D + BC
         -- , [{ card: cardD, min: 1 + 1, max: 1 }, { card: cardB, min: 1, max: 2 }] -- D + BD invalid min < max
         -- , [{ card: cardD, min: 1 + 1, max: 1 }, { card: cardC, min: 1, max: 3 }] -- D + CD invalid min < max
         ]
   where
-  test = buildConditionPattern testCards
+  test = foldMap (buildConditionPattern testCards) <<< NE.fromArray
 
 conditionEqual :: Array ConditionPattern -> Array ConditionPattern -> Aff Unit
 conditionEqual = shouldEqual `on` (Array.sort <<< map Array.sort)
