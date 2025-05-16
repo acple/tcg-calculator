@@ -1,1 +1,5 @@
-@import "tailwindcss";
+@import "tailwindcss" source("./src");
+
+@layer base {
+  html { @apply touch-manipulation; }
+}
