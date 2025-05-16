@@ -102,7 +102,7 @@ normalizeConditionPatterns = groupAllBy (comparing $ map _.card.id) >=> foldr co
 mkConditionPattern :: Cards -> Condition -> Array ConditionPattern
 mkConditionPattern cards { mode, count, cards: ids } = do
   let cards' = filterCards ids cards
-  case mode of
+  filterCondition <$> case mode of
     -- cards の中から count 枚以上を引くパターン
     AtLeast -> ado
       pattern <- mkDrawPattern cards' count
@@ -137,6 +137,8 @@ mkConditionPattern cards { mode, count, cards: ids } = do
     LeftAll -> ado
       pattern <- mkDrawPattern' cards' [replicate count 0]
       in pattern <#> \p -> { card: p.card, min: 0, max: 0 }
+  where
+  filterCondition = filter \{ card, min, max } -> not (min == 0 && max == card.count)
 
 -- カードを指定枚数引く全ての組み合わせを列挙する
 mkDrawPattern :: Cards -> Int -> Array DrawPattern

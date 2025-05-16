@@ -154,35 +154,26 @@ mkConditionPatternTest = do
       ]
 
   mkConditionPatternRemainsTest = do
-    test { mode: Remains, count: 1, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 0, max: 3 - 1 }]]
-    test { mode: Remains, count: 2, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 0, max: 3 - 2 }]]
+    test { mode: Remains, count: 1, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 0, max: 2 }]]
+    test { mode: Remains, count: 2, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 0, max: 1 }]]
+    test { mode: Remains, count: 3, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 0, max: 0 }]]
     test { mode: Remains, count: 4, cards: [cardA.id] } `conditionEqual` []
-    test { mode: Remains, count: 1, cards: [cardA.id, cardB.id] } `conditionEqual`
-      [ [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 0, max: 1 }]
-      , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 2 }]
-      ]
+    test { mode: Remains, count: 1, cards: [cardA.id, cardB.id] } `conditionEqual` [[{ card: cardA, min: 0, max: 2 }], [{ card: cardB, min: 0, max: 1 }]]
     test { mode: Remains, count: 2, cards: [cardA.id, cardB.id] } `conditionEqual`
-      -- cardA.count + cardB.count - 2 == 3
-      [ [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 0, max: 0 }]
-      , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 1 }]
-      , [{ card: cardA, min: 0, max: 1 }, { card: cardB, min: 0, max: 2 }]
+      [ [{ card: cardA, min: 0, max: 1 }] -- [2, (0)]
+      , [{ card: cardB, min: 0, max: 0 }] -- [(0), 2]
+      , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 1 }] -- [1, 1]
       ]
     test { mode: Remains, count: 3, cards: [cardA.id, cardB.id, cardC.id] } `conditionEqual`
-      -- [3, 2]
-      [ [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 0, max: 2 }, { card: cardC, min: 0, max: 0 }]
-      , [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 0, max: 0 }, { card: cardC, min: 0, max: 2 }]
-      -- , [{ card: cardA, min: 0, max: 0 }, { card: cardB, min: 0, max: 3 }, { card: cardC, min: 0, max: 2 }] -- cardB.count < 3
-      -- , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 3 }, { card: cardC, min: 0, max: 0 }] -- cardB.count < 3
-      , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 0 }, { card: cardC, min: 0, max: 3 }]
-      , [{ card: cardA, min: 0, max: 0 }, { card: cardB, min: 0, max: 2 }, { card: cardC, min: 0, max: 3 }]
-      -- [3, 1, 1]
-      , [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 0, max: 1 }, { card: cardC, min: 0, max: 1 }]
-      -- , [{ card: cardA, min: 0, max: 1 }, { card: cardB, min: 0, max: 3 }, { card: cardC, min: 0, max: 1 }] -- cardB.count < 3
-      , [{ card: cardA, min: 0, max: 1 }, { card: cardB, min: 0, max: 1 }, { card: cardC, min: 0, max: 3 }]
-      -- [2, 2, 1]
-      , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 2 }, { card: cardC, min: 0, max: 1 }]
-      , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 1 }, { card: cardC, min: 0, max: 2 }]
-      , [{ card: cardA, min: 0, max: 1 }, { card: cardB, min: 0, max: 2 }, { card: cardC, min: 0, max: 2 }]
+      [ [{ card: cardA, min: 0, max: 0 }] -- [3, (0), (0)]
+      , [{ card: cardC, min: 0, max: 0 }] -- [(0), (0), 3]
+      , [{ card: cardA, min: 0, max: 1 }, { card: cardB, min: 0, max: 1 }] -- [2, 1, (0)]
+      , [{ card: cardA, min: 0, max: 1 }, { card: cardC, min: 0, max: 2 }] -- [2, (0), 1]
+      , [{ card: cardB, min: 0, max: 0 }, { card: cardC, min: 0, max: 2 }] -- [(0), 2, 1]
+      , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 0 }] -- [1, 2, (0)]
+      , [{ card: cardA, min: 0, max: 2 }, { card: cardC, min: 0, max: 1 }] -- [1, (0), 2]
+      , [{ card: cardB, min: 0, max: 1 }, { card: cardC, min: 0, max: 1 }] -- [(0), 1, 2]
+      , [{ card: cardA, min: 0, max: 2 }, { card: cardB, min: 0, max: 1 }, { card: cardC, min: 0, max: 2 }] -- [1, 1, 1]
       ]
 
   mkConditionPatternJustRemainsTest = do
