@@ -99,6 +99,8 @@ mkConditionPatternTest = do
       mkConditionPatternJustRemainsTest
     it "Condition Choice" do
       mkConditionPatternChoiceTest
+    it "Condition LeftAll" do
+      mkConditionPatternLeftAllTest
   where
 
   test = mkConditionPattern testCards
@@ -106,6 +108,7 @@ mkConditionPatternTest = do
   mkConditionPatternAtLeastTest = do
     test { mode: AtLeast, count: 1, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 1, max: 3 }]]
     test { mode: AtLeast, count: 2, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 2, max: 3 }]]
+    test { mode: AtLeast, count: 3, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 3, max: 3 }]]
     test { mode: AtLeast, count: 4, cards: [cardA.id] } `conditionEqual` []
     test { mode: AtLeast, count: 1, cards: [cardA.id, cardB.id] } `conditionEqual` [[{ card: cardA, min: 1, max: 3 }], [{ card: cardB, min: 1, max: 2 }]]
     test { mode: AtLeast, count: 2, cards: [cardA.id, cardB.id] } `conditionEqual`
@@ -122,6 +125,7 @@ mkConditionPatternTest = do
   mkConditionPatternJustDrawTest = do
     test { mode: JustDraw, count: 1, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 1, max: 1 }]]
     test { mode: JustDraw, count: 2, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 2, max: 2 }]]
+    test { mode: JustDraw, count: 3, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 3, max: 3 }]]
     test { mode: JustDraw, count: 4, cards: [cardA.id] } `conditionEqual` []
     test { mode: JustDraw, count: 1, cards: [cardA.id, cardB.id] } `conditionEqual`
       [ [{ card: cardA, min: 1, max: 1 }, { card: cardB, min: 0, max: 0 }]
@@ -134,6 +138,7 @@ mkConditionPatternTest = do
       ]
     test { mode: JustDraw, count: 3, cards: [cardA.id, cardB.id] } `conditionEqual`
       [ [{ card: cardA, min: 3, max: 3 }, { card: cardB, min: 0, max: 0 }] -- [3, 0]
+      -- , [{ card: cardA, min: 0, max: 0 }, { card: cardB, min: 3, max: 3 }] -- cardB.count < 3
       , [{ card: cardA, min: 2, max: 2 }, { card: cardB, min: 1, max: 1 }] -- [2, 1]
       , [{ card: cardA, min: 1, max: 1 }, { card: cardB, min: 2, max: 2 }] -- [1, 2]
       ]
@@ -201,6 +206,21 @@ mkConditionPatternTest = do
       [ [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]
       , [{ card: cardA, min: 1, max: 3 }, { card: cardC, min: 1, max: 3 }]
       , [{ card: cardB, min: 1, max: 2 }, { card: cardC, min: 1, max: 3 }]
+      ]
+
+  mkConditionPatternLeftAllTest = do
+    test { mode: LeftAll, count: 1, cards: [cardA.id] } `conditionEqual` [[{ card: cardA, min: 0, max: 0 }]]
+    test { mode: LeftAll, count: 1, cards: [cardA.id, cardB.id] } `conditionEqual` [[{ card: cardA, min: 0, max: 0 }], [{ card: cardB, min: 0, max: 0 }]]
+    test { mode: LeftAll, count: 2, cards: [cardA.id, cardB.id] } `conditionEqual` [[{ card: cardA, min: 0, max: 0 }, { card: cardB, min: 0, max: 0 }]]
+    test { mode: LeftAll, count: 1, cards: [cardA.id, cardB.id, cardC.id] } `conditionEqual`
+      [ [{ card: cardA, min: 0, max: 0 }]
+      , [{ card: cardB, min: 0, max: 0 }]
+      , [{ card: cardC, min: 0, max: 0 }]
+      ]
+    test { mode: LeftAll, count: 2, cards: [cardA.id, cardB.id, cardC.id] } `conditionEqual`
+      [ [{ card: cardA, min: 0, max: 0 }, { card: cardB, min: 0, max: 0 }]
+      , [{ card: cardA, min: 0, max: 0 }, { card: cardC, min: 0, max: 0 }]
+      , [{ card: cardB, min: 0, max: 0 }, { card: cardC, min: 0, max: 0 }]
       ]
 
 mergeConditionPatternTest :: Spec Unit
