@@ -56,8 +56,8 @@ component = H.mkComponent
       , renderBackground isEditMode
       , HH.ul
           [ HP.class_ if isEditMode
-              then H.ClassName "break-anywhere absolute flex min-w-48 flex-col gap-0.5 bg-white p-4 shadow-md"
-              else H.ClassName "break-anywhere flex w-full flex-wrap gap-1"
+              then H.ClassName "absolute flex min-w-48 flex-col gap-0.5 bg-white p-4 wrap-anywhere shadow-md"
+              else H.ClassName "flex w-full flex-wrap gap-1 wrap-anywhere"
           , HE.onClick $ const EnterEdit
           ]
           $ items <#> renderItem isEditMode
