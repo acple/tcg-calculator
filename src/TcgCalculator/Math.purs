@@ -66,6 +66,7 @@ type Permutation a = Array (Array a)
 distinctPermutations :: forall a. Ord a => Array a -> Permutation a
 distinctPermutations = unfoldr1 $ Tuple <*> prevPerm
   where
+
   prevPerm :: Array a -> Maybe (Array a)
   prevPerm a = do
     k <- findLastIndex identity $ zipWith (>) a (drop 1 a)
@@ -76,6 +77,7 @@ distinctPermutations = unfoldr1 $ Tuple <*> prevPerm
       swapST k l st
       reverseST (k + 1) (length a - 1) st
       pure st
+
   reverseST :: forall h. Int -> Int -> STArray h a -> ST h Unit
   reverseST x y _ | x >= y = pure unit
   reverseST x y st = do
