@@ -12,7 +12,7 @@ import Data.Array.NonEmpty as NE
 import Data.Bifunctor (lmap)
 import Data.Const (Const)
 import Data.Either (Either(..))
-import Data.Foldable (fold, for_)
+import Data.Foldable (fold, foldMap, for_)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.String as String
@@ -46,7 +46,8 @@ data Action
   | AddCondition
   | RemoveCondition GroupId
   | ToggleDisabled GroupId
-  | Swap Index Index
+  | SwapPrev GroupId
+  | SwapNext GroupId
   | ReceiveConditionUpdated GroupId Condition.Output
   | RestoreState String
   | ApplyState AppState
@@ -88,7 +89,7 @@ component = H.mkComponent
               ]
           , HH.ul
               [ HP.class_ $ H.ClassName "flex flex-col gap-1" ]
-              $ Array.mapWithIndex (renderCondition deck') conditions
+              $ renderCondition deck' <$> conditions
           , renderConditionAddButton
           ]
       , HH.footer
@@ -111,15 +112,15 @@ component = H.mkComponent
       [ HP.class_ $ H.ClassName "flex grow basis-0 items-center justify-end rounded border-2 border-cyan-400 p-1" ]
       [ HH.slot_ (Proxy @"result") unit Result.component unit ]
 
-  renderCondition deck i id =
+  renderCondition deck id =
     HH.li
       [ HP.class_ $ H.ClassName "flex items-start gap-1" ]
       [ HH.div
           [ HP.class_ $ H.ClassName "flex flex-col" ]
-          [ HU.upButton (Swap (i - 1) i)
+          [ HU.upButton (SwapPrev id)
           , HU.removeButton (RemoveCondition id)
           , HU.toggleButton (ToggleDisabled id)
-          , HU.downButton (Swap i (i + 1))
+          , HU.downButton (SwapNext id)
           ]
       , HH.slot (Proxy @"condition") id Condition.component deck (ReceiveConditionUpdated id)
       ]
@@ -172,18 +173,19 @@ component = H.mkComponent
     ToggleDisabled id -> do
       H.tell (Proxy @"condition") id Condition.ToggleDisabled
       action SaveState
-    Swap x y -> do
-      H.modify_ do
-        conditions <- _.conditions
-        _ { conditions = ArrayUtil.swap x y conditions }
-      action SaveState
+    SwapPrev id -> do
+      conditions <- H.gets _.conditions
+      foldMap (H.modify_ <<< swapCondition <<< (_ - 1)) <<< Array.findIndex (_ == id) $ conditions
+    SwapNext id -> do
+      conditions <- H.gets _.conditions
+      foldMap (H.modify_ <<< swapCondition) <<< Array.findIndex (_ == id) $ conditions
     ReceiveConditionUpdated _ Condition.Updated -> do
       action SaveState
     ReceiveConditionUpdated id Condition.AllConditionDeleted -> do
       action $ RemoveCondition id
     RestoreState hash -> do
       let json = fold $ decodeURIComponent =<< String.stripPrefix (String.Pattern "#") hash
-      result <- H.liftEffect <<< runExceptT <<< parse $ json
+      result <- H.liftEffect <<< runExceptT <<< parseJson $ json
       case result of
         Left error -> do
           Console.error $ "Failed to decode JSON: " <> DecodeError.print error
@@ -191,8 +193,6 @@ component = H.mkComponent
         Right state -> do
           replaceState <- H.gets _.replaceState
           H.liftEffect $ replaceState state
-      where
-      parse = Codec.decode Codec.appState <=< except <<< lmap DecodeError.basic <<< JSON.parse
     ApplyState { deck, condition: set } -> do
       let ids = set <#> _.id
       { deck: currentDeck, conditions: currentConditions } <- H.get
@@ -207,3 +207,6 @@ component = H.mkComponent
       conditions <- H.requestAll (Proxy @"condition") Condition.GetState
       let condition = fold $ ids # traverse \id -> Record.insert (Proxy @"id") id <$> Map.lookup id conditions
       H.liftEffect $ pushState { deck, condition }
+    where
+    swapCondition i = _ { conditions = _ } <*> ArrayUtil.swap i (i + 1) <<< _.conditions
+    parseJson = Codec.decode Codec.appState <=< except <<< lmap DecodeError.basic <<< JSON.parse
