@@ -33,9 +33,11 @@ data Action
   | Receive Deck
   | ReceiveConditionUpdated
 
+type ConditionState = { conditions :: AppConditionGroup, disabled :: Boolean }
+
 data Query a
-  = GetState ({ conditions :: AppConditionGroup, disabled :: Boolean } -> a)
-  | UpdateState AppConditionGroup Boolean a
+  = GetState (ConditionState -> a)
+  | UpdateState ConditionState a
   | ToggleDisabled a
 
 ----------------------------------------------------------------
@@ -140,7 +142,7 @@ component = H.mkComponent
       lines <- H.requestAll (Proxy @"line") ConditionLine.GetCondition
       in reply <<< { conditions: _, disabled: groupDisabled } <$> do
         NE.fromArray conditions >>= traverse \{ id, disabled } -> { id, condition: _, disabled } <$> Map.lookup id lines
-    UpdateState conditions groupDisabled a -> H.lift do
+    UpdateState { conditions,  disabled: groupDisabled } a -> H.lift do
       { deck } <- H.modify _ { conditions = NE.toArray conditions <#> \{ id, disabled } -> { id, disabled }, disabled = groupDisabled }
       for_ conditions \{ id, condition } -> do
         H.tell (Proxy @"line") id (ConditionLine.UpdateState condition)

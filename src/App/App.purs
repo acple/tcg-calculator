@@ -90,7 +90,8 @@ component = H.mkComponent
           , HH.ul
               [ HP.class_ $ H.ClassName "flex flex-col gap-1" ]
               $ renderCondition deck' <$> conditions
-          , renderConditionAddButton
+          , HH.div_
+              [ HU.plusButton AddCondition ]
           ]
       , HH.footer
           [ HP.class_ $ H.ClassName "flex items-baseline px-2" ]
@@ -124,10 +125,6 @@ component = H.mkComponent
           ]
       , HH.slot (Proxy @"condition") id Condition.component deck (ReceiveConditionUpdated id)
       ]
-
-  renderConditionAddButton =
-    HH.div_
-      [ HU.plusButton AddCondition ]
 
   action = case _ of
     Initialize -> do
@@ -200,7 +197,7 @@ component = H.mkComponent
         H.modify_ _ { deck = deck, conditions = ids }
         H.tell (Proxy @"deck") unit (Deck.SetDeck deck)
       for_ set \{ id, conditions, disabled } -> do
-        H.tell (Proxy @"condition") id (Condition.UpdateState conditions disabled)
+        H.tell (Proxy @"condition") id (Condition.UpdateState { conditions, disabled })
       H.tell (Proxy @"result") unit (Result.Calculate deck (toConditionSet set))
     SaveState -> do
       { deck, conditions: ids, pushState } <- H.get

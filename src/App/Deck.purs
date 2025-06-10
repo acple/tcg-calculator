@@ -79,8 +79,8 @@ component = H.mkComponent
           [ HU.fa "fa-layer-group" [ H.ClassName "m-1 text-2xl" ]
           , HH.div [ HP.class_ $ H.ClassName "m-1" ] [ HH.text "デッキ情報" ]
           ]
-      , renderIntegerInput "手札枚数:" handCount 1 deckCount UpdateHand
-      , renderIntegerInput "デッキ枚数:" deckCount cardCount deckLimit UpdateTotal
+      , renderIntegerInput "hand" "手札枚数:" handCount 1 deckCount UpdateHand
+      , renderIntegerInput "deck" "デッキ枚数:" deckCount cardCount deckLimit UpdateTotal
       ]
 
   renderCardList others cards =
@@ -113,12 +113,14 @@ component = H.mkComponent
           [ HH.input
               [ HP.classes [ H.ClassName "grow", styleFormInput ]
               , HP.type_ HP.InputText
+              , HP.id $ "name-" <> id
               , HP.value card.name
               , HE.onValueChange $ UpdateCard <<< card { name = _ }
               ]
           , HH.input
               [ HP.class_ styleFormNumber
               , HP.type_ HP.InputNumber
+              , HP.id $ "count-" <> id
               , HP.step $ HP.Step 1.0
               , HP.value $ show card.count
               , HP.min 0.0
@@ -135,16 +137,17 @@ component = H.mkComponent
       [ HH.div
           [ HP.class_ $ H.ClassName "mx-1 grow" ]
           [ HU.plusButton AddCard ]
-      , renderIntegerInput "その他のカード:" otherCount 0 (deckLimit - cardCount) UpdateOthers
+      , renderIntegerInput "others" "その他のカード:" otherCount 0 (deckLimit - cardCount) UpdateOthers
       ]
 
-  renderIntegerInput text count min max handler =
+  renderIntegerInput id text count min max handler =
     HH.div
       [ HP.class_ $ H.ClassName "mx-1 flex flex-wrap justify-end border-b border-gray-500" ]
-      [ HH.div [ HP.class_ $ H.ClassName "m-1" ] [ HH.text text ]
+      [ HH.label [ HP.class_ $ H.ClassName "p-1", HP.for id ] [ HH.text text ]
       , HH.input
           [ HP.class_ styleFormNumber
           , HP.type_ HP.InputNumber
+          , HP.id id
           , HP.value $ show count
           , HP.step $ HP.Step 1.0
           , HP.min $ Int.toNumber min
@@ -211,6 +214,7 @@ component = H.mkComponent
       let transfer = Drag.dataTransfer event
       when (DataTransfer.types transfer == [dragItemMediaType]) do
         H.liftEffect <<< Event.preventDefault $ Drag.toEvent event
+        H.liftEffect $ DataTransfer.setDropEffect DataTransfer.Move transfer
     ExecuteReorder destination event -> do
       let transfer = Drag.dataTransfer event
       id <- H.liftEffect $ DataTransfer.getData (MediaType dragItemMediaType) transfer

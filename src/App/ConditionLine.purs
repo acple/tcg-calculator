@@ -26,8 +26,7 @@ import Web.UIEvent.FocusEvent as Focus
 data Output = Updated
 
 data Action
-  = Initialize
-  | UpdateConditionMode String
+  = UpdateConditionMode String
   | UpdateCardSelected (Array CardId)
   | UpdateCardCount String
   | Receive Cards
@@ -47,7 +46,6 @@ component = H.mkComponent
       { handleAction = action
       , handleQuery = runMaybeT <<< query
       , receive = Just <<< Receive
-      , initialize = Just Initialize
       }
   }
   where
@@ -107,9 +105,6 @@ component = H.mkComponent
       ]
 
   action = case _ of
-    Initialize -> do
-      { cards, condition: { mode, count, cards: selected } } <- H.get
-      updateStatus cards selected mode count
     UpdateCardSelected selected -> do
       let selected' = Array.sort selected
       { cards, condition: { mode, count, cards: current } } <- H.get

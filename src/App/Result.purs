@@ -45,11 +45,11 @@ component = H.mkComponent
           [ HP.class_ $ H.ClassName "mx-1 flex w-36 items-center justify-end gap-1" ]
           case calculation of
             Just _ ->
-              [ HH.div [ HP.class_ $ H.ClassName "text-2xl" ] [ HH.text "Calculating" ]
+              [ HH.span [ HP.class_ $ H.ClassName "text-2xl" ] [ HH.text "Calculating" ]
               , HU.fa_ "fa-spinner fa-pulse"
               ]
             _ ->
-              [ HH.div
+              [ HH.span
                   [ HP.class_ $ H.ClassName "text-2xl" ]
                   [ HH.text if total == zero
                       then "N/A"
