@@ -3,13 +3,13 @@ module App.Deck where
 import Prelude
 
 import Control.Alternative (guard)
-import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.Array ((!!))
 import Data.Array as Array
-import Data.Foldable (fold, foldMap)
+import Data.Const (Const)
+import Data.Foldable (foldMap)
 import Data.Function (on)
 import Data.Int as Int
-import Data.Maybe (fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.MediaType (MediaType(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF, collect)
@@ -34,7 +34,8 @@ import Web.UIEvent.FocusEvent as Focus
 ----------------------------------------------------------------
 
 data Action
-  = AddCard
+  = Receive Deck
+  | AddCard
   | RemoveCard Card
   | UpdateCard Card
   | UpdateTotal Int
@@ -45,21 +46,18 @@ data Action
   | HandleDragBehavior Drag.DragEvent
   | ExecuteReorder CardId Drag.DragEvent
 
-data Query a
-  = SetDeck Deck a
-
 ----------------------------------------------------------------
 
-component :: H.Component Query Unit Deck Aff
+component :: H.Component (Const Void) Deck Deck Aff
 component = H.mkComponent
   { initialState
   , render
-  , eval: H.mkEval H.defaultEval { handleAction = action, handleQuery = runMaybeT <<< query }
+  , eval: H.mkEval H.defaultEval { handleAction = action, receive = Just <<< Receive }
   }
   where
 
   initialState :: _ Deck
-  initialState _ = { cards: [], others: 40, hand: 5 }
+  initialState = identity
 
   render { cards, others, hand } = do
     let cardCount = countCards cards
@@ -168,39 +166,36 @@ component = H.mkComponent
     ]
 
   action = case _ of
+    Receive deck -> do
+      H.put deck
     AddCard -> do
       id <- generateId
-      H.raise =<< H.modify do
-        cards <- _.cards
-        _ { cards = Array.snoc cards { id, name: "", count: 0 } }
+      deck <- H.get
+      H.raise deck { cards = Array.snoc deck.cards { id, name: "", count: 0 } }
     RemoveCard card -> do
-      H.raise =<< H.modify do
-        { cards, others } <- identity
-        let cards' = Array.deleteBy (eq `on` _.id) card cards
-        _ { cards = cards', others = others + card.count }
+      deck <- H.get
+      let cards = Array.deleteBy (eq `on` _.id) card deck.cards
+      H.raise deck { cards = cards, others = deck.others + card.count }
     UpdateCard card -> do
-      { cards, others } <- H.get
-      fold do
-        i <- Array.findIndex (_.id >>> (_ == card.id)) cards
-        old <- cards !! i
-        let new = card { count = if String.null card.name then 0 else clamp 0 (old.count + others) card.count }
-        cards' <- Array.updateAt i new cards
-        pure $ H.raise =<< H.modify _ { cards = cards', others = others - (new.count - old.count) }
+      deck <- H.get
+      foldMap H.raise do
+        i <- findById card.id deck.cards
+        old <- deck.cards !! i
+        let new = card { count = if String.null card.name then 0 else clamp 0 (old.count + deck.others) card.count }
+        cards <- Array.updateAt i new deck.cards
+        pure deck { cards = cards, others = deck.others - (new.count - old.count) }
     UpdateTotal total -> do
-      cards <- H.gets _.cards
-      let cardCount = countCards cards
-      action $ UpdateOthers (total - cardCount)
+      deck <- H.get
+      H.raise deck { others = total - countCards deck.cards }
     UpdateHand hand -> do
-      H.raise =<< H.modify do
-        { cards, others } <- identity
-        let deckCount = countCards cards + others
-        _ { hand = clamp 1 deckCount hand }
+      deck <- H.get
+      let total = countCards deck.cards + deck.others
+      H.raise deck { hand = clamp 1 total hand }
     UpdateOthers others -> do
-      H.raise =<< H.modify do
-        { cards, hand } <- identity
-        let cardCount = countCards cards
-        let deckCount = clamp cardCount deckLimit (cardCount + others)
-        _ { others = deckCount - cardCount, hand = min hand deckCount }
+      deck <- H.get
+      let cardCount = countCards deck.cards
+      let deckCount = clamp cardCount deckLimit (cardCount + others)
+      H.raise deck { others = deckCount - cardCount, hand = min deck.hand deckCount }
     SelectOnFocus event -> do
       let target = Input.fromEventTarget <=< Event.target <<< Focus.toEvent $ event
       H.liftEffect $ foldMap Input.select target
@@ -213,29 +208,26 @@ component = H.mkComponent
     HandleDragBehavior event -> do
       let transfer = Drag.dataTransfer event
       when (DataTransfer.types transfer == [dragItemMediaType]) do
-        H.liftEffect <<< Event.preventDefault $ Drag.toEvent event
-        H.liftEffect $ DataTransfer.setDropEffect DataTransfer.Move transfer
+        H.liftEffect do
+          Event.preventDefault $ Drag.toEvent event
+          DataTransfer.setDropEffect DataTransfer.Move transfer
     ExecuteReorder destination event -> do
       let transfer = Drag.dataTransfer event
       id <- H.liftEffect $ DataTransfer.getData (MediaType dragItemMediaType) transfer
       unless (String.null id) do
         H.liftEffect <<< Event.preventDefault $ Drag.toEvent event
-        cards <- H.gets _.cards
-        foldMap (H.raise <=< H.modify <<< flip _ { cards = _ }) do
+        deck@{ cards } <- H.get
+        foldMap H.raise do
           target <- Id.fromString id
           guard $ target /= destination
-          from <- Array.findIndex (_.id >>> (_ == target)) cards
-          to <- Array.findIndex (_.id >>> (_ == destination)) cards
-          pure $ ArrayUtil.shiftInsert from to cards
+          from <- findById target cards
+          to <- findById destination cards
+          pure deck { cards = ArrayUtil.shiftInsert from to cards }
 
   dragItemMediaType = "tcg-calculator/card"
 
   countCards = alaF Additive Array.foldMap _.count
 
-  deckLimit = 255
+  findById id = Array.findIndex (_.id >>> (_ == id))
 
-  query :: _ ~> _
-  query = case _ of
-    SetDeck deck a -> do
-      H.put deck
-      pure a
+  deckLimit = 255

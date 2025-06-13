@@ -84,7 +84,7 @@ component = H.mkComponent
           [ HP.class_ $ H.ClassName "relative mb-[80vh] flex max-w-4xl flex-col gap-3 p-1" ]
           [ HH.div
               [ HP.class_ $ H.ClassName "flex flex-wrap gap-1" ]
-              [ renderDeck
+              [ renderDeck deck
               , renderResult
               ]
           , HH.ul
@@ -103,10 +103,10 @@ component = H.mkComponent
           ]
       ]
 
-  renderDeck =
+  renderDeck deck =
     HH.div
       [ HP.class_ $ H.ClassName "grow" ]
-      [ HH.slot (Proxy @"deck") unit Deck.component unit UpdateDeck ]
+      [ HH.slot (Proxy @"deck") unit Deck.component deck UpdateDeck ]
 
   renderResult =
     HH.div
@@ -197,7 +197,6 @@ component = H.mkComponent
       { deck: currentDeck, conditions: currentConditions } <- H.get
       when (deck /= currentDeck || ids /= currentConditions) do
         H.modify_ _ { deck = deck, conditions = ids }
-        H.tell (Proxy @"deck") unit (Deck.SetDeck deck)
       for_ set \{ id, conditions, disabled } -> do
         H.tell (Proxy @"condition") id (Condition.UpdateState { conditions, disabled })
       H.tell (Proxy @"result") unit (Result.Calculate deck (toConditionSet set))
