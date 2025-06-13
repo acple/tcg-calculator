@@ -173,9 +173,11 @@ component = H.mkComponent
     SwapPrev id -> do
       conditions <- H.gets _.conditions
       foldMap (H.modify_ <<< swapCondition <<< (_ - 1)) <<< Array.findIndex (_ == id) $ conditions
+      action SaveState
     SwapNext id -> do
       conditions <- H.gets _.conditions
       foldMap (H.modify_ <<< swapCondition) <<< Array.findIndex (_ == id) $ conditions
+      action SaveState
     ReceiveConditionUpdated _ Condition.Updated -> do
       action SaveState
     ReceiveConditionUpdated id Condition.AllConditionDeleted -> do
