@@ -225,7 +225,7 @@
     },
     "package_set": {
       "address": {
-        "registry": "64.10.0"
+        "registry": "65.1.0"
       },
       "compiler": ">=0.15.15 <0.16.0",
       "content": {
@@ -321,7 +321,7 @@
         "distributive": "6.0.0",
         "dodo-printer": "2.2.3",
         "dom-filereader": "7.0.0",
-        "dom-indexed": "12.0.0",
+        "dom-indexed": "13.0.0",
         "dom-simple": "0.4.0",
         "dotenv": "4.0.3",
         "droplet": "0.6.0",
@@ -418,7 +418,7 @@
         "halogen-vdom-string-renderer": "0.5.0",
         "halogen-xterm": "2.0.0",
         "heckin": "2.0.1",
-        "heterogeneous": "0.6.0",
+        "heterogeneous": "0.7.0",
         "homogeneous": "0.4.0",
         "http-methods": "6.0.0",
         "httpurple": "4.0.0",
@@ -752,7 +752,7 @@
         "webextension-polyfill": "0.1.0",
         "webgpu": "0.0.1",
         "which": "2.0.0",
-        "whine-core": "0.0.30",
+        "whine-core": "0.0.32",
         "xterm": "1.0.0",
         "yoga-fetch": "1.0.1",
         "yoga-json": "5.1.0",
@@ -1033,8 +1033,8 @@
     },
     "dom-indexed": {
       "type": "registry",
-      "version": "12.0.0",
-      "integrity": "sha256-bltgxNRfJrJc73YirgM+8u4AqdJAsuaKr7epwzIayF0=",
+      "version": "13.0.0",
+      "integrity": "sha256-fum5mqCcGwUWpKRePCkoLgRNLYeHtkSwkx/7j6u85ds=",
       "dependencies": [
         "media-types",
         "prelude",
