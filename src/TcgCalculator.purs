@@ -2,11 +2,11 @@ module TcgCalculator where
 
 import Prelude
 
-import Control.Alternative (empty)
-import Data.Array (all, any, concatMap, filter, find, findIndex, foldMap, groupAllBy, length, notElem, nub, replicate, sortBy, updateAt, zipWith, (..), (:))
+import Control.Alternative (empty, guard)
+import Data.Array (all, any, concatMap, filter, find, findIndex, foldMap, groupAllBy, length, mapMaybe, notElem, null, nub, replicate, sortBy, updateAt, zipWith, (..), (:))
 import Data.Array.NonEmpty (foldl1, toArray)
 import Data.BigInt (BigInt)
-import Data.Foldable (and, fold, foldr, product)
+import Data.Foldable (and, fold, foldr)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid.Additive (Additive(..))
@@ -19,11 +19,31 @@ import TcgCalculator.Types (Card, Cards, Condition, ConditionGroup, ConditionMod
 
 -- 条件を満たす組み合わせの個数を計算する
 calculate :: Deck -> ConditionSet -> BigInt
-calculate deck set = do
-  let drawPattern = generateDrawPatterns deck
-  let conditionPatterns = normalizeConditionPatterns $ buildConditionPattern deck.cards =<< set
-  let pattern = filter (\dp -> any (satisfyCondition dp) conditionPatterns) drawPattern
-  sumBy (calculatePatternCount deck) pattern
+calculate deck set = countMatchingPatterns deck $ normalizeConditionPatterns $ buildConditionPattern deck.cards =<< set
+
+-- カードを順に走査し、いずれかの ConditionPattern を満たすドローパターンの組み合わせ数を数え上げる
+countMatchingPatterns :: Deck -> Array ConditionPattern -> BigInt
+countMatchingPatterns deck patterns = foldr step leaf deck.cards deck.hand defaultCandidates
+  where
+
+  defaultCandidates = patterns <#> \pattern ->
+    { remaining: sumBy _.min pattern
+    , entries: Map.fromFoldable $ pattern <#> \{ card, min, max } -> Tuple card.id { min, max }
+    }
+
+  leaf hand candidates = if null candidates then zero else combinationNumber deck.others hand
+
+  step card k hand candidates = 0 .. min card.count hand # sumBy \draw -> do
+    let hand' = hand - draw
+    let candidates' = mapMaybe (update card.id draw hand') candidates
+    if null candidates' then zero else combinationNumber card.count draw * k hand' candidates'
+
+  update cardId draw hand candidate = case Map.lookup cardId candidate.entries of
+    Nothing -> pure candidate
+    Just { min, max } -> do
+      let remaining = candidate.remaining - min
+      guard $ min <= draw && draw <= max && remaining <= hand
+      pure candidate { remaining = remaining }
 
 -- 指定した条件式で使用していないカードをデッキから取り除く
 normalizeDeck :: Deck -> ConditionSet -> Deck
@@ -42,32 +62,11 @@ calculateTotal { cards, others, hand } = combinationNumber (sumBy _.count cards 
 
 ----------------------------------------------------------------
 
--- 各カードをそれぞれ何枚引いているかの状態を表す
-type DrawPattern = Array { card :: Card, draw :: Int }
-
--- Deck から再現可能な全ての手札の組み合わせを列挙する
-generateDrawPatterns :: Deck -> Array DrawPattern
-generateDrawPatterns { cards, others, hand } = do
-  let maxDrawCount = min hand (sumBy _.count cards)
-  let minDrawCount = max 0 (hand - others) -- others が hand より少ない場合に成り立たないパターンは予めフィルタする
-  mkDrawPattern cards =<< maxDrawCount .. minDrawCount
-
--- 与えた DrawPattern にマッチする組み合わせの個数を返す
-calculatePatternCount :: Deck -> DrawPattern -> BigInt
-calculatePatternCount { others, hand } pattern = do
-  let patternCount = product $ pattern <#> \{ card: { count }, draw } -> combinationNumber count draw -- 条件のカードを引くときの組み合わせの数
-  patternCount * combinationNumber others (hand - sumBy _.draw pattern) -- 残りの手札に条件外のカードを引く組み合わせの数
-
-----------------------------------------------------------------
-
 -- カードとそのドロー可能枚数を組み合わせた一つの条件式を表す
 -- 暗黙的に card.id で昇順にソートされていることを期待する
 type ConditionPattern = Array { card :: Card, min :: Int, max :: Int }
 
-satisfyCondition :: DrawPattern -> ConditionPattern -> Boolean
-satisfyCondition dp = all \{ card: { id }, min, max } -> do
-  let draw = maybe 0 _.draw $ find (_.card.id >>> (_ == id)) dp
-  min <= draw && draw <= max
+----------------------------------------------------------------
 
 -- 条件式をマージ (AND) して ConditionPattern のリストに変換する
 buildConditionPattern :: Cards -> ConditionGroup -> Array ConditionPattern
@@ -97,6 +96,8 @@ normalizeConditionPatterns = groupAllBy (comparing $ map _.card.id) >=> foldr co
       Just i -> fold $ updateAt i condition patterns
       Nothing -> condition : patterns
   include = map and <<< zipWith \{ min: min1, max: max1 } { min: min2, max: max2 } -> min2 <= min1 && max1 <= max2
+
+----------------------------------------------------------------
 
 -- 一つの Condition に対応する全パターンのリストを出力する
 mkConditionPattern :: Cards -> Condition -> Array ConditionPattern
@@ -139,6 +140,11 @@ mkConditionPattern cards { mode, count, cards: ids } = do
       in pattern <#> \p -> { card: p.card, min: 0, max: 0 }
   where
   filterCondition = filter \{ card, min, max } -> not (min == 0 && max == card.count)
+
+----------------------------------------------------------------
+
+-- 各カードをそれぞれ何枚引いているかの状態を表す
+type DrawPattern = Array { card :: Card, draw :: Int }
 
 -- カードを指定枚数引く全ての組み合わせを列挙する
 mkDrawPattern :: Cards -> Int -> Array DrawPattern
