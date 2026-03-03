@@ -9,7 +9,7 @@ import Data.Foldable (foldMap)
 import Data.Function (on)
 import Effect (Effect)
 import Effect.Aff (Aff)
-import TcgCalculator (ConditionPattern, buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, normalizeDeck)
+import TcgCalculator (ConditionPattern, buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, mkDrawPattern, normalizeDeck)
 import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber)
 import TcgCalculator.Types (Card, Cards, ConditionMode(..))
 import TcgCalculator.Types.Id (mkId)
@@ -81,10 +81,53 @@ mathTest = do
 tcgCalculatorTest :: Spec Unit
 tcgCalculatorTest = do
   describe "TcgCalculator" do
+    mkDrawPatternTest
     mkConditionPatternTest
     mergeConditionPatternTest
     buildConditionPatternTest
     calculateTest
+
+mkDrawPatternTest :: Spec Unit
+mkDrawPatternTest = do
+  describe "mkDrawPattern" do
+    it "single card" do
+      mkDrawPattern 1 [cardA] `shouldEqual` [[{ card: cardA, draw: 1 }]]
+      mkDrawPattern 2 [cardA] `shouldEqual` [[{ card: cardA, draw: 2 }]]
+      mkDrawPattern 3 [cardA] `shouldEqual` [[{ card: cardA, draw: 3 }]] -- draw all
+      mkDrawPattern 4 [cardA] `shouldEqual` [] -- capacity(3) < count
+    it "multiple cards" do
+      mkDrawPattern 1 [cardB, cardD] `shouldEqual` -- B(2)+D(1), draw 1
+        [ [{ card: cardB, draw: 1 }]
+        , [{ card: cardD, draw: 1 }]]
+      mkDrawPattern 2 [cardB, cardD] `shouldEqual` -- B(2)+D(1), draw 2
+        [ [{ card: cardB, draw: 2 }]
+        , [{ card: cardB, draw: 1 }, { card: cardD, draw: 1 }]
+        ]
+      mkDrawPattern 2 [cardA, cardB] `shouldEqual` -- A(3)+B(2), draw 2
+        [ [{ card: cardA, draw: 2 }]
+        , [{ card: cardA, draw: 1 }, { card: cardB, draw: 1 }]
+        , [{ card: cardB, draw: 2 }]
+        ]
+      mkDrawPattern 3 [cardB, cardD] `shouldEqual` -- B(2)+D(1), draw all
+        [[{ card: cardB, draw: 2 }, { card: cardD, draw: 1 }]]
+    it "count=0 card" do
+      mkDrawPattern 1 [cardD, cardE] `shouldEqual` -- E(0) not reached
+        [[{ card: cardD, draw: 1 }]]
+      mkDrawPattern 1 [cardE, cardD] `shouldEqual` -- E(0) skipped
+        [[{ card: cardD, draw: 1 }]]
+      mkDrawPattern 1 [cardE] `shouldEqual` [] -- only E(0), capacity=0
+    it "forced minimum draw" do
+      mkDrawPattern 3 [cardA, cardD] `shouldEqual` -- A(3)+D(1), draw 3: minDraw(A)=2
+        [ [{ card: cardA, draw: 3 }]
+        , [{ card: cardA, draw: 2 }, { card: cardD, draw: 1 }]
+        ]
+      mkDrawPattern 4 [cardA, cardD] `shouldEqual` -- A(3)+D(1), draw all
+        [[{ card: cardA, draw: 3 }, { card: cardD, draw: 1 }]]
+    it "edge cases" do
+      mkDrawPattern (-1) [cardA] `shouldEqual` []
+      mkDrawPattern 0 [cardA] `shouldEqual` [[]]
+      mkDrawPattern 0 [] `shouldEqual` [[]]
+      mkDrawPattern 1 [] `shouldEqual` [] -- no cards
 
 mkConditionPatternTest :: Spec Unit
 mkConditionPatternTest = do
@@ -342,7 +385,6 @@ calculateTest = do
       let cond13 = buildCondition [[{ cards: [cardA.id, cardB.id], count: 1, mode: JustDraw }], [{ cards: [cardC.id, cardD.id], count: 1, mode: JustDraw }]]
       test deck cond13 10805
       test deck { others = 0 } cond13 25
-      let cardE = { id: mkId "eee", name: "E", count: 0 }
       let cond14 = buildCondition [[{ cards: [cardE.id], count: 0, mode: LeftAll }]]
       let deck14 = deck { cards = [cardE] }
       test deck14 cond14 462
@@ -369,3 +411,5 @@ cardC :: Card
 cardC = { id: mkId "ccc", name: "C", count: 3 }
 cardD :: Card
 cardD = { id: mkId "ddd", name: "D", count: 1 }
+cardE :: Card
+cardE = { id: mkId "eee", name: "E", count: 0 }

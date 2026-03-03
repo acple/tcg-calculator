@@ -3,7 +3,7 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty, guard)
-import Data.Array (all, any, concatMap, filter, find, findIndex, foldMap, groupAllBy, length, mapMaybe, notElem, null, nub, replicate, sortBy, updateAt, zipWith, (..), (:))
+import Data.Array (all, any, concatMap, filter, find, findIndex, foldMap, groupAllBy, mapMaybe, notElem, nub, null, sortBy, updateAt, zipWith, (..), (:))
 import Data.Array.NonEmpty (foldl1, toArray)
 import Data.BigInt (BigInt)
 import Data.Foldable (and, fold, foldr)
@@ -12,7 +12,7 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF)
 import Data.Tuple (Tuple(..))
-import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber)
+import TcgCalculator.Math (combinationNumber, combinations)
 import TcgCalculator.Types (Card, Cards, Condition, ConditionGroup, ConditionMode(..), ConditionSet, Deck, filterCards)
 
 ----------------------------------------------------------------
@@ -106,38 +106,38 @@ mkConditionPattern cards { mode, count, cards: ids } = do
   filterCondition <$> case mode of
     -- cards の中から count 枚以上を引くパターン
     AtLeast -> ado
-      pattern <- mkDrawPattern cards' count
+      pattern <- mkDrawPattern count cards'
       in pattern <#> \p -> { card: p.card, min: p.draw, max: p.card.count }
     -- cards の中からちょうど count 枚を引くパターン
     JustDraw -> ado
-      pattern <- mkDrawPattern cards' count
+      pattern <- mkDrawPattern count cards'
       in cards' <#> \card -> do
         let draw = maybe 0 _.draw $ find (_.card.id >>> (_ == card.id)) pattern
         { card, min: draw, max: draw }
     -- count 枚以上デッキに残すパターン
     Remains -> ado
-      pattern <- mkDrawPattern cards' (sumBy _.count cards' - count)
+      pattern <- mkDrawPattern (sumBy _.count cards' - count) cards'
       in cards' <#> \card -> do
         let draw = maybe 0 _.draw $ find (_.card.id >>> (_ == card.id)) pattern
         { card, min: 0, max: draw }
     -- ちょうど count 枚デッキに残すパターン
     JustRemains -> ado
-      pattern <- mkDrawPattern cards' (sumBy _.count cards' - count)
+      pattern <- mkDrawPattern (sumBy _.count cards' - count) cards'
       in cards' <#> \card -> do
         let draw = maybe 0 _.draw $ find (_.card.id >>> (_ == card.id)) pattern
         { card, min: draw, max: draw }
     -- cards の中から count 種類以上を1枚以上引くパターン
     Choice -> ado
-      pattern <- mkDrawPattern' cards' [replicate count 1]
-      in pattern <#> \p -> { card: p.card, min: 1, max: p.card.count }
+      selected <- combinations count cards'
+      in selected <#> \card -> { card, min: 1, max: card.count }
     -- cards の中から count 種類以上を1枚以上残すパターン
     LeftOne -> ado
-      pattern <- mkDrawPattern' cards' [replicate count 1]
-      in pattern <#> \p -> { card: p.card, min: 0, max: p.card.count - 1 }
+      selected <- combinations count cards'
+      in selected <#> \card -> { card, min: 0, max: card.count - 1 }
     -- cards の中から count 種類以上を1枚も引かないパターン
     LeftAll -> ado
-      pattern <- mkDrawPattern' cards' [replicate count 0]
-      in pattern <#> \p -> { card: p.card, min: 0, max: 0 }
+      selected <- combinations count cards'
+      in selected <#> \card -> { card, min: 0, max: 0 }
   where
   filterCondition = filter \{ card, min, max } -> not (min == 0 && max == card.count)
 
@@ -147,23 +147,23 @@ mkConditionPattern cards { mode, count, cards: ids } = do
 type DrawPattern = Array { card :: Card, draw :: Int }
 
 -- カードを指定枚数引く全ての組み合わせを列挙する
-mkDrawPattern :: Cards -> Int -> Array DrawPattern
-mkDrawPattern cards count = mkDrawPattern' cards $ partitionNumber count
-
--- 指定の枚数パターンに合致するカードの組み合わせを全て列挙する
--- 引数 cards の順序は維持される
--- 引数 pattern の各要素は予め降順にソートされている必要がある
-mkDrawPattern' :: Cards -> Array (Array Int) -> Array DrawPattern
-mkDrawPattern' cards pattern = do
-  let cardsLength = length cards
-  let cardCounts = sortBy (flip compare) $ _.count <$> cards
-  let pattern' = filter (length >>> (_ <= cardsLength) && and <<< zipWith (>=) cardCounts) pattern
-  let patternLength = nub $ length <$> pattern'
-  let cardCombinations = Map.fromFoldable $ Tuple <*> flip combinations cards <$> patternLength
-  p <- pattern'
-  let cardCombination = fold $ Map.lookup (length p) cardCombinations
-  p' <- distinctPermutations p
-  filter (all \d -> d.draw <= d.card.count) $ zipWith { draw: _, card: _ } p' <$> cardCombination
+mkDrawPattern :: Int -> Cards -> Array DrawPattern
+mkDrawPattern count _ | count < 0  = []
+mkDrawPattern 0 _ = [[]]
+mkDrawPattern count cards = do
+  let capacity = sumBy _.count cards
+  if capacity < count then [] else foldr step leaf cards count capacity
+  where
+  leaf _ _ = [[]]
+  step :: Card -> (Int -> Int -> Array DrawPattern) -> Int -> Int -> Array DrawPattern
+  step _ _ 0 _ = [[]]
+  step { count: 0 } k remaining capacity = k remaining capacity
+  step card k remaining capacity = do
+    let capacity' = capacity - card.count
+    let maxDraw = min remaining card.count
+    let minDraw = max 1 (remaining - capacity')
+    let draws = maxDraw .. minDraw >>= \draw -> ({ card, draw } : _) <$> k (remaining - draw) capacity'
+    if capacity' < remaining then draws else draws <> k remaining capacity'
 
 ----------------------------------------------------------------
 
