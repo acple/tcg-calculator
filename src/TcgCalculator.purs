@@ -3,15 +3,16 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty, guard)
-import Data.Array (any, concatMap, filter, find, findIndex, groupAllBy, mapMaybe, notElem, nub, null, sortBy, updateAt, (..), (:))
+import Data.Array (any, concatMap, filter, findIndex, groupAllBy, mapMaybe, notElem, nub, null, sortBy, updateAt, (!!), (..), (:))
 import Data.Array.NonEmpty (foldl1, toArray)
 import Data.BigInt (BigInt)
 import Data.Foldable (class Foldable, all, and, fold, foldMap, foldr)
 import Data.Map (Map)
 import Data.Map as Map
-import Data.Maybe (Maybe(..), maybe)
+import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF)
+import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..))
 import TcgCalculator.Math (combinationNumber, combinations)
 import TcgCalculator.Types (Card, Cards, Condition, ConditionGroup, ConditionMode(..), ConditionSet, Deck, CardId, filterCards)
@@ -112,21 +113,15 @@ mkConditionPattern cards { mode, count, cards: ids } = do
     -- cards の中からちょうど count 枚を引くパターン
     JustDraw -> ado
       pattern <- mkDrawPattern count cards'
-      in cards' <#> \card -> do
-        let draw = maybe 0 _.draw $ find (_.card.id >>> (_ == card.id)) pattern
-        { card, min: draw, max: draw }
+      in cards' # mapWithDraw pattern \card draw -> { card, min: draw, max: draw }
     -- count 枚以上デッキに残すパターン
     Remains -> ado
       pattern <- mkDrawPattern (sumBy _.count cards' - count) cards'
-      in cards' <#> \card -> do
-        let draw = maybe 0 _.draw $ find (_.card.id >>> (_ == card.id)) pattern
-        { card, min: 0, max: draw }
+      in cards' # mapWithDraw pattern \card draw -> { card, min: 0, max: draw }
     -- ちょうど count 枚デッキに残すパターン
     JustRemains -> ado
       pattern <- mkDrawPattern (sumBy _.count cards' - count) cards'
-      in cards' <#> \card -> do
-        let draw = maybe 0 _.draw $ find (_.card.id >>> (_ == card.id)) pattern
-        { card, min: draw, max: draw }
+      in cards' # mapWithDraw pattern \card draw -> { card, min: draw, max: draw }
     -- cards の中から count 種類以上を1枚以上引くパターン
     Choice -> ado
       selected <- combinations count cards'
@@ -140,6 +135,10 @@ mkConditionPattern cards { mode, count, cards: ids } = do
       selected <- combinations count cards'
       in selected <#> \card -> { card, min: 0, max: 0 }
   where
+  mapWithDraw pattern f = _.value <<< do
+    mapAccumL <@> 0 $ \i card -> case pattern !! i of
+      Just p | p.card.id == card.id -> { accum: i + 1, value: f card p.draw }
+      _ -> { accum: i, value: f card 0 }
   filterCondition = filter \{ card, min, max } -> not (min == 0 && max == card.count)
   toConditionPattern = Map.fromFoldable <<< map (flip Tuple <*> _.card.id)
 
@@ -149,6 +148,7 @@ mkConditionPattern cards { mode, count, cards: ids } = do
 type DrawPattern = Array { card :: Card, draw :: Int }
 
 -- カードを指定枚数引く全ての組み合わせを列挙する
+-- 結果は cards の順序を保持した部分列の集合となる
 mkDrawPattern :: Int -> Cards -> Array DrawPattern
 mkDrawPattern count _ | count < 0  = []
 mkDrawPattern 0 _ = [[]]
