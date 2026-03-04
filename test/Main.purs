@@ -11,7 +11,7 @@ import Data.Map as Map
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import TcgCalculator (ConditionPattern, buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, mkDrawPattern, normalizeDeck)
+import TcgCalculator (ConditionPattern, buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, mkDrawPattern, normalizeConditionPatterns, normalizeDeck)
 import TcgCalculator.Math (combinationNumber, combinations)
 import TcgCalculator.Types (Card, Cards, ConditionMode(..))
 import TcgCalculator.Types.Id (mkId)
@@ -65,6 +65,7 @@ tcgCalculatorTest = do
   describe "TcgCalculator" do
     mkDrawPatternTest
     mkConditionPatternTest
+    normalizeConditionPatternTest
     mergeConditionPatternTest
     buildConditionPatternTest
     calculateTest
@@ -273,6 +274,47 @@ mkConditionPatternTest = do
       [p [{ card: cardA, min: 1, max: 3 }], p [{ card: cardB, min: 1, max: 2 }]]
     test0 { mode: AtLeast, count: 1, cards: [cardE.id] } `conditionEqual` []
     test0 { mode: AtLeast, count: 6, cards: [cardA.id, cardB.id] } `conditionEqual` []
+
+normalizeConditionPatternTest :: Spec Unit
+normalizeConditionPatternTest = do
+  describe "normalizeConditionPatterns" do
+    it "same keys" do
+      normalizeConditionPatterns
+        [p [{ card: cardA, min: 2, max: 2 }], p [{ card: cardA, min: 1, max: 3 }]] `conditionEqual`
+        [p [{ card: cardA, min: 1, max: 3 }]] -- wider dominates narrower
+      normalizeConditionPatterns
+        [p [{ card: cardA, min: 1, max: 1 }], p [{ card: cardA, min: 3, max: 3 }]] `conditionEqual`
+        [p [{ card: cardA, min: 1, max: 1 }], p [{ card: cardA, min: 3, max: 3 }]] -- disjoint
+      normalizeConditionPatterns
+        [p [{ card: cardA, min: 2, max: 2 }], p [{ card: cardA, min: 3, max: 3 }], p [{ card: cardA, min: 1, max: 3 }]] `conditionEqual`
+        [p [{ card: cardA, min: 1, max: 3 }]] -- one dominates multiple
+      normalizeConditionPatterns
+        [ p [{ card: cardA, min: 2, max: 2 }, { card: cardB, min: 1, max: 1 }]
+        , p [{ card: cardA, min: 3, max: 3 }, { card: cardB, min: 2, max: 2 }]
+        , p [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]
+        ] `conditionEqual`
+        [p [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]] -- multi-key, one dominates multiple
+    it "cross key set" do
+      normalizeConditionPatterns
+        [p [{ card: cardA, min: 1, max: 3 }], p [{ card: cardA, min: 2, max: 2 }, { card: cardB, min: 1, max: 2 }]] `conditionEqual`
+        [p [{ card: cardA, min: 1, max: 3 }]] -- fewer keys dominates
+      normalizeConditionPatterns
+        [p [{ card: cardA, min: 2, max: 2 }], p [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]] `conditionEqual`
+        [p [{ card: cardA, min: 2, max: 2 }], p [{ card: cardA, min: 1, max: 3 }, { card: cardB, min: 1, max: 2 }]] -- more keys does not dominate
+    it "implies boundary" do
+      normalizeConditionPatterns
+        [p [{ card: cardA, min: 2, max: 2 }], p [{ card: cardA, min: 2, max: 3 }]] `conditionEqual`
+        [p [{ card: cardA, min: 2, max: 3 }]] -- equal min: g.min <= s.min
+      normalizeConditionPatterns
+        [p [{ card: cardA, min: 2, max: 3 }], p [{ card: cardA, min: 1, max: 3 }]] `conditionEqual`
+        [p [{ card: cardA, min: 1, max: 3 }]] -- equal max: s.max <= g.max
+      normalizeConditionPatterns
+        [p [{ card: cardA, min: 1, max: 2 }], p [{ card: cardA, min: 2, max: 3 }]] `conditionEqual`
+        [p [{ card: cardA, min: 1, max: 2 }], p [{ card: cardA, min: 2, max: 3 }]] -- overlapping, no domination
+      normalizeConditionPatterns
+        [p [{ card: cardA, min: 1, max: 3 }], p [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 1, max: 2 }]] `conditionEqual`
+        [p [{ card: cardA, min: 1, max: 3 }], p [{ card: cardA, min: 0, max: 3 }, { card: cardB, min: 1, max: 2 }]] -- extra key prevents domination
+
 
 mergeConditionPatternTest :: Spec Unit
 mergeConditionPatternTest = do

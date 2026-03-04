@@ -3,10 +3,10 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty, guard)
-import Data.Array (any, concatMap, filter, findIndex, groupAllBy, mapMaybe, notElem, nub, null, sortBy, updateAt, (!!), (..), (:))
+import Data.Array (any, concatMap, filter, mapMaybe, notElem, nub, null, sortBy, (!!), (..), (:))
 import Data.Array.NonEmpty (foldl1, toArray)
 import Data.BigInt (BigInt)
-import Data.Foldable (class Foldable, all, and, fold, foldMap, foldr)
+import Data.Foldable (class Foldable, all, and, foldMap, foldr)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -93,14 +93,14 @@ isValidConditionPattern = all \{ card: { count }, min, max } -> min <= max && mi
 
 -- 重複する条件を取り除いてパターンを正規化する
 normalizeConditionPatterns :: Array ConditionPattern -> Array ConditionPattern
-normalizeConditionPatterns = groupAllBy (comparing Map.keys) >=> foldr collect []
+normalizeConditionPatterns = foldr collect []
   where
-  collect condition patterns = if any (include condition) patterns -- より広い条件を既に含む場合は何もしない
-    then patterns
-    else case findIndex (flip include condition) patterns of -- より広い条件が与えられた場合は上書きする
-      Just i -> fold $ updateAt i condition patterns
-      Nothing -> condition : patterns
-  include = map and <<< Map.intersectionWith \{ min: min1, max: max1 } { min: min2, max: max2 } -> min2 <= min1 && max1 <= max2
+  collect condition patterns
+    | any (implies condition) patterns = patterns -- より広い条件を既に含む場合は何もしない
+    | otherwise = condition : filter (not <<< flip implies condition) patterns -- より狭い条件を全て除去して追加する
+  implies specific general = do
+    let covered = Map.intersectionWith (\s g -> g.min <= s.min && s.max <= g.max) specific general
+    Map.size covered == Map.size general && and covered
 
 ----------------------------------------------------------------
 
