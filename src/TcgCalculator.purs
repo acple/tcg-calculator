@@ -26,12 +26,15 @@ calculate deck set = countMatchingPatterns deck $ normalizeConditionPatterns $ b
 -- カードを順に走査し、いずれかの ConditionPattern を満たすドローパターンの組み合わせ数を数え上げる
 countMatchingPatterns :: Deck -> Array ConditionPattern -> BigInt
 countMatchingPatterns deck patterns = do
-  let candidates = toCandidate <$> patterns
+  let candidates = mapMaybe (toCandidate deck.hand) patterns
   foldr step (leaf deck.others) deck.cards deck.hand candidates
   where
 
-  toCandidate :: ConditionPattern -> { remaining :: Int, entries :: ConditionPattern }
-  toCandidate pattern = { remaining: sumBy _.min pattern , entries: pattern }
+  toCandidate :: Int -> ConditionPattern -> Maybe { remaining :: Int, entries :: ConditionPattern }
+  toCandidate hand pattern = do
+    let remaining = sumBy _.min pattern
+    guard $ remaining <= hand
+    pure { remaining, entries: pattern }
 
   leaf others hand candidates = if null candidates then zero else combinationNumber others hand
 
