@@ -23,7 +23,6 @@ package:
     - media-types
     - newtype
     - numbers
-    - open-memoize
     - ordered-collections
     - partial
     - prelude
@@ -34,7 +33,6 @@ package:
     - strings
     - transformers
     - tuples
-    - unfoldable
     - uuid
     - web-events
     - web-html

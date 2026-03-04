@@ -12,7 +12,7 @@ import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import TcgCalculator (ConditionPattern, buildConditionPattern, calculate, mergeConditionPattern, mkConditionPattern, mkDrawPattern, normalizeDeck)
-import TcgCalculator.Math (combinationNumber, combinations, distinctPermutations, partitionNumber)
+import TcgCalculator.Math (combinationNumber, combinations)
 import TcgCalculator.Types (Card, Cards, ConditionMode(..))
 import TcgCalculator.Types.Id (mkId)
 import Test.Spec (Spec, describe, it)
@@ -32,10 +32,6 @@ mathTest = do
   describe "TcgCalculator.Math" do
     it "combinationNumber" do
       combinationNumberTest
-    it "partitionNumber" do
-      partitionNumberTest
-    it "permutations" do
-      permutationsTest
     it "combinations" do
       combinationsTest
   where
@@ -48,22 +44,6 @@ mathTest = do
     combinationNumber 120 3 `shouldEqual` BigInt.fromInt 280840
     combinationNumber (-1) 0 `shouldEqual` BigInt.fromInt 0
     combinationNumber 5 (-1) `shouldEqual` BigInt.fromInt 0
-
-  partitionNumberTest = do
-    partitionNumber 5 `shouldEqual` [[5], [4, 1], [3, 2], [3, 1, 1], [2, 2, 1], [2, 1, 1, 1], [1, 1, 1, 1, 1]]
-    partitionNumber 4 `shouldEqual` [[4], [3, 1], [2, 2], [2, 1, 1], [1, 1, 1, 1]]
-    partitionNumber 2 `shouldEqual` [[2], [1, 1]]
-    partitionNumber 1 `shouldEqual` [[1]]
-    partitionNumber 0 `shouldEqual` [[]]
-    partitionNumber (-1) `shouldEqual` []
-
-  permutationsTest = do
-    distinctPermutations [3, 2, 1] `shouldEqual` [[3, 2, 1], [3, 1, 2], [2, 3, 1], [2, 1, 3], [1, 3, 2], [1, 2, 3]]
-    distinctPermutations [3, 1, 1] `shouldEqual` [[3, 1, 1], [1, 3, 1], [1, 1, 3]]
-    distinctPermutations [3, 3, 1, 1] `shouldEqual` [[3, 3, 1, 1], [3, 1, 3, 1], [3, 1, 1, 3], [1, 3, 3, 1], [1, 3, 1, 3], [1, 1, 3, 3]]
-    distinctPermutations ['b', 'a'] `shouldEqual` [['b', 'a'], ['a', 'b']]
-    distinctPermutations ["x"] `shouldEqual` [["x"]]
-    distinctPermutations ([] :: Array Unit) `shouldEqual` [[]]
 
   combinationsTest = do
     combinations 2 [1, 2, 3] `shouldEqual`
