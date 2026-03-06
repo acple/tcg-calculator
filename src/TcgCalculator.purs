@@ -153,7 +153,7 @@ type DrawPattern = Array { card :: Card, draw :: Int }
 -- カードを指定枚数引く全ての組み合わせを列挙する
 -- 結果は cards の順序を保持した部分列の集合となる
 mkDrawPattern :: Int -> Cards -> Array DrawPattern
-mkDrawPattern count _ | count < 0  = []
+mkDrawPattern count _ | count < 0 = []
 mkDrawPattern 0 _ = [[]]
 mkDrawPattern count cards = do
   let capacity = sumBy _.count cards
