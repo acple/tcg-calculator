@@ -274,6 +274,8 @@ mkConditionPatternTest = do
       [p [{ card: cardA, min: 1, max: 3 }], p [{ card: cardB, min: 1, max: 2 }]]
     test0 { mode: AtLeast, count: 1, cards: [cardE.id] } `conditionEqual` []
     test0 { mode: AtLeast, count: 6, cards: [cardA.id, cardB.id] } `conditionEqual` []
+    test0 { mode: LeftOne, count: 1, cards: [cardE.id] } `conditionEqual`
+      [p [{ card: cardE, min: 0, max: -1 }]] -- impossible
 
 normalizeConditionPatternTest :: Spec Unit
 normalizeConditionPatternTest = do
@@ -391,64 +393,77 @@ conditionEqual = shouldEqual `on` Array.sort
 calculateTest :: Spec Unit
 calculateTest = do
   describe "calculate" do
-    it "check some results" do
+    it "AtLeast" do
       let deck = { cards: testCards, others: 11, hand: 5 }
-      let cond01 = buildCondition [[{ cards: [cardA.id], count: 1, mode: AtLeast }]]
-      test deck cond01 9316
-      test deck { others = 0 } cond01 120
-      let cond02 = buildCondition [[{ cards: [cardA.id], count: 1, mode: JustDraw }]]
-      test deck cond02 7140
-      test deck { others = 0 } cond02 45
-      let cond03 = buildCondition [[{ cards: [cardA.id, cardB.id, cardC.id], count: 5, mode: AtLeast }]]
-      test deck cond03 56
-      test deck { others = 0 } cond03 56
-      let cond04 = buildCondition [[{ cards: [cardA.id, cardB.id, cardC.id], count: 2, mode: Choice }]]
-      test deck cond04 9080
-      test deck { others = 0 } cond04 126
-      let cond05 = buildCondition [[{ cards: [cardB.id, cardC.id, cardD.id], count: 4, mode: JustDraw }]]
-      test deck cond05 210
-      test deck { others = 0 } cond05 45
-      let cond06 = buildCondition [[{ cards: [cardA.id], count: 1, mode: AtLeast }, { cards: [cardB.id], count: 1, mode: AtLeast }]]
-      test deck cond06 3751
-      test deck { others = 0 } cond06 99
-      let cond07 = buildCondition [[{ cards: [cardA.id], count: 2, mode: JustDraw }, { cards: [cardB.id], count: 1, mode: AtLeast }]]
-      test deck cond07 675
-      test deck { others = 0 } cond07 48
-      let cond08 = buildCondition [[{ cards: [cardD.id], count: 1, mode: AtLeast }, { cards: [cardA.id, cardB.id, cardC.id, cardD.id], count: 2, mode: Choice }]]
-      test deck cond08 1819
-      test deck { others = 0 } cond08 70
-      let cond09 = buildCondition [[{ cards: [cardD.id], count: 1, mode: AtLeast }, { cards: [cardA.id, cardB.id, cardC.id], count: 2, mode: Choice }]]
-      test deck cond09 1819
-      test deck { others = 0 } cond09 70
-      let cond10 = buildCondition [[{ cards: [cardA.id], count: 0, mode: JustDraw }]]
-      let deck10 = { cards: [cardA, cardB], others: 5, hand: 5 }
-      test deck10 cond10 21
-      test deck10 { others = 2 } cond10 0
-      let cond11 = buildCondition [[{ cards: [cardA.id, cardB.id, cardC.id, cardD.id], count: 3, mode: Choice }]]
-      test deck cond11 3352
-      test deck { others = 0 } cond11 118
-      let cond12 = buildCondition [[{ cards: [cardA.id, cardB.id], count: 1, mode: JustDraw }, { cards: [cardC.id, cardD.id], count: 1, mode: JustDraw }]]
-      test deck cond12 3300
-      test deck { others = 0 } cond12 0
-      let cond13 = buildCondition [[{ cards: [cardA.id, cardB.id], count: 1, mode: JustDraw }], [{ cards: [cardC.id, cardD.id], count: 1, mode: JustDraw }]]
-      test deck cond13 10805
-      test deck { others = 0 } cond13 25
-      let cond19 = buildCondition [[{ cards: [cardA.id], count: 1, mode: LeftOne }]]
-      test deck cond19 15368
-      let cond14 = buildCondition [[{ cards: [cardE.id], count: 0, mode: LeftAll }]]
-      let deck14 = deck { cards = [cardE] }
-      test deck14 cond14 462
-      let deck15 = deck { cards = deck.cards <> [cardE] }
-      let cond15 = buildCondition [[{ cards: [cardA.id, cardB.id, cardE.id], count: 1, mode: LeftAll }]]
-      test deck15 cond15 15504
-      let deck16 = deck15
-      let cond16 = buildCondition [[{ cards: [cardA.id, cardB.id, cardE.id], count: 2, mode: LeftAll }]]
-      test deck16 cond16 11753
-      let deck17 = { cards: [cardE, cardA, cardB, cardC, cardD], others: 11, hand: 5 }
-      let cond17 = buildCondition [[{ cards: [cardE.id, cardA.id], count: 1, mode: AtLeast }]]
-      test deck17 cond17 9316
-      let cond18 = buildCondition [[{ cards: [cardE.id, cardA.id], count: 1, mode: JustDraw }]]
-      test deck17 cond18 7140
+      let cond1 = buildCondition [[{ cards: [cardA.id], count: 1, mode: AtLeast }]]
+      test deck cond1 9316
+      test deck { others = 0 } cond1 120
+      let cond2 = buildCondition [[{ cards: [cardA.id, cardB.id, cardC.id], count: 5, mode: AtLeast }]]
+      test deck cond2 56
+      test deck { others = 0 } cond2 56
+    it "JustDraw" do
+      let deck = { cards: testCards, others: 11, hand: 5 }
+      let cond1 = buildCondition [[{ cards: [cardA.id], count: 1, mode: JustDraw }]]
+      test deck cond1 7140
+      test deck { others = 0 } cond1 45
+      let cond2 = buildCondition [[{ cards: [cardB.id, cardC.id, cardD.id], count: 4, mode: JustDraw }]]
+      test deck cond2 210
+      test deck { others = 0 } cond2 45
+      let deck3 = { cards: [cardA, cardB], others: 5, hand: 5 }
+      let cond3 = buildCondition [[{ cards: [cardA.id], count: 0, mode: JustDraw }]] -- draw 0
+      test deck3 cond3 21
+      test deck3 { others = 2 } cond3 0
+    it "Choice" do
+      let deck = { cards: testCards, others: 11, hand: 5 }
+      let cond1 = buildCondition [[{ cards: [cardA.id, cardB.id, cardC.id], count: 2, mode: Choice }]]
+      test deck cond1 9080
+      test deck { others = 0 } cond1 126
+      let cond2 = buildCondition [[{ cards: [cardA.id, cardB.id, cardC.id, cardD.id], count: 3, mode: Choice }]]
+      test deck cond2 3352
+      test deck { others = 0 } cond2 118
+    it "LeftOne" do
+      let deck = { cards: testCards, others: 11, hand: 5 }
+      let cond = buildCondition [[{ cards: [cardA.id], count: 1, mode: LeftOne }]]
+      test deck cond 15368
+      let deck2 = { cards: [cardE, cardA, cardB, cardC, cardD], others: 11, hand: 5 }
+      let cond2 = buildCondition [[{ cards: [cardE.id], count: 1, mode: LeftOne }]] -- count=0 card: max=-1, impossible
+      test deck2 cond2 0
+    it "LeftAll" do
+      let deck = { cards: testCards <> [cardE], others: 11, hand: 5 }
+      let cond1 = buildCondition [[{ cards: [cardE.id], count: 0, mode: LeftAll }]] -- count=0 card
+      test deck { cards = [cardE] } cond1 462
+      let cond2 = buildCondition [[{ cards: [cardA.id, cardB.id, cardE.id], count: 1, mode: LeftAll }]]
+      test deck cond2 15504
+      let cond3 = buildCondition [[{ cards: [cardA.id, cardB.id, cardE.id], count: 2, mode: LeftAll }]]
+      test deck cond3 11753
+    it "AND conditions" do
+      let deck = { cards: testCards, others: 11, hand: 5 }
+      let cond1 = buildCondition [[{ cards: [cardA.id], count: 1, mode: AtLeast }, { cards: [cardB.id], count: 1, mode: AtLeast }]]
+      test deck cond1 3751
+      test deck { others = 0 } cond1 99
+      let cond2 = buildCondition [[{ cards: [cardA.id], count: 2, mode: JustDraw }, { cards: [cardB.id], count: 1, mode: AtLeast }]]
+      test deck cond2 675
+      test deck { others = 0 } cond2 48
+      let cond3 = buildCondition [[{ cards: [cardD.id], count: 1, mode: AtLeast }, { cards: [cardA.id, cardB.id, cardC.id, cardD.id], count: 2, mode: Choice }]]
+      test deck cond3 1819
+      test deck { others = 0 } cond3 70
+      let cond4 = buildCondition [[{ cards: [cardD.id], count: 1, mode: AtLeast }, { cards: [cardA.id, cardB.id, cardC.id], count: 2, mode: Choice }]]
+      test deck cond4 1819 -- D already covered by AtLeast, same result as cond3
+      test deck { others = 0 } cond4 70
+      let cond5 = buildCondition [[{ cards: [cardA.id, cardB.id], count: 1, mode: JustDraw }, { cards: [cardC.id, cardD.id], count: 1, mode: JustDraw }]]
+      test deck cond5 3300
+      test deck { others = 0 } cond5 0
+    it "OR conditions" do
+      let deck = { cards: testCards, others: 11, hand: 5 }
+      let cond = buildCondition [[{ cards: [cardA.id, cardB.id], count: 1, mode: JustDraw }], [{ cards: [cardC.id, cardD.id], count: 1, mode: JustDraw }]]
+      test deck cond 10805
+      test deck { others = 0 } cond 25
+    it "count=0 card" do
+      let deck = { cards: [cardE, cardA, cardB, cardC, cardD], others: 11, hand: 5 }
+      let cond1 = buildCondition [[{ cards: [cardE.id, cardA.id], count: 1, mode: AtLeast }]]
+      test deck cond1 9316
+      let cond2 = buildCondition [[{ cards: [cardE.id, cardA.id], count: 1, mode: JustDraw }]]
+      test deck cond2 7140
   where
   test deck cond expected = calculate (normalizeDeck deck cond) cond `shouldEqual` BigInt.fromInt expected
   buildCondition = Array.mapMaybe NE.fromArray
