@@ -3,15 +3,16 @@ module TcgCalculator where
 import Prelude
 
 import Control.Alternative (empty, guard)
-import Data.Array (any, concatMap, filter, mapMaybe, notElem, nub, null, sortBy, (!!), (..), (:))
-import Data.Array.NonEmpty (foldl1, toArray)
+import Data.Array (any, filter, mapMaybe, null, partition, sortWith, (!!), (..), (:))
+import Data.Array.NonEmpty (foldl1)
 import Data.BigInt (BigInt)
-import Data.Foldable (class Foldable, all, and, foldMap, foldr)
+import Data.Foldable (class Foldable, all, and, foldMap, foldl, foldr)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF)
+import Data.Set as Set
 import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..))
 import TcgCalculator.Math (combinationNumber, combinations)
@@ -55,12 +56,11 @@ countMatchingPatterns deck patterns = do
 normalizeDeck :: Deck -> ConditionSet -> Deck
 normalizeDeck { cards, others, hand } set = do
   let used = usedCards set
-  let cards' = sortBy (comparing _.id) <<< filterCards used $ cards
-  let unused = diffCards used cards
-  { cards: cards', others: others + sumBy _.count unused, hand }
+  let { yes: cards', no: unused } = partition (inUse used) cards
+  { cards: sortWith _.id cards', others: others + sumBy _.count unused, hand }
   where
-  usedCards = nub <<< concatMap _.cards <<< concatMap toArray
-  diffCards used = filter (_.id >>> notElem <@> used)
+  usedCards = foldl (foldl $ (_ <<< _.cards) <<< foldr Set.insert) Set.empty
+  inUse ids = flip Set.member ids <<< _.id
 
 -- 確率計算のため、全組み合わせの個数を計算する
 calculateTotal :: Deck -> BigInt
