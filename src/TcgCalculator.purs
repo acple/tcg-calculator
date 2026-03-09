@@ -28,7 +28,7 @@ calculate deck set = countMatchingPatterns deck $ normalizeConditionPatterns $ b
 countMatchingPatterns :: Deck -> Array ConditionPattern -> BigInt
 countMatchingPatterns deck patterns = do
   let candidates = mapMaybe (toCandidate deck.hand) patterns
-  foldr step (leaf deck.others) deck.cards deck.hand candidates
+  if null candidates then zero else foldr step (leaf deck.others) deck.cards deck.hand candidates
   where
 
   toCandidate :: Int -> ConditionPattern -> Maybe { remaining :: Int, entries :: ConditionPattern }
@@ -37,7 +37,7 @@ countMatchingPatterns deck patterns = do
     guard $ remaining <= hand
     pure { remaining, entries: pattern }
 
-  leaf others hand candidates = if null candidates then zero else combinationNumber others hand
+  leaf others hand _ = combinationNumber others hand
 
   step :: Card -> (Int -> Array _ -> BigInt) -> Int -> Array _ -> BigInt
   step card k hand candidates = 0 .. min card.count hand # sumBy \draw -> do
@@ -60,7 +60,7 @@ normalizeDeck { cards, others, hand } set = do
   { cards: sortWith _.id cards', others: others + sumBy _.count unused, hand }
   where
   usedCards = foldl (foldl $ (_ <<< _.cards) <<< foldr Set.insert) Set.empty
-  inUse ids = flip Set.member ids <<< _.id
+  inUse = flip $ Set.member <<< _.id
 
 -- 確率計算のため、全組み合わせの個数を計算する
 calculateTotal :: Deck -> BigInt
@@ -70,8 +70,6 @@ calculateTotal { cards, others, hand } = combinationNumber (sumBy _.count cards 
 
 -- カードとそのドロー可能枚数を組み合わせた一つの条件式を表す
 type ConditionPattern = Map CardId { card :: Card, min :: Int, max :: Int }
-
-----------------------------------------------------------------
 
 -- 条件式をマージ (AND) して ConditionPattern のリストに変換する
 buildConditionPattern :: Cards -> ConditionGroup -> Array ConditionPattern
@@ -101,8 +99,6 @@ normalizeConditionPatterns = foldr collect []
   implies specific general = do
     let covered = Map.intersectionWith (\s g -> g.min <= s.min && s.max <= g.max) specific general
     Map.size covered == Map.size general && and covered
-
-----------------------------------------------------------------
 
 -- 一つの Condition に対応する全パターンのリストを出力する
 mkConditionPattern :: Cards -> Condition -> Array ConditionPattern

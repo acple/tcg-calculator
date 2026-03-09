@@ -108,10 +108,10 @@ type AppConditionGroup = NonEmptyArray AppCondition
 type AppCondition = { id :: ConditionId, condition :: Condition, disabled :: Boolean }
 
 toConditionSet :: AppConditionSet -> ConditionSet
-toConditionSet = Array.filter (not _.disabled) >>> Array.sortBy (comparing _.id) >>> Array.mapMaybe (_.conditions >>> toConditionGroup)
+toConditionSet = Array.filter (not _.disabled) >>> Array.sortWith _.id >>> Array.mapMaybe (_.conditions >>> toConditionGroup)
 
 toConditionGroup :: AppConditionGroup -> Maybe ConditionGroup
-toConditionGroup = NE.filter (not _.disabled) >>> Array.sortBy (comparing _.id) >>> map _.condition >>> NE.fromArray
+toConditionGroup = NE.filter (not _.disabled) >>> Array.sortWith _.id >>> map _.condition >>> NE.fromArray
 
 ----------------------------------------------------------------
 

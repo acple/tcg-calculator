@@ -29,7 +29,6 @@ package:
     - record
     - routing
     - safe-coerce
-    - st
     - strings
     - transformers
     - tuples

@@ -2,6 +2,7 @@ module Util.Halogen where
 
 import Prelude
 
+import Data.Array ((:))
 import Halogen.HTML as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -13,7 +14,7 @@ empty :: forall w i. HH.HTML w i
 empty = HH.text mempty
 
 fa :: forall w i. String -> Array H.ClassName -> HH.HTML w i
-fa s c = HH.i [ HP.classes $ [ H.ClassName ("fa-solid " <> s) ] <> c ] []
+fa s c = HH.i [ HP.classes $ H.ClassName ("fa-solid " <> s) : c ] []
 
 fa_ :: forall w i. String -> HH.HTML w i
 fa_ s = HH.i [ HP.class_ $ H.ClassName ("fa-solid " <> s) ] []
