@@ -21,7 +21,7 @@ import Partial.Unsafe (unsafePartial)
 combinationNumber :: Int -> Int -> BigInt
 combinationNumber = go
   where
-  go n r | n < 0 || n < r = zero
+  go n r | r < 0 || n < r = zero
   go n r | n - r < r = go n (n - r)
   go _ 0 = one
   go n 1 = BigInt.fromInt n
@@ -36,10 +36,11 @@ type Combination a = Array (Array a)
 -- combinations 2 [1, 2, 3, 4] -> [[1, 2], [1, 3], [1, 4], [2, 3], [2, 4], [3, 4]]
 combinations :: forall a. Int -> Array a -> Combination a
 combinations n a
+  | n < 0         = []
   | n == 0        = [[]]
+  | n == 1        = singleton <$> a
   | length a == n = [a]
   | length a < n  = []
-  | n == 1        = singleton <$> a
   | otherwise     = case uncons a of
       Just { head, tail } -> ((head : _) <$> combinations (n - 1) tail) <> combinations n tail
       _ -> []
