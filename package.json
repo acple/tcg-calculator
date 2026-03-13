@@ -4,13 +4,13 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "spago build --pedantic-packages && purs-backend-es bundle-app -t ./bundle/app.js && purs-backend-es bundle-app -s -m Worker.Main -t ./bundle/worker.js",
-    "bundle": "npm run build && npm run parcel",
+    "build": "spago build --pedantic-packages",
+    "bundle": "npm run build && vite build",
     "gendevcert": "dotnet dev-certs https --format pem --no-password --export-path devcert.pem --trust",
-    "parcel": "PARCEL_WORKER_BACKEND=process parcel build --public-url . -- index.html bundle/worker.js",
     "postinstall": "spago install",
-    "server": "PARCEL_WORKER_BACKEND=process parcel serve --cert devcert.pem --key devcert.key --no-hmr -- index.html bundle/worker.js",
-    "test": "spago test"
+    "preview": "npm run bundle && vite preview",
+    "server": "npm run build && vite",
+    "test": "npm run build && node -e \"import { main } from './output-es/Test.Main/index.js'; main()\""
   },
   "author": "acple",
   "license": "MIT",
@@ -19,12 +19,11 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.18",
-    "esbuild": "^0.27.2",
-    "parcel": "^2.16.3",
+    "@tailwindcss/postcss": "^4.2.1",
     "purescript": "^0.15.15",
     "purescript-psa": "^0.9.0",
     "purs-backend-es": "^1.4.3",
-    "spago": "^1.0.3"
+    "spago": "^1.0.3",
+    "vite": "^8.0.0"
   }
 }

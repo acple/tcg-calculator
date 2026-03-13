@@ -9,7 +9,6 @@
 /.purs*
 /.psa*
 /.spago
-/.parcel-cache/
 /.vscode
 /.spec-results
 

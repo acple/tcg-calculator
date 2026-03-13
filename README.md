@@ -21,7 +21,6 @@ https://acple.github.io/tcg-calculator/
 ## いじりたいとき
 ```console
 npm install
-npm run build
 npm gendevcert # dotnet-cli / あるいは devcert(.pem|.key) の手動生成
 npm run server
 ```

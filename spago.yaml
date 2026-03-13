@@ -47,3 +47,7 @@ workspace:
   extraPackages: {}
   packageSet:
     registry: 73.3.0
+  backend:
+    cmd: purs-backend-es
+    args:
+      - build
