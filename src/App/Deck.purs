@@ -111,7 +111,7 @@ component = H.mkComponent
           [ HH.input
               [ HP.classes [ H.ClassName "grow", styleFormInput ]
               , HP.type_ HP.InputText
-              , HP.id $ "name-" <> id
+              , HP.id $ "card-" <> id
               , HP.value card.name
               , HE.onValueChange $ UpdateCard <<< card { name = _ }
               ]
