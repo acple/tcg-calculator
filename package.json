@@ -6,7 +6,6 @@
   "scripts": {
     "build": "spago build --pedantic-packages",
     "bundle": "npm run build && vite build",
-    "gendevcert": "dotnet dev-certs https --format pem --no-password --export-path devcert.pem --trust",
     "postinstall": "spago install",
     "preview": "npm run bundle && vite preview",
     "server": "npm run build && vite",

@@ -17,10 +17,4 @@ export default defineConfig({
     },
   },
   base: "./",
-  server: {
-    https: {
-      cert: "./devcert.pem",
-      key: "./devcert.key",
-    },
-  },
 });
