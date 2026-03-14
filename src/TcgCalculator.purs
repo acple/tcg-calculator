@@ -22,7 +22,7 @@ import TcgCalculator.Types (Card, Cards, Condition, ConditionGroup, ConditionMod
 
 -- 条件を満たす組み合わせの個数を計算する
 calculate :: Deck -> ConditionSet -> BigInt
-calculate deck set = countMatchingPatterns deck $ normalizeConditionPatterns $ buildConditionPattern deck.cards =<< set
+calculate deck conditions = countMatchingPatterns deck $ normalizeConditionPatterns $ buildConditionPattern deck.cards =<< conditions
 
 -- カードを順に走査し、いずれかの ConditionPattern を満たすドローパターンの組み合わせ数を数え上げる
 countMatchingPatterns :: Deck -> Array ConditionPattern -> BigInt
@@ -52,10 +52,10 @@ countMatchingPatterns deck patterns = do
       guard $ min <= draw && draw <= max && remaining <= hand
       pure candidate { remaining = remaining }
 
--- 指定した条件式で使用していないカードをデッキから取り除く
+-- 指定した条件式で使用していないカードをデッキから取り除き、Id 順にソートする
 normalizeDeck :: Deck -> ConditionSet -> Deck
-normalizeDeck { cards, others, hand } set = do
-  let used = usedCards set
+normalizeDeck { cards, others, hand } conditions = do
+  let used = usedCards conditions
   let { yes: cards', no: unused } = partition (inUse used) cards
   { cards: sortWith _.id cards', others: others + sumBy _.count unused, hand }
   where

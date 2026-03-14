@@ -10,7 +10,7 @@ import Codec.JSON.DecodeError (DecodeError)
 import Codec.JSON.DecodeError as DecodeError
 import Control.Monad.Except (ExceptT, except, lift, runExcept)
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
-import Data.Array (elemIndex, sort, (!!))
+import Data.Array (elemIndex, mapMaybe, (!!))
 import Data.Codec (Codec', codec', hoist, (<~<))
 import Data.Codec (encode, decode) as Export
 import Data.Codec.JSON as CJ
@@ -18,7 +18,7 @@ import Data.Codec.JSON.Common as CJC
 import Data.Codec.JSON.Record as CJR
 import Data.Codec.JSON.Sum as CJS
 import Data.Either (note)
-import Data.Traversable (fold, traverse)
+import Data.Traversable (traverse)
 import Effect (Effect)
 import JSON (JSON)
 import TcgCalculator.Types (AppCondition, AppConditionGroup, AppConditionSet, AppState, AppStateJson, Card, CardId, CardJson, ConditionGroupJson, ConditionJson, ConditionMode, ConditionSetJson, DeckJson, generateId, readConditionMode)
@@ -72,7 +72,7 @@ appState' = codec' decode encode
 
   encodeCondition :: AppCondition -> Array CardId -> ConditionJson
   encodeCondition { condition: { mode, count, cards }, disabled } ids = do
-    let cards' = sort <<< fold $ traverse (elemIndex <@> ids) cards
+    let cards' = mapMaybe (elemIndex <@> ids) cards
     { mode, count, cards: cards', disabled }
 
 ----------------------------------------------------------------

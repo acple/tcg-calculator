@@ -50,10 +50,11 @@ component = H.mkComponent
   }
   where
 
-  initialState :: _ { cards :: Cards, condition :: Condition, min :: Int, max :: Int }
-  initialState = { cards: _, condition: { mode: AtLeast, count: 0, cards: [] }, min: 0, max: 0 }
+  initialState :: _ { cards :: Cards, condition :: Condition }
+  initialState = { cards: _, condition: { mode: AtLeast, count: 0, cards: [] } }
 
-  render { cards, condition: { mode, count }, min, max } =
+  render { cards, condition: { mode, count, cards: selected } } = do
+    let { min, max } = getMinMax (filterCards selected cards) mode
     HH.div
       [ HP.class_ $ H.ClassName "flex flex-wrap items-center justify-end" ]
       [ HH.div
@@ -106,10 +107,9 @@ component = H.mkComponent
 
   action = case _ of
     UpdateCardSelected selected -> do
-      let selected' = Array.sort selected
       { cards, condition: { mode, count, cards: current } } <- H.get
-      when (selected' /= current) do
-        updateStatus cards selected' mode count
+      when (selected /= current) do
+        updateStatus cards selected mode count
         H.raise Updated
     UpdateConditionMode mode -> do
       readConditionMode mode # foldMap \mode' -> do
@@ -127,11 +127,11 @@ component = H.mkComponent
     SelectOnFocus event -> do
       let element = Input.fromEventTarget <=< Event.target <<< Focus.toEvent $ event
       H.liftEffect $ foldMap Input.select element
-    where
-    updateStatus cards selected mode count = do
-      let cards' = filterCards selected cards
-      let { min, max } = getMinMax cards' mode
-      H.put { cards, condition: { mode, count: clamp min max count, cards: Array.sort $ cards' <#> _.id }, min, max }
+
+  updateStatus cards selected mode count = do
+    let cards' = filterCards selected cards
+    let { min, max } = getMinMax cards' mode
+    H.put { cards, condition: { mode, count: clamp min max count, cards: cards' <#> _.id } }
 
   getMinMax :: Cards -> ConditionMode -> { min :: Int, max :: Int }
   getMinMax cards = case _ of
@@ -163,11 +163,10 @@ component = H.mkComponent
   query = case _ of
     GetCondition reply -> do
       reply <$> H.gets _.condition
-    UpdateState condition@{ mode, cards: selected } a -> H.lift do
+    UpdateState { mode, count, cards: selected } a -> H.lift do
       cards <- H.gets _.cards
-      let cards' = filterCards selected cards
-      let { min, max } = getMinMax cards' mode
-      H.put { cards, condition, min, max }
-      let items = cards <#> \card -> { key: card.id, value: card.name, selected: Array.elem card cards' }
+      updateStatus cards selected mode count
+      { cards: ids } <- H.gets _.condition
+      let items = cards <#> \card -> { key: card.id, value: card.name, selected: Array.elem card.id ids }
       H.tell (Proxy @"selector") unit (Selector.SetItems items)
       pure a
