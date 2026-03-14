@@ -2,7 +2,6 @@ module App.Result where
 
 import Prelude
 
-import App.Worker as Worker
 import Control.Alternative (guard)
 import Control.Monad.Maybe.Trans (runMaybeT)
 import Data.BigInt (BigInt)
@@ -19,6 +18,7 @@ import Halogen.HTML.Properties as HP
 import TcgCalculator as TC
 import TcgCalculator.Types (ConditionSet, Deck)
 import Util.Halogen as HU
+import Worker.Client as Worker
 
 ----------------------------------------------------------------
 

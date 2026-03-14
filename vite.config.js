@@ -16,5 +16,13 @@ export default defineConfig({
       },
     },
   },
+  worker: {
+    rolldownOptions: {
+      treeshake: {
+        annotations: true,
+        moduleSideEffects: false,
+      },
+    },
+  },
   base: "./",
 });
