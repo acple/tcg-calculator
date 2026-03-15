@@ -1,4 +1,4 @@
-module Worker.Client where
+module Worker.Client (run) where
 
 import Prelude
 

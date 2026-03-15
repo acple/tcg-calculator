@@ -37,8 +37,6 @@ import Util.Halogen as HU
 
 ----------------------------------------------------------------
 
-type Index = Int
-
 data Action
   = Initialize
   | PrepareDefaultState

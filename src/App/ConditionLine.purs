@@ -167,6 +167,6 @@ component = H.mkComponent
       cards <- H.gets _.cards
       updateStatus cards selected mode count
       { cards: ids } <- H.gets _.condition
-      let items = cards <#> \card -> { key: card.id, value: card.name, selected: Array.elem card.id ids }
+      let items = cards <#> \{ id, name } -> { key: id, value: name, selected: Array.elem id ids }
       H.tell (Proxy @"selector") unit (Selector.SetItems items)
       pure a
