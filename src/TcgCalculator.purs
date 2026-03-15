@@ -6,7 +6,7 @@ import Control.Alternative (empty, guard)
 import Data.Array (any, filter, mapMaybe, null, partition, sortWith, (!!), (..), (:))
 import Data.Array.NonEmpty (foldl1)
 import Data.BigInt (BigInt)
-import Data.Foldable (class Foldable, all, and, foldMap, foldl, foldr)
+import Data.Foldable (class Foldable, all, and, foldMap, foldr)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -59,8 +59,8 @@ normalizeDeck { cards, others, hand } conditions = do
   let { yes: cards', no: unused } = partition (inUse used) cards
   { cards: sortWith _.id cards', others: others + sumBy _.count unused, hand }
   where
-  usedCards = foldl (foldl $ (_ <<< _.cards) <<< foldr Set.insert) Set.empty
-  inUse = flip $ Set.member <<< _.id
+  usedCards = foldMap (foldMap _.cards)
+  inUse = flip (Set.member <<< _.id)
 
 -- 確率計算のため、全組み合わせの個数を計算する
 calculateTotal :: Deck -> BigInt

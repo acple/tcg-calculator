@@ -15,6 +15,7 @@ import Data.Either (Either(..))
 import Data.Foldable (fold, foldMap, for_)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
+import Data.Set as Set
 import Data.String as String
 import Data.Traversable (traverse)
 import Effect (Effect)
@@ -146,7 +147,7 @@ component = H.mkComponent
       groupId <- generateId
       let card1 = { id: cardId, name: "Card1", count: 3 }
       let defaultDeck = { cards: [card1], others: 37, hand: 5 }
-      let defaultCondition = { mode: AtLeast, count: 1, cards: [cardId] }
+      let defaultCondition = { mode: AtLeast, count: 1, cards: Set.singleton cardId }
       let defaultConditionGroup = NE.singleton { id: conditionId, condition: defaultCondition, disabled: false }
       let defaultConditionSet = [{ id: groupId, conditions: defaultConditionGroup, disabled: false }]
       replaceState <- H.gets _.replaceState

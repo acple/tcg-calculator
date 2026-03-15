@@ -35,6 +35,8 @@ import Data.Array.NonEmpty (NonEmptyArray)
 import Data.Array.NonEmpty as NE
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
+import Data.Set (Set)
+import Data.Set as Set
 import Data.Show.Generic (genericShow)
 import TcgCalculator.Types.Id (Id)
 import TcgCalculator.Types.Id (Id, generateId) as Export
@@ -84,10 +86,10 @@ type ConditionSet = Array ConditionGroup
 
 type ConditionGroup = NonEmptyArray Condition
 
-type Condition = { mode :: ConditionMode, count :: Int, cards :: Array CardId }
+type Condition = { mode :: ConditionMode, count :: Int, cards :: Set CardId }
 
-filterCards :: Array CardId -> Cards -> Cards
-filterCards ids = Array.filter (_.id >>> Array.elem <@> ids)
+filterCards :: Set CardId -> Cards -> Cards
+filterCards = Array.filter <<< flip (Set.member <<< _.id)
 
 ----------------------------------------------------------------
 

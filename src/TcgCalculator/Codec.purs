@@ -10,7 +10,7 @@ import Codec.JSON.DecodeError (DecodeError)
 import Codec.JSON.DecodeError as DecodeError
 import Control.Monad.Except (ExceptT, except, lift, runExcept)
 import Control.Monad.Reader (ReaderT, ask, runReaderT)
-import Data.Array (elemIndex, mapMaybe, (!!))
+import Data.Array (elemIndex, (!!))
 import Data.Codec (Codec', codec', hoist, (<~<))
 import Data.Codec (encode, decode) as Export
 import Data.Codec.JSON as CJ
@@ -18,6 +18,7 @@ import Data.Codec.JSON.Common as CJC
 import Data.Codec.JSON.Record as CJR
 import Data.Codec.JSON.Sum as CJS
 import Data.Either (note)
+import Data.Set as Set
 import Data.Traversable (traverse)
 import Effect (Effect)
 import JSON (JSON)
@@ -53,7 +54,7 @@ appState' = codec' decode encode
     ids <- ask
     id <- generateId
     cards' <- lift <<< except <<< note (DecodeError.basic "Could not decode conditions") <<< traverse (ids !! _) $ cards
-    pure { id, condition: { mode, count, cards: cards' }, disabled }
+    pure { id, condition: { mode, count, cards: Set.fromFoldable cards' }, disabled }
 
   encode :: AppState -> AppStateJson
   encode { deck: { cards, hand, others }, condition: set } = do
@@ -72,7 +73,7 @@ appState' = codec' decode encode
 
   encodeCondition :: AppCondition -> Array CardId -> ConditionJson
   encodeCondition { condition: { mode, count, cards }, disabled } ids = do
-    let cards' = mapMaybe (elemIndex <@> ids) cards
+    let cards' = Set.toUnfoldable <<< Set.mapMaybe (elemIndex <@> ids) $ cards
     { mode, count, cards: cards', disabled }
 
 ----------------------------------------------------------------

@@ -10,6 +10,7 @@ import Data.Int as Int
 import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(..))
 import Data.Newtype (alaF)
+import Data.Set as Set
 import Effect.Aff (Aff)
 import Halogen as H
 import Halogen.HTML as HH
@@ -51,7 +52,7 @@ component = H.mkComponent
   where
 
   initialState :: _ { cards :: Cards, condition :: Condition }
-  initialState = { cards: _, condition: { mode: AtLeast, count: 0, cards: [] } }
+  initialState = { cards: _, condition: { mode: AtLeast, count: 0, cards: mempty } }
 
   render { cards, condition: { mode, count, cards: selected } } = do
     let { min, max } = getMinMax (filterCards selected cards) mode
@@ -107,9 +108,10 @@ component = H.mkComponent
 
   action = case _ of
     UpdateCardSelected selected -> do
+      let selected' = Set.fromFoldable selected
       { cards, condition: { mode, count, cards: current } } <- H.get
-      when (selected /= current) do
-        updateStatus cards selected mode count
+      when (selected' /= current) do
+        updateStatus cards selected' mode count
         H.raise Updated
     UpdateConditionMode mode -> do
       readConditionMode mode # foldMap \mode' -> do
@@ -131,7 +133,7 @@ component = H.mkComponent
   updateStatus cards selected mode count = do
     let cards' = filterCards selected cards
     let { min, max } = getMinMax cards' mode
-    H.put { cards, condition: { mode, count: clamp min max count, cards: cards' <#> _.id } }
+    H.put { cards, condition: { mode, count: clamp min max count, cards: Set.fromFoldable (cards' <#> _.id) } }
 
   getMinMax :: Cards -> ConditionMode -> { min :: Int, max :: Int }
   getMinMax cards = case _ of
@@ -167,6 +169,6 @@ component = H.mkComponent
       cards <- H.gets _.cards
       updateStatus cards selected mode count
       { cards: ids } <- H.gets _.condition
-      let items = cards <#> \{ id, name } -> { key: id, value: name, selected: Array.elem id ids }
+      let items = cards <#> \{ id, name } -> { key: id, value: name, selected: Set.member id ids }
       H.tell (Proxy @"selector") unit (Selector.SetItems items)
       pure a
