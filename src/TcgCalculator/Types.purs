@@ -3,22 +3,22 @@ module TcgCalculator.Types
   , AppConditionGroup
   , AppConditionSet
   , AppState
-  , AppStateJson
   , Card
   , CardId
-  , CardJson
   , Cards
   , Condition
   , ConditionGroup
-  , ConditionGroupJson
   , ConditionId
-  , ConditionJson
   , ConditionMode(..)
   , ConditionSet
-  , ConditionSetJson
   , Deck
-  , DeckJson
   , GroupId
+  , HashCard
+  , HashCondition
+  , HashConditionGroup
+  , HashConditionSet
+  , HashDeck
+  , HashState
   , WorkerParam
   , module Export
   , readConditionMode
@@ -117,14 +117,14 @@ toConditionGroup = NE.filter (not _.disabled) >>> Array.sortWith _.id >>> map _.
 
 ----------------------------------------------------------------
 
-type AppStateJson = { deck :: DeckJson, condition :: ConditionSetJson }
+type HashState = { deck :: HashDeck, condition :: HashConditionSet }
 
-type DeckJson = { cards :: Array CardJson, hand :: Int, others :: Int }
+type HashDeck = { cards :: Array HashCard, hand :: Int, others :: Int }
 
-type CardJson = { name :: String, count :: Int }
+type HashCard = { name :: String, count :: Int }
 
-type ConditionSetJson = Array { conditions :: ConditionGroupJson, disabled :: Boolean }
+type HashConditionSet = Array { conditions :: HashConditionGroup, disabled :: Boolean }
 
-type ConditionGroupJson = NonEmptyArray ConditionJson
+type HashConditionGroup = NonEmptyArray HashCondition
 
-type ConditionJson = { mode :: ConditionMode, count :: Int, cards :: Array Int, disabled :: Boolean }
+type HashCondition = { mode :: ConditionMode, count :: Int, cards :: Array Int, disabled :: Boolean }

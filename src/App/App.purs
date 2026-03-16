@@ -6,7 +6,7 @@ import App.Condition as Condition
 import App.Deck as Deck
 import App.Result as Result
 import Codec.JSON.DecodeError as DecodeError
-import Control.Monad.Except (except, runExceptT)
+import Control.Monad.Except (except, runExcept, runExceptT)
 import Data.Array as Array
 import Data.Array.NonEmpty as NE
 import Data.Bifunctor (lmap)
@@ -17,7 +17,6 @@ import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
 import Data.String as String
-import Data.Traversable (traverse)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class.Console as Console
@@ -26,6 +25,7 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Halogen.Subscription as HS
+import JSON (JSON)
 import JSON as JSON
 import JSURI (decodeURIComponent)
 import Record as Record
@@ -49,7 +49,7 @@ data Action
   | SwapNext GroupId
   | ReceiveConditionUpdated GroupId Condition.Output
   | RestoreState String
-  | ApplyState AppState
+  | ApplyState JSON String
   | SaveState
 
 ----------------------------------------------------------------
@@ -135,10 +135,11 @@ component = H.mkComponent
       action <<< handle =<< H.liftEffect psi.locationState
       where
       update f export = do
-        let json = Codec.encode Codec.appState export
-        f (Foreign.unsafeToForeign export) ("#" <> JSON.print json)
+        let stateJson = Codec.encode Codec.appState export
+        let hashJson = Codec.encode Codec.hashAppState export
+        f (Foreign.unsafeToForeign stateJson) ("#" <> JSON.print hashJson)
       handle { state, hash }
-        | not Foreign.isNull state = ApplyState (Foreign.unsafeFromForeign state) -- this works only with purescript-backend-optimizer
+        | not Foreign.isNull state = ApplyState (Foreign.unsafeFromForeign state) hash
         | not String.null hash     = RestoreState hash
         | otherwise                = PrepareDefaultState
     PrepareDefaultState -> do
@@ -186,24 +187,29 @@ component = H.mkComponent
       result <- H.liftEffect <<< runExceptT <<< parseJson $ json
       case result of
         Left error -> do
-          Console.error $ "Failed to decode JSON: " <> DecodeError.print error
+          Console.error $ "Failed to decode Hash JSON: " <> DecodeError.print error
           action PrepareDefaultState
         Right state -> do
           replaceState <- H.gets _.replaceState
           H.liftEffect $ replaceState state
-    ApplyState { deck, condition: set } -> do
-      let ids = set <#> _.id
-      { deck: currentDeck, conditions: currentConditions } <- H.get
-      when (deck /= currentDeck || ids /= currentConditions) do
-        H.modify_ _ { deck = deck, conditions = ids }
-      for_ set \{ id, conditions, disabled } -> do
-        H.tell (Proxy @"condition") id (Condition.UpdateState { conditions, disabled })
-      H.tell (Proxy @"result") unit (Result.Calculate deck (toConditionSet set))
+    ApplyState json hash -> do
+      case runExcept <<< Codec.decode Codec.appState $ json of
+        Left error -> do
+          Console.error $ "Failed to decode AppState JSON: " <> DecodeError.print error
+          action $ RestoreState hash
+        Right { deck, condition: set } -> do
+          let ids = set <#> _.id
+          { deck: currentDeck, conditions: currentConditions } <- H.get
+          when (deck /= currentDeck || ids /= currentConditions) do
+            H.modify_ _ { deck = deck, conditions = ids }
+          for_ set \{ id, conditions, disabled } -> do
+            H.tell (Proxy @"condition") id (Condition.UpdateState { conditions, disabled })
+          H.tell (Proxy @"result") unit (Result.Calculate deck (toConditionSet set))
     SaveState -> do
       { deck, conditions: ids, pushState } <- H.get
       conditions <- H.requestAll (Proxy @"condition") Condition.GetState
-      let condition = fold $ ids # traverse \id -> Record.insert (Proxy @"id") id <$> Map.lookup id conditions
+      let condition = ids # Array.mapMaybe \id -> Record.insert (Proxy @"id") id <$> Map.lookup id conditions
       H.liftEffect $ pushState { deck, condition }
     where
     swapCondition i = _ { conditions = _ } <*> ArrayUtil.swap i (i + 1) <<< _.conditions
-    parseJson = Codec.decode Codec.appState <=< except <<< lmap DecodeError.basic <<< JSON.parse
+    parseJson = Codec.decode Codec.hashAppState <=< except <<< lmap DecodeError.basic <<< JSON.parse
