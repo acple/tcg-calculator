@@ -9,7 +9,7 @@
     "postinstall": "spago install",
     "preview": "npm run bundle && vite preview",
     "server": "npm run build && vite",
-    "test": "npm run build && node -e \"import { main } from './output/Test.Main/index.js'; main()\""
+    "test": "npm run build && node -e \"import { main } from './build/Test.Main/index.js'; main()\""
   },
   "author": "acple",
   "license": "MIT",

@@ -12,5 +12,5 @@
 /.vscode
 /.spec-results
 
-/bundle/
+/build/
 /dist/

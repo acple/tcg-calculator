@@ -1,2 +1,2 @@
-import { main } from "./output/Worker.Main/index.js";
+import { main } from "./build/Worker.Main/index.js";
 main();
