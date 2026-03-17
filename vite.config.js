@@ -1,10 +1,8 @@
 import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
 
-// TODO: When @tailwindcss/vite supports Vite 8:
-// - Replace @tailwindcss/postcss with @tailwindcss/vite in package.json
-// - Add `import tailwindcss from "@tailwindcss/vite"` and `plugins: [tailwindcss()]`
-// - Remove .postcssrc.json
 export default defineConfig({
+  plugins: [tailwindcss()],
   build: {
     target: "esnext",
     modulePreload: false,

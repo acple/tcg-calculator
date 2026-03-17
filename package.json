@@ -18,11 +18,12 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.1",
+    "@tailwindcss/vite": "0.0.0-insiders.f302fce",
     "purescript": "^0.15.16",
     "purescript-psa": "^0.9.0",
     "purs-backend-es": "^1.4.3",
     "spago": "^1.0.3",
+    "tailwindcss": "0.0.0-insiders.f302fce",
     "vite": "^8.0.0"
   }
 }
