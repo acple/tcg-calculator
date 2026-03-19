@@ -12,7 +12,7 @@
     "postinstall": "spago install",
     "preview": "npm run bundle && vite preview",
     "server": "npm run build && vite",
-    "test": "npm run build && node -e \"import { main } from './build/Test.Main/index.js'; main()\""
+    "test": "npm run build && node test.js"
   },
   "dependencies": {
     "big-integer": "^1.6.52",
