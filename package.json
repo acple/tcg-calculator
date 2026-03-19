@@ -3,6 +3,9 @@
   "name": "tcg-calculator",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
+  "license": "MIT",
+  "author": "acple",
   "scripts": {
     "build": "spago build --pedantic-packages",
     "bundle": "npm run build && vite build",
@@ -11,19 +14,17 @@
     "server": "npm run build && vite",
     "test": "npm run build && node -e \"import { main } from './build/Test.Main/index.js'; main()\""
   },
-  "author": "acple",
-  "license": "MIT",
   "dependencies": {
     "big-integer": "^1.6.52",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "0.0.0-insiders.f302fce",
+    "@tailwindcss/vite": "4.2.2",
     "purescript": "^0.15.16",
     "purescript-psa": "^0.9.0",
     "purs-backend-es": "^1.4.3",
     "spago": "^1.0.3",
-    "tailwindcss": "0.0.0-insiders.f302fce",
-    "vite": "^8.0.0"
+    "tailwindcss": "4.2.2",
+    "vite": "^8.0.1"
   }
 }
