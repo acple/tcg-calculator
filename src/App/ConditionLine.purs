@@ -8,14 +8,13 @@ import Data.Array as Array
 import Data.Foldable (foldMap)
 import Data.Int as Int
 import Data.Maybe (Maybe(..))
-import Data.Monoid.Additive (Additive(..))
-import Data.Newtype (alaF)
 import Data.Set as Set
 import Effect.Aff (Aff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import TcgCalculator.Math (sumBy)
 import TcgCalculator.Types (CardId, Cards, Condition, ConditionMode(..), filterCards, readConditionMode)
 import Type.Proxy (Proxy(..))
 import Web.Event.Event as Event
@@ -159,7 +158,7 @@ component = H.mkComponent
       let max = Array.length cards
       { min: min 1 max, max }
     where
-    countCards = alaF Additive Array.foldMap _.count
+    countCards = sumBy _.count
 
   query :: _ ~> _
   query = case _ of

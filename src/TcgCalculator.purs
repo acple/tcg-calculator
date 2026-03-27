@@ -6,16 +6,14 @@ import Control.Alternative (empty, guard)
 import Data.Array (any, filter, mapMaybe, null, partition, sortWith, (!!), (..), (:))
 import Data.Array.NonEmpty (foldl1)
 import Data.BigInt (BigInt)
-import Data.Foldable (class Foldable, all, and, foldMap, foldr)
+import Data.Foldable (all, and, foldMap, foldr)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
-import Data.Monoid.Additive (Additive(..))
-import Data.Newtype (alaF)
 import Data.Set as Set
 import Data.Traversable (mapAccumL)
 import Data.Tuple (Tuple(..))
-import TcgCalculator.Math (combinationNumber, combinations)
+import TcgCalculator.Math (combinationNumber, combinations, sumBy)
 import TcgCalculator.Types (Card, Cards, Condition, ConditionGroup, ConditionMode(..), ConditionSet, Deck, CardId, filterCards)
 
 ----------------------------------------------------------------
@@ -165,8 +163,3 @@ mkDrawPattern count cards = do
     let minDraw = max 1 (remaining - capacity')
     let draws = maxDraw .. minDraw >>= \draw -> ({ card, draw } : _) <$> k (remaining - draw) capacity'
     if capacity' < remaining then draws else draws <> k remaining capacity'
-
-----------------------------------------------------------------
-
-sumBy :: forall f a m. Foldable f => Semiring m => (a -> m) -> f a -> m
-sumBy = alaF Additive foldMap

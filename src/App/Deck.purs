@@ -11,8 +11,7 @@ import Data.Function (on)
 import Data.Int as Int
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.MediaType (MediaType(..))
-import Data.Monoid.Additive (Additive(..))
-import Data.Newtype (alaF, collect)
+import Data.Newtype (collect)
 import Data.String as String
 import Data.Tuple (Tuple(..))
 import Effect.Aff (Aff)
@@ -21,6 +20,7 @@ import Halogen.HTML as HH
 import Halogen.HTML.Elements.Keyed as HK
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import TcgCalculator.Math (sumBy)
 import TcgCalculator.Types (Card, CardId, Deck, generateId)
 import TcgCalculator.Types.Id as Id
 import Util.Array as ArrayUtil
@@ -226,7 +226,7 @@ component = H.mkComponent
 
   dragItemMediaType = "tcg-calculator/card"
 
-  countCards = alaF Additive Array.foldMap _.count
+  countCards = sumBy _.count
 
   findById id = Array.findIndex (_.id >>> (_ == id))
 

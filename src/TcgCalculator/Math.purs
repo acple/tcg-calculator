@@ -1,9 +1,4 @@
-module TcgCalculator.Math
-  ( Combination
-  , combinationNumber
-  , combinations
-  )
-  where
+module TcgCalculator.Math where
 
 import Prelude
 
@@ -11,8 +6,11 @@ import Data.Array (index, length, singleton, uncons, zipWith, (:))
 import Data.Array.Partial as P
 import Data.BigInt (BigInt)
 import Data.BigInt as BigInt
+import Data.Foldable (class Foldable, foldMap)
 import Data.List.Lazy as L
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Monoid.Additive (Additive(..))
+import Data.Newtype (alaF)
 import Partial.Unsafe (unsafePartial)
 
 ----------------------------------------------------------------
@@ -44,3 +42,8 @@ combinations n a
   | otherwise     = case uncons a of
       Just { head, tail } -> ((head : _) <$> combinations (n - 1) tail) <> combinations n tail
       _ -> []
+
+----------------------------------------------------------------
+
+sumBy :: forall f a m. Foldable f => Semiring m => (a -> m) -> f a -> m
+sumBy = alaF Additive foldMap
