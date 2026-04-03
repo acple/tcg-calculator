@@ -1,5 +1,9 @@
 @import "tailwindcss" source("./src");
+@import "@fortawesome/fontawesome-free/css/fontawesome";
+@import "@fortawesome/fontawesome-free/css/solid";
 
 @layer base {
-  html { @apply touch-manipulation; }
+  html {
+    @apply touch-manipulation;
+  }
 }

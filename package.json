@@ -19,6 +19,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "7.2.0",
     "@tailwindcss/vite": "^4.2.2",
     "purescript": "^0.15.16",
     "purescript-psa": "^0.9.0",
@@ -26,5 +27,6 @@
     "spago": "^1.0.4",
     "tailwindcss": "^4.2.2",
     "vite": "^8.0.3"
-  }
+  },
+  "packageManager": "npm@11.12.1"
 }
