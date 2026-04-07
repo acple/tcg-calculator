@@ -54,7 +54,7 @@
     },
     "package_set": {
       "address": {
-        "registry": "75.6.0"
+        "registry": "75.8.0"
       },
       "compiler": ">=0.15.15 <0.16.0",
       "content": {
@@ -265,11 +265,11 @@
         "humdrum": "0.0.1",
         "hylograph-canvas": "0.1.0",
         "hylograph-d3-kernel": "0.1.0",
-        "hylograph-graph": "0.2.0",
-        "hylograph-layout": "0.2.1",
+        "hylograph-graph": "0.3.0",
+        "hylograph-layout": "0.3.0",
         "hylograph-music": "0.4.0",
         "hylograph-optics": "0.1.0",
-        "hylograph-selection": "0.5.0",
+        "hylograph-selection": "0.5.1",
         "hylograph-simulation": "0.5.0",
         "hylograph-simulation-core": "0.1.0",
         "hylograph-simulation-halogen": "0.5.0",
@@ -666,8 +666,8 @@
         "yoga-json": "5.2.1",
         "yoga-language": "1.0.0",
         "yoga-next-fastify": "0.1.1",
-        "yoga-om": "2.0.0",
-        "yoga-om-layer": "2.0.0",
+        "yoga-om": "2.2.0",
+        "yoga-om-layer": "2.1.0",
         "yoga-om-strom": "0.4.2",
         "yoga-om-workerbees": "0.1.2",
         "yoga-opentelemetry": "0.2.0",

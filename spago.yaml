@@ -46,7 +46,7 @@ package:
 workspace:
   extraPackages: {}
   packageSet:
-    registry: 75.6.0
+    registry: 75.8.0
   backend:
     cmd: purs-backend-es
     args: [ build, --output-dir, build ]
