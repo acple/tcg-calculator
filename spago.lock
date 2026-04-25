@@ -54,7 +54,7 @@
     },
     "package_set": {
       "address": {
-        "registry": "75.9.1"
+        "registry": "76.1.1"
       },
       "compiler": ">=0.15.15 <0.16.0",
       "content": {
@@ -277,7 +277,7 @@
         "hylograph-wasm-kernel": "0.1.0",
         "hyrule": "2.3.8",
         "i18next": "0.1.0",
-        "idb": "0.1.0",
+        "idb": "0.2.0",
         "identity": "6.0.0",
         "identy": "4.0.1",
         "indexed-db": "1.0.0",
@@ -531,7 +531,7 @@
         "string-parsers": "8.0.0",
         "strings": "6.0.1",
         "strings-extra": "4.0.0",
-        "stringutils": "0.0.12",
+        "stringutils": "0.0.13",
         "structured-logging": "1.0.0",
         "substitute": "0.2.3",
         "supply": "0.2.0",
@@ -539,7 +539,7 @@
         "systemd-journald": "0.3.0",
         "tagged": "4.0.2",
         "tailrec": "6.1.0",
-        "tanstack-query": "2.0.1",
+        "tanstack-query": "3.0.0",
         "tecton": "0.2.1",
         "tecton-halogen": "0.2.0",
         "temporal": "0.1.0",
@@ -681,7 +681,7 @@
         "yoga-redis": "0.1.0",
         "yoga-shadcn": "1.0.5",
         "yoga-sql-types": "0.1.0",
-        "yoga-sqlite": "0.3.1",
+        "yoga-sqlite": "0.3.2",
         "yoga-sse": "0.1.1",
         "yoga-subtlecrypto": "0.1.0",
         "yoga-test-docker": "0.1.2",
