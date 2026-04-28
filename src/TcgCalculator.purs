@@ -44,7 +44,9 @@ countMatchingPatterns deck patterns = do
     if null candidates' then zero else combinationNumber card.count draw * k hand' candidates'
 
   update cardId draw hand candidate = case Map.lookup cardId candidate.entries of
-    Nothing -> pure candidate
+    Nothing -> do
+      guard $ candidate.remaining <= hand
+      pure candidate
     Just { min, max } -> do
       let remaining = candidate.remaining - min
       guard $ min <= draw && draw <= max && remaining <= hand
